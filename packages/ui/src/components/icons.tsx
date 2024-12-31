@@ -3,6 +3,7 @@ import type { IconNode, LucideProps } from "lucide-react";
 import type { TwcComponentProps } from "react-twc";
 import React from "react";
 import {
+  SiDiscord,
   SiLinkedin,
   SiOpenai,
   SiOpenaiHex,
@@ -133,6 +134,9 @@ export const Icons = {
     "size",
     "variant",
   ])<IconProps>(({ size, variant }) => iconVariants({ size, variant })),
+  Discord: twx(SiDiscord).transientProps(["size", "variant"])<IconProps>(
+    ({ size, variant }) => iconVariants({ size, variant }),
+  ),
   AngelList: ({ size, ...props }: IconProps) => (
     <svg
       className={iconVariants({ size })}

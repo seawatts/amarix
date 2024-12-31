@@ -26,6 +26,10 @@ export const Users = pgTable("user", {
   id: varchar("id", { length: 128 }).notNull().primaryKey(),
   lastName: text("lastName"),
   online: boolean("online").default(false).notNull(),
+  lastLoggedInAt: timestamp("lastLoggedInAt", {
+    mode: "date",
+    withTimezone: true,
+  }),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,

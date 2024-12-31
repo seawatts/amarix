@@ -16,6 +16,7 @@
     "@trpc/client": "11.0.0-rc.364",
     "@trpc/react-query": "11.0.0-rc.364",
     "@trpc/server": "11.0.0-rc.364",
+    "bitecs": "github:NateTheGreatt/bitECS#rc-0-4-0",
     "framer-motion": "11.15.0",
     "geist": "1.3.1",
     "next": "15.1.3",
