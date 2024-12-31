@@ -9,8 +9,8 @@ import {
   SidebarMenu,
 } from "@acme/ui/sidebar";
 
-import type { DebugMetrics } from "../../../lib/ecs/engine";
-import type { DataPoint } from "../../../lib/ecs/types";
+import type { DebugMetrics } from "../../lib/ecs/engine";
+import type { DataPoint } from "../../lib/ecs/types";
 import { PerformanceMetric } from "./performance-metric";
 
 interface PerformanceMetricsProps {

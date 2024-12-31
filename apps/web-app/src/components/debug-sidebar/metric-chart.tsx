@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 
-import type { DataPoint } from "../../../lib/ecs/types";
+import type { DataPoint } from "../../lib/ecs/types";
 
 interface MetricChartProps {
   data: DataPoint[];

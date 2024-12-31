@@ -12,7 +12,7 @@ import {
   SidebarMenuSub,
 } from "@acme/ui/sidebar";
 
-import type { DebugMetrics } from "../../../lib/ecs/engine";
+import type { DebugMetrics } from "../../lib/ecs/engine";
 
 interface ECSStatusProps {
   metrics: DebugMetrics;

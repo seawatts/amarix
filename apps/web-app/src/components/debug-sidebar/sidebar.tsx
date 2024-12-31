@@ -11,9 +11,9 @@ import {
 
 import type { DebugMetrics } from "../../lib/ecs/engine";
 import type { DataPoint } from "../../lib/ecs/types";
-import { ECSStatus } from "./components/ecs-status";
-import { ModeToggle } from "./components/mode-toggle";
-import { PerformanceMetrics } from "./components/performance-metrics";
+import { ECSStatus } from "./ecs-status";
+import { ModeToggle } from "./mode-toggle";
+import { PerformanceMetrics } from "./performance-metrics";
 
 interface DebugSidebarProps {
   getMetrics: () => DebugMetrics;

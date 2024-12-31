@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { SidebarMenuButton, SidebarMenuItem } from "@acme/ui/sidebar";
 
-import type { DataPoint } from "../../../lib/ecs/types";
+import type { DataPoint } from "../../lib/ecs/types";
 import { MetricChart } from "./metric-chart";
 
 interface PerformanceMetricProps {
