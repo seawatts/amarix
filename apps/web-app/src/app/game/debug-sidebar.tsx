@@ -1,86 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronRight, File, Folder } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@acme/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
+  SidebarHeader,
+  SidebarTrigger,
 } from "@acme/ui/sidebar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
-import { Text } from "@acme/ui/typography";
 
-interface DebugMetrics {
-  fps: number;
-  entityCount: number;
-  componentCounts: {
-    position: number;
-    movement: number;
-    player: number;
-  };
-  memoryUsage: number;
-  lastFrameTime: number;
-}
+import type { DebugMetrics } from "../../lib/ecs/engine";
+import type { DataPoint } from "../../lib/ecs/types";
+import { ECSStatus } from "./components/ecs-status";
+import { ModeToggle } from "./components/mode-toggle";
+import { PerformanceMetrics } from "./components/performance-metrics";
 
 interface DebugSidebarProps {
   getMetrics: () => DebugMetrics;
-}
-
-// ECS file tree structure
-const ecsTree = [
-  ["components", "Position.ts", "Movement.ts", "Player.ts"],
-  ["systems", "movement.ts", "render.ts"],
-  ["queries", "movement.ts", "render.ts"],
-  "world.ts",
-];
-
-function Tree({ item }: { item: string | any[] }) {
-  const [name, ...items] = Array.isArray(item) ? item : [item];
-
-  if (items.length === 0) {
-    return (
-      <SidebarMenuButton>
-        <File className="size-4" />
-        {name}
-      </SidebarMenuButton>
-    );
-  }
-
-  return (
-    <SidebarMenuItem>
-      <Collapsible
-        defaultOpen
-        className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
-      >
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton>
-            <ChevronRight className="size-4 transition-transform" />
-            <Folder className="size-4" />
-            {name}
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <SidebarMenuSub>
-            {items.map((subItem, index) => (
-              <Tree key={index} item={subItem} />
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
-      </Collapsible>
-    </SidebarMenuItem>
-  );
 }
 
 export function DebugSidebar({ getMetrics }: DebugSidebarProps) {
@@ -96,23 +32,64 @@ export function DebugSidebar({ getMetrics }: DebugSidebarProps) {
     memoryUsage: 0,
   });
 
+  const [fpsHistory, setFpsHistory] = useState<DataPoint[]>([]);
+  const [frameTimeHistory, setFrameTimeHistory] = useState<DataPoint[]>([]);
+  const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
+  const MAX_HISTORY = 50; // Keep 50 data points for all metrics
+  const UPDATE_INTERVAL = 100; // Update every 100ms
+
   useEffect(() => {
     let frameId: number;
-    let lastTime = performance.now();
-    let frameCount = 0;
+    let lastUpdateTime = performance.now();
 
     const updateMetrics = () => {
       const currentTime = performance.now();
-      frameCount++;
 
-      // Update FPS every second
-      if (currentTime - lastTime >= 1000) {
+      // Update metrics more frequently
+      if (currentTime - lastUpdateTime >= UPDATE_INTERVAL) {
         const newMetrics = getMetrics();
-        newMetrics.fps = frameCount;
         setMetrics(newMetrics);
 
-        frameCount = 0;
-        lastTime = currentTime;
+        // Update FPS history
+        setFpsHistory((previous) => {
+          const newPoint = {
+            timestamp: currentTime,
+            value: newMetrics.fps,
+          };
+          const newHistory = [...previous, newPoint];
+          if (newHistory.length > MAX_HISTORY) {
+            newHistory.shift();
+          }
+          return newHistory;
+        });
+
+        // Update frame time history
+        setFrameTimeHistory((previous) => {
+          const newPoint = {
+            timestamp: currentTime,
+            value: newMetrics.lastFrameTime,
+          };
+          const newHistory = [...previous, newPoint];
+          if (newHistory.length > MAX_HISTORY) {
+            newHistory.shift();
+          }
+          return newHistory;
+        });
+
+        // Update memory history
+        setMemoryHistory((previous) => {
+          const newPoint = {
+            timestamp: currentTime,
+            value: newMetrics.memoryUsage / 1024 / 1024, // Convert to MB
+          };
+          const newHistory = [...previous, newPoint];
+          if (newHistory.length > MAX_HISTORY) {
+            newHistory.shift();
+          }
+          return newHistory;
+        });
+
+        lastUpdateTime = currentTime;
       }
 
       frameId = requestAnimationFrame(updateMetrics);
@@ -126,65 +103,21 @@ export function DebugSidebar({ getMetrics }: DebugSidebarProps) {
   }, [getMetrics]);
 
   return (
-    <Sidebar className="border-l">
+    <Sidebar collapsible="icon" className="border-l">
+      <SidebarHeader className="flex-row items-center justify-between gap-2">
+        <SidebarTrigger className="h-8 w-8" />
+        <div className="group-data-[collapsible=icon]:hidden">
+          <ModeToggle />
+        </div>
+      </SidebarHeader>
       <SidebarContent>
-        <Tabs defaultValue="metrics" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="metrics" className="flex-1">
-              Metrics
-            </TabsTrigger>
-            <TabsTrigger value="ecs" className="flex-1">
-              ECS
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="metrics" className="mt-0">
-            <SidebarGroup>
-              <SidebarGroupLabel>Performance</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <div className="grid grid-cols-2 gap-2 rounded-lg border p-4">
-                  <Text>FPS</Text>
-                  <Text>{metrics.fps}</Text>
-                  <Text>Frame Time</Text>
-                  <Text>{metrics.lastFrameTime.toFixed(2)}ms</Text>
-                  <Text>Memory Usage</Text>
-                  <Text>
-                    {(metrics.memoryUsage / 1024 / 1024).toFixed(2)}MB
-                  </Text>
-                </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>ECS Status</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <div className="grid grid-cols-2 gap-2 rounded-lg border p-4">
-                  <Text>Total Entities</Text>
-                  <Text>{metrics.entityCount}</Text>
-                  <Text>Position Components</Text>
-                  <Text>{metrics.componentCounts.position}</Text>
-                  <Text>Movement Components</Text>
-                  <Text>{metrics.componentCounts.movement}</Text>
-                  <Text>Player Components</Text>
-                  <Text>{metrics.componentCounts.player}</Text>
-                </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </TabsContent>
-
-          <TabsContent value="ecs" className="mt-0">
-            <SidebarGroup>
-              <SidebarGroupLabel>Files</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {ecsTree.map((item, index) => (
-                    <Tree key={index} item={item} />
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </TabsContent>
-        </Tabs>
+        <PerformanceMetrics
+          metrics={metrics}
+          fpsHistory={fpsHistory}
+          frameTimeHistory={frameTimeHistory}
+          memoryHistory={memoryHistory}
+        />
+        <ECSStatus metrics={metrics} />
       </SidebarContent>
     </Sidebar>
   );
