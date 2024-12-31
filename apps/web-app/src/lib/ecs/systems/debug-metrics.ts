@@ -1,0 +1,79 @@
+import type { World } from "bitecs";
+import { query } from "bitecs";
+
+import {
+  DebugMetrics,
+  HostileNPC,
+  InBattle,
+  Movement,
+  NPC,
+  NPCInteraction,
+  Player,
+  Position,
+} from "../components";
+
+const UPDATE_INTERVAL = 100; // Update metrics every 100ms
+
+export function createDebugMetricsSystem() {
+  let lastFrameTime = performance.now();
+  let frameCount = 0;
+  let lastFpsUpdateTime = performance.now();
+  let currentFps = 0;
+
+  return (world: World) => {
+    // Get the metrics entity
+    const [metricsEntity] = query(world, [DebugMetrics]);
+    if (!metricsEntity) return world;
+
+    // Update FPS counter
+    const currentTime = performance.now();
+    frameCount++;
+    if (currentTime - lastFpsUpdateTime >= 1000) {
+      currentFps = Math.round(
+        (frameCount * 1000) / (currentTime - lastFpsUpdateTime),
+      );
+      frameCount = 0;
+      lastFpsUpdateTime = currentTime;
+    }
+
+    // Update metrics at the specified interval
+    if (
+      currentTime - (DebugMetrics.lastUpdate[metricsEntity] ?? 0) >=
+      UPDATE_INTERVAL
+    ) {
+      // Query component counts
+      const movementEntities = query(world, [Movement]);
+      const playerEntities = query(world, [Player]);
+      const positionEntities = query(world, [Position]);
+      const npcEntities = query(world, [NPC]);
+      const npcInteractionEntities = query(world, [NPCInteraction]);
+      const hostileNpcEntities = query(world, [HostileNPC]);
+      const inBattleEntities = query(world, [InBattle]);
+
+      // Update component counts
+      DebugMetrics.componentCounts.movement[metricsEntity] =
+        movementEntities.length;
+      DebugMetrics.componentCounts.player[metricsEntity] =
+        playerEntities.length;
+      DebugMetrics.componentCounts.position[metricsEntity] =
+        positionEntities.length;
+      DebugMetrics.componentCounts.npc[metricsEntity] = npcEntities.length;
+      DebugMetrics.componentCounts.npcInteraction[metricsEntity] =
+        npcInteractionEntities.length;
+      DebugMetrics.componentCounts.hostileNpc[metricsEntity] =
+        hostileNpcEntities.length;
+      DebugMetrics.componentCounts.inBattle[metricsEntity] =
+        inBattleEntities.length;
+
+      // Update performance metrics
+      DebugMetrics.fps[metricsEntity] = currentFps;
+      DebugMetrics.frameTime[metricsEntity] = currentTime - lastFrameTime;
+      DebugMetrics.memoryUsage[metricsEntity] =
+        globalThis.performance.memory?.usedJSHeapSize ?? 0;
+      DebugMetrics.lastUpdate[metricsEntity] = currentTime;
+    }
+
+    lastFrameTime = currentTime;
+    return world;
+  };
+}

@@ -3,7 +3,8 @@ import { query } from "bitecs";
 
 import { Movement, Player, Position } from "../components";
 
-const CELL_SIZE = 50;
+const CELL_SIZE = 100;
+const MOVEMENT_SPEED = 8; // Pixels per frame
 
 export const createMovementSystem = (canvas: HTMLCanvasElement) => {
   return (world: ReturnType<typeof createWorld>) => {
@@ -15,23 +16,25 @@ export const createMovementSystem = (canvas: HTMLCanvasElement) => {
 
       if (dx === 0 && dy === 0) continue;
 
-      const newX = (Position.x[eid] ?? 0) + dx * CELL_SIZE;
-      const newY = (Position.y[eid] ?? 0) + dy * CELL_SIZE;
+      // Normalize diagonal movement
+      const length = Math.hypot(dx, dy);
+      const normalizedDx = dx / length;
+      const normalizedDy = dy / length;
 
-      // Check canvas bounds
+      const newX = (Position.x[eid] ?? 0) + normalizedDx * MOVEMENT_SPEED;
+      const newY = (Position.y[eid] ?? 0) + normalizedDy * MOVEMENT_SPEED;
+
+      // Check canvas bounds with padding
+      const padding = CELL_SIZE / 2;
       if (
-        newX >= CELL_SIZE / 2 &&
-        newX <= canvas.width - CELL_SIZE / 2 &&
-        newY >= CELL_SIZE / 2 &&
-        newY <= canvas.height - CELL_SIZE / 2
+        newX >= padding &&
+        newX <= canvas.width - padding &&
+        newY >= padding &&
+        newY <= canvas.height - padding
       ) {
         Position.x[eid] = newX;
         Position.y[eid] = newY;
       }
-
-      // Reset movement
-      Movement.dx[eid] = 0;
-      Movement.dy[eid] = 0;
     }
 
     return world;

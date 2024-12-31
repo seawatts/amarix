@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
+import { DebugSidebar } from "../../components/debug-sidebar/sidebar";
+import { NPCInteractionManager } from "../../components/npc-interaction-manager";
 import { GameEngine } from "../../lib/ecs/engine";
-import { DebugSidebar } from "./debug-sidebar";
+import { useGameEngine } from "../../lib/store/game-engine";
 
 declare global {
   interface Performance {
@@ -19,52 +21,61 @@ declare global {
 
 export default function GamePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const engineRef = useRef<GameEngine | null>(null);
-
-  const getMetrics = useCallback(() => {
-    return (
-      engineRef.current?.getMetrics() ?? {
-        componentCounts: {
-          movement: 0,
-          player: 0,
-          position: 0,
-        },
-        entityCount: 0,
-        fps: 0,
-        lastFrameTime: 0,
-        memoryUsage: 0,
-      }
-    );
-  }, []);
+  const setEngine = useGameEngine((state) => state.setEngine);
+  const engine = useGameEngine((state) => state.engine);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Set initial canvas size
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+
     // Create game engine
-    engineRef.current = new GameEngine(canvas);
-    const engine = engineRef.current;
+    const newEngine = new GameEngine(canvas);
+    setEngine(newEngine);
+
+    // Define handlers inside effect
+    const handleKeyDown = (event: KeyboardEvent) => {
+      newEngine.handleKeyDown(event);
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      newEngine.handleKeyUp(event);
+    };
 
     // Add event listeners
-    globalThis.addEventListener("keydown", engine.handleKeyDown);
+    globalThis.addEventListener("keydown", handleKeyDown);
+    globalThis.addEventListener("keyup", handleKeyUp);
 
     // Start game loop
-    engine.start();
+    newEngine.start();
 
     // Cleanup
     return () => {
-      globalThis.removeEventListener("keydown", engine.handleKeyDown);
-      engine.cleanup();
-      engineRef.current = null;
+      globalThis.removeEventListener("keydown", handleKeyDown);
+      globalThis.removeEventListener("keyup", handleKeyUp);
+      newEngine.cleanup();
+      setEngine(null);
     };
-  }, []);
+  }, [setEngine]); // Only depend on setEngine which is stable
 
   return (
     <SidebarProvider>
-      <DebugSidebar getMetrics={getMetrics} />
+      <DebugSidebar />
       <SidebarInset>
         <main className="fixed inset-0 bg-zinc-800">
-          <canvas ref={canvasRef} className="h-full w-full bg-white" />
+          <canvas
+            ref={canvasRef}
+            className="h-full w-full bg-white"
+            style={{
+              imageRendering: "pixelated",
+            }}
+          />
+          {engine && <NPCInteractionManager world={engine.world} />}
         </main>
       </SidebarInset>
     </SidebarProvider>
