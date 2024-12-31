@@ -1,0 +1,22 @@
+{
+  "name": "@acme/prettier-config",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "4.4.0",
+    "prettier": "3.4.2",
+    "prettier-plugin-tailwindcss": "0.6.9"
+  },
+  "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
+    "typescript": "5.7.2"
+  }
+}
