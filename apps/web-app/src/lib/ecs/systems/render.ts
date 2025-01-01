@@ -3,6 +3,7 @@ import { query } from "bitecs";
 
 import {
   BattleState,
+  Clickable,
   Health,
   HostileNPC,
   InBattle,
@@ -277,18 +278,18 @@ function renderExplorationEntities(
 ) {
   const npcs = query(world, [Position, NPC]);
   const players = query(world, [Position, Player]);
-  // console.log("[Render] players", players);
 
   // Render NPCs first (so player appears on top)
   for (const npcEid of npcs) {
     const x = Position.x[npcEid] ?? 0;
     const y = Position.y[npcEid] ?? 0;
+    const isHovered = Clickable.isHovered[npcEid] === 1;
 
     context.fillStyle = HostileNPC.eid[npcEid] ? "#ff4d4d" : "#4d94ff";
 
     // Add entity glow effect
     context.shadowColor = HostileNPC.eid[npcEid] ? "#ff000066" : "#0066ff66";
-    context.shadowBlur = 15;
+    context.shadowBlur = isHovered ? 25 : 15;
 
     // Draw centered on grid
     context.fillRect(
@@ -302,8 +303,8 @@ function renderExplorationEntities(
     context.shadowBlur = 0;
 
     // Add border for better definition
-    context.strokeStyle = "#ffffff66";
-    context.lineWidth = 2;
+    context.strokeStyle = isHovered ? "#ffffff" : "#ffffff66";
+    context.lineWidth = isHovered ? 3 : 2;
     context.strokeRect(
       x - CELL_SIZE / 2,
       y - CELL_SIZE / 2,
@@ -321,6 +322,11 @@ function renderExplorationEntities(
         npcHealth,
         npcMaxHealth,
       );
+    }
+
+    // Show cursor pointer when hovering
+    if (isHovered) {
+      context.canvas.style.cursor = "pointer";
     }
   }
 

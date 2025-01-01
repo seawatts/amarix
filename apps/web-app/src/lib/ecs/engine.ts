@@ -43,6 +43,7 @@ export class GameEngine {
       createBattleSystem(),
       createNPCInteractionSystem(),
       createMovementSystem(canvas),
+      // createClickInteractionSystem(),
       createRenderSystem(canvas, context),
     );
 

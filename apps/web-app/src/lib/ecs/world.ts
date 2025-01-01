@@ -8,6 +8,7 @@ import {
 import {
   BattleAction,
   BattleState,
+  Clickable,
   DebugMetrics,
   Health,
   HostileNPC,
@@ -48,6 +49,7 @@ export function createGameWorld() {
   registerComponent(world, BattleAction);
   registerComponent(world, ValidActions);
   registerComponent(world, DebugMetrics);
+  registerComponent(world, Clickable);
 
   // Create and initialize debug metrics entity
   const metricsEntity = addEntity(world);

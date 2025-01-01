@@ -94,3 +94,8 @@ export const DebugMetrics = {
   lastUpdate: new Float64Array(10),
   memoryUsage: new Float64Array(10),
 };
+
+// Component to track clickable entities and hover state
+export const Clickable = {
+  isHovered: new Uint8Array(10),
+};
