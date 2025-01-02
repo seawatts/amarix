@@ -1,18 +1,18 @@
 import type { World } from "bitecs";
-import { pipe } from "bitecs";
+import { query } from "bitecs";
 
 import type { GameStore } from "~/lib/stores/game-state";
-import { InputState } from "./input";
-import { createBattleSystem } from "./systems/battle";
+import { CurrentPlayer } from "./components";
+import { createKeyboardSystem } from "./systems/keyboard";
+import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
-import { createNPCInteractionSystem } from "./systems/npc-interaction";
 import { createRenderSystem } from "./systems/render";
 import { createGameWorld } from "./world";
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   world: World;
-  private pipeline: ReturnType<typeof pipe>;
+  private systems: ((world: World) => World)[];
   private animationFrameId: number | null = null;
   private lastTime = performance.now();
   private frameInterval = 1000 / 60;
@@ -21,25 +21,22 @@ export class GameEngine {
   constructor(canvas: HTMLCanvasElement, store: GameStore) {
     this.canvas = canvas;
     this.store = store;
-    const { world, playerEid: _playerEid } = createGameWorld(canvas);
-    this.world = world;
+    this.world = createGameWorld(canvas);
 
     const context = this.canvas.getContext("2d");
     if (!context) {
       throw new Error("Failed to get canvas context");
     }
 
-    // Create pipeline
-    this.pipeline = pipe(
-      createBattleSystem(),
-      createNPCInteractionSystem(),
+    // Create systems
+    this.systems = [
+      createKeyboardSystem(),
+      createMouseSystem(),
+      // createBattleSystem(),
+      // createNPCInteractionSystem(),
       createMovementSystem(canvas),
       createRenderSystem(canvas, context),
-    );
-
-    // Initialize game state
-    // this.store.setEngine(this);
-    // this.store.setWorld(this.world);
+    ] as ((world: World) => World)[];
   }
 
   public start() {
@@ -59,29 +56,29 @@ export class GameEngine {
 
     if (deltaTime >= this.frameInterval) {
       this.lastTime = timestamp - (deltaTime % this.frameInterval);
-      this.pipeline(this.world);
+
+      // Run each system in sequence
+      let currentWorld = this.world;
+      for (const system of this.systems) {
+        currentWorld = system(currentWorld);
+      }
 
       // Update game state
-      this.store.update(this.world);
+      this.store.update(currentWorld);
     }
 
     this.animationFrameId = requestAnimationFrame(this.gameLoop);
   };
 
-  handleKeyDown(event: KeyboardEvent) {
-    InputState.pressedKeys.add(event.key);
-  }
-
-  handleKeyUp(event: KeyboardEvent) {
-    // eslint-disable-next-line drizzle/enforce-delete-with-where
-    InputState.pressedKeys.delete(event.key);
+  public getPlayerEid() {
+    const players = query(this.world, [CurrentPlayer]);
+    return players[0] ?? 0;
   }
 
   cleanup() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
     }
-    InputState.pressedKeys.clear();
-    // this.store.reset();
+    this.store.reset();
   }
 }

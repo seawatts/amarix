@@ -1,6 +1,13 @@
 "use client";
 
-import { Keyboard, MapPin, Puzzle, Settings, Swords } from "lucide-react";
+import {
+  Keyboard,
+  MapPin,
+  Mouse,
+  Puzzle,
+  Settings,
+  Swords,
+} from "lucide-react";
 
 import {
   SidebarGroup,
@@ -12,7 +19,6 @@ import {
   SidebarMenuSub,
 } from "@acme/ui/sidebar";
 
-import { InputState } from "~/lib/ecs/input";
 import { useGameStore } from "~/providers/game-store-provider";
 
 export function ECSStatus() {
@@ -42,33 +48,47 @@ export function ECSStatus() {
             <SidebarMenuSub>
               <SidebarMenuItem>
                 <SidebarMenuButton>
-                  {InputState.pressedKeys.size > 0
-                    ? [...InputState.pressedKeys]
-                        .map((key) => {
-                          switch (key) {
-                            case " ": {
-                              return "Space";
-                            }
-                            case "ArrowUp": {
-                              return "↑";
-                            }
-                            case "ArrowDown": {
-                              return "↓";
-                            }
-                            case "ArrowLeft": {
-                              return "←";
-                            }
-                            case "ArrowRight": {
-                              return "→";
-                            }
-                            default: {
-                              return key;
-                            }
-                          }
-                        })
-                        .join(" + ")
+                  Keys:{" "}
+                  {metrics.input.pressedKeys.length > 0
+                    ? metrics.input.pressedKeys.join(" + ")
                     : "None"}
                 </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <Mouse className="size-4" />
+                  <span>Mouse</span>
+                </SidebarMenuButton>
+                <SidebarMenuSub>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton>
+                      Position: [{metrics.input.mouse.position.x},{" "}
+                      {metrics.input.mouse.position.y}]
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton>
+                      Buttons:{" "}
+                      {[
+                        metrics.input.mouse.buttons.left && "Left",
+                        metrics.input.mouse.buttons.middle && "Middle",
+                        metrics.input.mouse.buttons.right && "Right",
+                      ]
+                        .filter(Boolean)
+                        .join(" + ") || "None"}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton>
+                      Hovered: {metrics.input.mouse.hoveredEntity || "None"}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton>
+                      Clicked: {metrics.input.mouse.clickedEntity || "None"}
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenuSub>
               </SidebarMenuItem>
             </SidebarMenuSub>
           </SidebarMenuItem>

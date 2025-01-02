@@ -4,6 +4,13 @@ import { useEffect, useRef } from "react";
 
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
+import { clearKeyDown, setKeyDown } from "~/lib/ecs/utils/keyboard";
+import {
+  clearMouseButtonDown,
+  getCanvasCoordinates,
+  setMouseButtonDown,
+  updateMousePosition,
+} from "~/lib/ecs/utils/mouse";
 import { useGameStore } from "~/providers/game-store-provider";
 import { DebugSidebar } from "../../components/debug-sidebar/sidebar";
 import { NPCInteractionManager } from "../../components/npc-interaction-manager";
@@ -23,6 +30,7 @@ export default function GamePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const store = useGameStore((state) => state);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -38,18 +46,45 @@ export default function GamePage() {
     store.setEngine(newEngine);
     store.setWorld(newEngine.world);
 
-    // Define handlers inside effect
+    // Define keyboard handlers
     const handleKeyDown = (event: KeyboardEvent) => {
-      newEngine.handleKeyDown(event);
+      const playerEid = newEngine.getPlayerEid();
+      setKeyDown(playerEid, event.code);
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      newEngine.handleKeyUp(event);
+      const playerEid = newEngine.getPlayerEid();
+      clearKeyDown(playerEid, event.code);
+    };
+
+    // Define mouse handlers
+    const handleMouseMove = (event: MouseEvent) => {
+      const playerEid = newEngine.getPlayerEid();
+      const { x, y } = getCanvasCoordinates(event, canvas);
+      updateMousePosition(playerEid, x, y);
+    };
+
+    const handleMouseDown = (event: MouseEvent) => {
+      const playerEid = newEngine.getPlayerEid();
+      setMouseButtonDown(playerEid, event.button);
+    };
+
+    const handleMouseUp = (event: MouseEvent) => {
+      const playerEid = newEngine.getPlayerEid();
+      clearMouseButtonDown(playerEid, event.button);
+    };
+
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
     };
 
     // Add event listeners
     globalThis.addEventListener("keydown", handleKeyDown);
     globalThis.addEventListener("keyup", handleKeyUp);
+    canvas.addEventListener("mousemove", handleMouseMove);
+    canvas.addEventListener("mousedown", handleMouseDown);
+    canvas.addEventListener("mouseup", handleMouseUp);
+    canvas.addEventListener("contextmenu", handleContextMenu);
 
     // Start game loop
     newEngine.start();
@@ -58,6 +93,10 @@ export default function GamePage() {
     return () => {
       globalThis.removeEventListener("keydown", handleKeyDown);
       globalThis.removeEventListener("keyup", handleKeyUp);
+      canvas.removeEventListener("mousemove", handleMouseMove);
+      canvas.removeEventListener("mousedown", handleMouseDown);
+      canvas.removeEventListener("mouseup", handleMouseUp);
+      canvas.removeEventListener("contextmenu", handleContextMenu);
       newEngine.cleanup();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

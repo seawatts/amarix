@@ -9,10 +9,14 @@ import {
   BattleAction,
   BattleState,
   Clickable,
+  CurrentPlayer,
   Health,
   HostileNPC,
+  Hoverable,
   InBattle,
   InteractionCooldown,
+  KeyboardState,
+  MouseState,
   Movement,
   NPC,
   NPCInteraction,
@@ -25,11 +29,6 @@ const CELL_SIZE = 50;
 const INITIAL_HEALTH = 100;
 const NPC_COUNT = 5;
 const HOSTILE_NPC_COUNT = 2;
-
-interface GameWorldState {
-  world: ReturnType<typeof createWorld>;
-  playerEid: number;
-}
 
 function getInitialPlayerPosition(canvas: HTMLCanvasElement) {
   return {
@@ -58,7 +57,8 @@ function getRandomGridPosition(
   }
 }
 
-export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
+export function createGameWorld(canvas: HTMLCanvasElement) {
+  // Create the world first
   const world = createWorld();
 
   // Register components with the world
@@ -75,6 +75,10 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
   registerComponent(world, BattleAction);
   registerComponent(world, ValidActions);
   registerComponent(world, Clickable);
+  registerComponent(world, Hoverable);
+  registerComponent(world, KeyboardState);
+  registerComponent(world, CurrentPlayer);
+  registerComponent(world, MouseState);
 
   // Create player
   const playerEid = addEntity(world);
@@ -85,6 +89,9 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
   addComponent(world, playerEid, Movement);
   addComponent(world, playerEid, Player);
   addComponent(world, playerEid, Health);
+  addComponent(world, playerEid, CurrentPlayer);
+  addComponent(world, playerEid, KeyboardState);
+  addComponent(world, playerEid, MouseState);
 
   // Set player values
   Position.x[playerEid] = playerX;
@@ -94,6 +101,17 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
   Player.eid[playerEid] = 1;
   Health.current[playerEid] = INITIAL_HEALTH;
   Health.max[playerEid] = INITIAL_HEALTH;
+  CurrentPlayer.eid[playerEid] = 1;
+
+  // Initialize keyboard state
+  KeyboardState.keys[playerEid] = 0;
+
+  // Initialize mouse state
+  MouseState.x[playerEid] = 0;
+  MouseState.y[playerEid] = 0;
+  MouseState.buttonsDown[playerEid] = 0;
+  MouseState.hoveredEntity[playerEid] = 0;
+  MouseState.clickedEntity[playerEid] = 0;
 
   // Create NPCs
   const takenPositions = [{ x: playerX, y: playerY }];
@@ -108,6 +126,8 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
     addComponent(world, npcEid, Position);
     addComponent(world, npcEid, NPC);
     addComponent(world, npcEid, Health);
+    addComponent(world, npcEid, Clickable);
+    addComponent(world, npcEid, Hoverable);
 
     // Set NPC values
     Position.x[npcEid] = x;
@@ -115,6 +135,10 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
     NPC.eid[npcEid] = 1;
     Health.current[npcEid] = INITIAL_HEALTH;
     Health.max[npcEid] = INITIAL_HEALTH;
+    Clickable.isClicked[npcEid] = 0;
+    Clickable.type[npcEid] = "npc";
+    Hoverable.isHovered[npcEid] = 0;
+    Hoverable.type[npcEid] = "npc";
 
     takenPositions.push({ x, y });
   }
@@ -129,6 +153,8 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
     addComponent(world, npcEid, NPC);
     addComponent(world, npcEid, Health);
     addComponent(world, npcEid, HostileNPC);
+    addComponent(world, npcEid, Clickable);
+    addComponent(world, npcEid, Hoverable);
 
     // Set NPC values
     Position.x[npcEid] = x;
@@ -137,9 +163,13 @@ export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
     HostileNPC.isHostile[npcEid] = 1;
     Health.current[npcEid] = INITIAL_HEALTH;
     Health.max[npcEid] = INITIAL_HEALTH;
+    Clickable.isClicked[npcEid] = 0;
+    Clickable.type[npcEid] = "hostile-npc";
+    Hoverable.isHovered[npcEid] = 0;
+    Hoverable.type[npcEid] = "hostile-npc";
 
     takenPositions.push({ x, y });
   }
 
-  return { playerEid, world };
+  return world;
 }

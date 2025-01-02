@@ -5,12 +5,16 @@ import { createStore } from "zustand/vanilla";
 import type { GameEngine } from "../ecs/engine";
 import {
   BattleState,
+  CurrentPlayer,
   HostileNPC,
+  KeyboardState,
+  MouseState,
   NPC,
   NPCInteraction,
-  Player,
   Position,
 } from "~/lib/ecs/components";
+import { getPressedKeys } from "~/lib/ecs/utils/keyboard";
+import { getMouseState } from "~/lib/ecs/utils/mouse";
 
 interface NPCState {
   id: number;
@@ -51,6 +55,19 @@ interface GameMetrics {
     frameTime: number;
     memoryUsage: number;
   };
+  input: {
+    pressedKeys: string[];
+    mouse: {
+      position: { x: number; y: number };
+      buttons: {
+        left: boolean;
+        middle: boolean;
+        right: boolean;
+      };
+      hoveredEntity: number;
+      clickedEntity: number;
+    };
+  };
   componentCounts: {
     hostileNpc: number;
     inBattle: number;
@@ -85,7 +102,12 @@ export const createGameStore = (initState: State = defaultInitState) => {
       const fps = 1000 / frameTime;
 
       // Get player metrics
-      const playerEntities = query(world, [Player, Position]);
+      const playerEntities = query(world, [
+        CurrentPlayer,
+        Position,
+        KeyboardState,
+        MouseState,
+      ]);
       const playerEid = playerEntities[0];
 
       let metrics: GameMetrics | null = null;
@@ -100,6 +122,10 @@ export const createGameStore = (initState: State = defaultInitState) => {
         if (isActive) {
           currentTurn = BattleState.turn[playerEid] === 0 ? "player" : "enemy";
         }
+
+        // Get input state
+        const pressedKeys = getPressedKeys(playerEid);
+        const mouseState = getMouseState(playerEid);
 
         // Count components
         const hostileNpcEntities = query(world, [HostileNPC]).length;
@@ -122,6 +148,10 @@ export const createGameStore = (initState: State = defaultInitState) => {
             npcInteraction: npcInteractionEntities,
             player: playerEntitiesCount,
             position: positionEntities,
+          },
+          input: {
+            mouse: mouseState,
+            pressedKeys,
           },
           performance: {
             fps,

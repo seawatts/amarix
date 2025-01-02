@@ -15,6 +15,10 @@ export const Player = {
   eid: new Uint32Array(10),
 };
 
+export const CurrentPlayer = {
+  eid: new Uint32Array(10),
+};
+
 // Tag component to identify NPC entities
 export const NPC = {
   eid: new Uint32Array(10),
@@ -75,11 +79,37 @@ export const ValidActions = {
   cells: Array.from({ length: 10 }).fill([]), // Array of {x: number, y: number}[]
 };
 
-export const InputState = {
-  pressedKeys: new Set<string>(),
+// Input state using bit fields for multiple key tracking
+export const KeyboardState = {
+  // Single array to track all keys (128 possible keys)
+  keys: new Uint32Array(128),
 };
 
-// Component to track clickable entities and hover state
-export const Clickable = {
-  isHovered: new Uint8Array(10),
+// Mouse state component
+export const MouseState = {
+  // Mouse buttons state (using bit field like keyboard)
+  // Bit 0: Left button
+  // Bit 1: Right button
+  // Bit 2: Middle button
+  buttonsDown: new Uint8Array(10),
+
+  // Entity being clicked (0 if none)
+  clickedEntity: new Uint32Array(10),
+
+  // Entity being hovered over (0 if none)
+  hoveredEntity: new Uint32Array(10),
+
+  // Current mouse position in canvas coordinates
+  x: new Float32Array(10),
+  y: new Float32Array(10),
 };
+
+export const Hoverable = {
+  isHovered: new Uint8Array(10),
+  type: Array.from({ length: 10 }).fill(""),
+} as const;
+
+export const Clickable = {
+  isClicked: new Uint8Array(10),
+  type: Array.from({ length: 10 }).fill(""),
+} as const;
