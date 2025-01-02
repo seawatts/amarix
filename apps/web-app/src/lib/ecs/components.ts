@@ -23,6 +23,7 @@ export const NPC = {
 // Tag component to identify hostile NPCs
 export const HostileNPC = {
   eid: new Uint32Array(10),
+  isHostile: new Uint8Array(10),
 };
 
 // Component to store NPC interaction data
@@ -76,23 +77,6 @@ export const ValidActions = {
 
 export const InputState = {
   pressedKeys: new Set<string>(),
-};
-
-// Debug Metrics Component
-export const DebugMetrics = {
-  componentCounts: {
-    hostileNpc: new Uint32Array(10),
-    inBattle: new Uint32Array(10),
-    movement: new Uint32Array(10),
-    npc: new Uint32Array(10),
-    npcInteraction: new Uint32Array(10),
-    player: new Uint32Array(10),
-    position: new Uint32Array(10),
-  },
-  fps: new Uint32Array(10),
-  frameTime: new Float32Array(10),
-  lastUpdate: new Float64Array(10),
-  memoryUsage: new Float64Array(10),
 };
 
 // Component to track clickable entities and hover state

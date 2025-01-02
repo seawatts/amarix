@@ -15,21 +15,22 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppSidebar } from "~/components/app-sidebar";
 import { env } from "~/env.server";
+import { GameStoreProvider } from "~/providers/game-store-provider";
 
 export const metadata: Metadata = {
-  description: "ShelterBuddy is a tool for shelters to manage their animals",
+  description: "Amarix",
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://shelterbuddy.vercel.app"
+      ? "https://amarix.vercel.app"
       : "http://localhost:3000",
   ),
   openGraph: {
-    description: "ShelterBuddy is a tool for shelters to manage their animals",
-    siteName: "ShelterBuddy",
-    title: "ShelterBuddy",
-    url: "https://shelterbuddy.vercel.app",
+    description: "Amarix",
+    siteName: "Amarix",
+    title: "Amarix",
+    url: "https://amarix.vercel.app",
   },
-  title: "ShelterBuddy",
+  title: "Amarix",
   twitter: {
     card: "summary_large_image",
     creator: "@seawatts",
@@ -60,10 +61,12 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <ClerkProvider>
           <AnalyticsProviders identifyUser>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-              <SidebarProvider defaultOpen={defaultOpen}>
-                <AppSidebar />
-                <main className="flex-1">{props.children}</main>
-              </SidebarProvider>
+              <GameStoreProvider>
+                <SidebarProvider defaultOpen={defaultOpen}>
+                  <AppSidebar />
+                  <main className="flex-1">{props.children}</main>
+                </SidebarProvider>
+              </GameStoreProvider>
               <Toaster />
             </ThemeProvider>
           </AnalyticsProviders>

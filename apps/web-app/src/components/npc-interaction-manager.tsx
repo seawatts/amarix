@@ -1,17 +1,14 @@
 "use client";
 
-import type { World } from "bitecs";
 import { useEffect, useState } from "react";
 import { query } from "bitecs";
 
 import { NPCInteraction } from "~/lib/ecs/components";
+import { useGameStore } from "~/providers/game-store-provider";
 import { NPCDialog } from "./npc-dialog";
 
-interface NPCInteractionManagerProps {
-  world: World;
-}
-
-export function NPCInteractionManager({ world }: NPCInteractionManagerProps) {
+export function NPCInteractionManager() {
+  const world = useGameStore((state) => state.world);
   const [activeInteraction, setActiveInteraction] = useState<{
     message: string;
     entityId: number;
@@ -20,6 +17,7 @@ export function NPCInteractionManager({ world }: NPCInteractionManagerProps) {
   useEffect(() => {
     // Check for active interactions each frame
     function checkInteractions() {
+      if (!world) return;
       const interacting = query(world, [NPCInteraction]);
 
       // Find the first active interaction

@@ -9,7 +9,6 @@ import {
   BattleAction,
   BattleState,
   Clickable,
-  DebugMetrics,
   Health,
   HostileNPC,
   InBattle,
@@ -24,63 +23,19 @@ import {
 
 const CELL_SIZE = 50;
 const INITIAL_HEALTH = 100;
+const NPC_COUNT = 5;
+const HOSTILE_NPC_COUNT = 2;
+
+interface GameWorldState {
+  world: ReturnType<typeof createWorld>;
+  playerEid: number;
+}
 
 function getInitialPlayerPosition(canvas: HTMLCanvasElement) {
   return {
     x: canvas.width / 2,
     y: canvas.height / 2,
   };
-}
-
-export function createGameWorld() {
-  const world = createWorld();
-
-  // Register components with the world
-  registerComponent(world, Position);
-  registerComponent(world, Movement);
-  registerComponent(world, Player);
-  registerComponent(world, NPC);
-  registerComponent(world, Health);
-  registerComponent(world, HostileNPC);
-  registerComponent(world, NPCInteraction);
-  registerComponent(world, InteractionCooldown);
-  registerComponent(world, BattleState);
-  registerComponent(world, InBattle);
-  registerComponent(world, BattleAction);
-  registerComponent(world, ValidActions);
-  registerComponent(world, DebugMetrics);
-  registerComponent(world, Clickable);
-
-  // Create and initialize debug metrics entity
-  const metricsEntity = addEntity(world);
-  addComponent(world, metricsEntity, DebugMetrics);
-
-  return world;
-}
-
-export function createPlayer(
-  world: ReturnType<typeof createWorld>,
-  canvas: HTMLCanvasElement,
-) {
-  const eid = addEntity(world);
-  const { x, y } = getInitialPlayerPosition(canvas);
-
-  // First add all components to the entity
-  addComponent(world, eid, Position);
-  addComponent(world, eid, Movement);
-  addComponent(world, eid, Player);
-  addComponent(world, eid, Health);
-
-  // Then set their values
-  Position.x[eid] = x;
-  Position.y[eid] = y;
-  Movement.dx[eid] = 0;
-  Movement.dy[eid] = 0;
-  Player.eid[eid] = 1;
-  Health.current[eid] = INITIAL_HEALTH;
-  Health.max[eid] = INITIAL_HEALTH;
-
-  return eid;
 }
 
 function getRandomGridPosition(
@@ -103,39 +58,88 @@ function getRandomGridPosition(
   }
 }
 
-export function createNPCs(
-  world: ReturnType<typeof createWorld>,
-  canvas: HTMLCanvasElement,
-  count: number,
-): number[] {
+export function createGameWorld(canvas: HTMLCanvasElement): GameWorldState {
+  const world = createWorld();
+
+  // Register components with the world
+  registerComponent(world, Position);
+  registerComponent(world, Movement);
+  registerComponent(world, Player);
+  registerComponent(world, NPC);
+  registerComponent(world, Health);
+  registerComponent(world, HostileNPC);
+  registerComponent(world, NPCInteraction);
+  registerComponent(world, InteractionCooldown);
+  registerComponent(world, BattleState);
+  registerComponent(world, InBattle);
+  registerComponent(world, BattleAction);
+  registerComponent(world, ValidActions);
+  registerComponent(world, Clickable);
+
+  // Create player
+  const playerEid = addEntity(world);
   const { x: playerX, y: playerY } = getInitialPlayerPosition(canvas);
-  const takenPositions: { x: number; y: number }[] = [
-    { x: playerX, y: playerY }, // Player's position
-  ];
 
-  const createdEntities: number[] = [];
+  // Add player components
+  addComponent(world, playerEid, Position);
+  addComponent(world, playerEid, Movement);
+  addComponent(world, playerEid, Player);
+  addComponent(world, playerEid, Health);
 
-  for (let index = 0; index < count; index++) {
-    const eid = addEntity(world);
+  // Set player values
+  Position.x[playerEid] = playerX;
+  Position.y[playerEid] = playerY;
+  Movement.dx[playerEid] = 0;
+  Movement.dy[playerEid] = 0;
+  Player.eid[playerEid] = 1;
+  Health.current[playerEid] = INITIAL_HEALTH;
+  Health.max[playerEid] = INITIAL_HEALTH;
 
-    // Get random position that doesn't overlap with other entities
+  // Create NPCs
+  const takenPositions = [{ x: playerX, y: playerY }];
+  const npcCount = NPC_COUNT - HOSTILE_NPC_COUNT;
+
+  // Create regular NPCs
+  for (let index = 0; index < npcCount; index++) {
+    const npcEid = addEntity(world);
     const { x, y } = getRandomGridPosition(canvas, takenPositions);
 
-    // First add all components to the entity
-    addComponent(world, eid, Position);
-    addComponent(world, eid, NPC);
-    addComponent(world, eid, Health);
+    // Add NPC components
+    addComponent(world, npcEid, Position);
+    addComponent(world, npcEid, NPC);
+    addComponent(world, npcEid, Health);
 
-    // Then set their values
-    Position.x[eid] = x;
-    Position.y[eid] = y;
-    NPC.eid[eid] = 1;
-    Health.current[eid] = INITIAL_HEALTH;
-    Health.max[eid] = INITIAL_HEALTH;
+    // Set NPC values
+    Position.x[npcEid] = x;
+    Position.y[npcEid] = y;
+    NPC.eid[npcEid] = 1;
+    Health.current[npcEid] = INITIAL_HEALTH;
+    Health.max[npcEid] = INITIAL_HEALTH;
 
     takenPositions.push({ x, y });
-    createdEntities.push(eid);
   }
 
-  return createdEntities;
+  // Create hostile NPCs
+  for (let index = 0; index < HOSTILE_NPC_COUNT; index++) {
+    const npcEid = addEntity(world);
+    const { x, y } = getRandomGridPosition(canvas, takenPositions);
+
+    // Add NPC components
+    addComponent(world, npcEid, Position);
+    addComponent(world, npcEid, NPC);
+    addComponent(world, npcEid, Health);
+    addComponent(world, npcEid, HostileNPC);
+
+    // Set NPC values
+    Position.x[npcEid] = x;
+    Position.y[npcEid] = y;
+    NPC.eid[npcEid] = 1;
+    HostileNPC.isHostile[npcEid] = 1;
+    Health.current[npcEid] = INITIAL_HEALTH;
+    Health.max[npcEid] = INITIAL_HEALTH;
+
+    takenPositions.push({ x, y });
+  }
+
+  return { playerEid, world };
 }

@@ -30,7 +30,7 @@ module.exports = withSentryConfig(module.exports, {
   // https://github.com/getsentry/sentry-webpack-plugin#options
 
   org: "seawatts",
-  project: "shelter-buddy",
+  project: "amarix-buddy",
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,

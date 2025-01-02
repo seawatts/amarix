@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
+import { useGameStore } from "~/providers/game-store-provider";
 import { DebugSidebar } from "../../components/debug-sidebar/sidebar";
 import { NPCInteractionManager } from "../../components/npc-interaction-manager";
 import { GameEngine } from "../../lib/ecs/engine";
-import { useGameEngine } from "../../lib/store/game-engine";
 
 declare global {
   interface Performance {
@@ -21,8 +21,7 @@ declare global {
 
 export default function GamePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const setEngine = useGameEngine((state) => state.setEngine);
-  const engine = useGameEngine((state) => state.engine);
+  const store = useGameStore((state) => state);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,8 +34,9 @@ export default function GamePage() {
     canvas.height = rect.height * dpr;
 
     // Create game engine
-    const newEngine = new GameEngine(canvas);
-    setEngine(newEngine);
+    const newEngine = new GameEngine(canvas, store);
+    store.setEngine(newEngine);
+    store.setWorld(newEngine.world);
 
     // Define handlers inside effect
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -59,9 +59,9 @@ export default function GamePage() {
       globalThis.removeEventListener("keydown", handleKeyDown);
       globalThis.removeEventListener("keyup", handleKeyUp);
       newEngine.cleanup();
-      setEngine(null);
     };
-  }, [setEngine]); // Only depend on setEngine which is stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <SidebarProvider>
@@ -75,7 +75,7 @@ export default function GamePage() {
               imageRendering: "pixelated",
             }}
           />
-          {engine && <NPCInteractionManager world={engine.world} />}
+          <NPCInteractionManager />
         </main>
       </SidebarInset>
     </SidebarProvider>

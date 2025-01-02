@@ -1,69 +1,50 @@
 import type { World } from "bitecs";
-import { addComponent, pipe } from "bitecs";
+import { pipe } from "bitecs";
 
-import { HostileNPC, InBattle } from "./components";
+import type { GameStore } from "~/lib/stores/game-state";
+import { InputState } from "./input";
 import { createBattleSystem } from "./systems/battle";
-import { createDebugMetricsSystem } from "./systems/debug-metrics";
-import { createInputSystem } from "./systems/input";
 import { createMovementSystem } from "./systems/movement";
 import { createNPCInteractionSystem } from "./systems/npc-interaction";
 import { createRenderSystem } from "./systems/render";
-import { createGameWorld, createNPCs, createPlayer } from "./world";
-
-const INITIAL_NPC_COUNT = 5;
-const INITIAL_HOSTILE_NPC_COUNT = 2;
+import { createGameWorld } from "./world";
 
 export class GameEngine {
-  public world!: World;
-  private pipeline: (world: World) => void;
-  private animationFrameId: number | null = null;
-  private player: number | null = null;
   private canvas: HTMLCanvasElement;
-  private inputSystem!: ReturnType<ReturnType<typeof createInputSystem>>;
-  private lastFrameTime = 0;
-  private readonly targetFPS = 60;
-  private readonly frameInterval = 1000 / 60; // 60 FPS
+  world: World;
+  private pipeline: ReturnType<typeof pipe>;
+  private animationFrameId: number | null = null;
+  private lastTime = performance.now();
+  private frameInterval = 1000 / 60;
+  private store: GameStore;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, store: GameStore) {
     this.canvas = canvas;
+    this.store = store;
+    const { world, playerEid: _playerEid } = createGameWorld(canvas);
+    this.world = world;
 
-    // Initialize world and systems
-    this.world = createGameWorld();
-    const context = canvas.getContext("2d");
+    const context = this.canvas.getContext("2d");
     if (!context) {
-      throw new Error("Could not get canvas context");
+      throw new Error("Failed to get canvas context");
     }
 
-    // Initialize systems
-    this.inputSystem = createInputSystem()(this.world);
-
-    // Create pipeline of systems
+    // Create pipeline
     this.pipeline = pipe(
-      createDebugMetricsSystem(),
       createBattleSystem(),
       createNPCInteractionSystem(),
       createMovementSystem(canvas),
-      // createClickInteractionSystem(),
       createRenderSystem(canvas, context),
     );
 
-    // Create initial entities
-    this.player = createPlayer(this.world, canvas);
-    createNPCs(this.world, canvas, INITIAL_NPC_COUNT);
-
-    // Create hostile NPCs
-    for (let index = 0; index < INITIAL_HOSTILE_NPC_COUNT; index++) {
-      const [npc] = createNPCs(this.world, canvas, 1);
-      if (npc !== undefined) {
-        addComponent(this.world, npc, HostileNPC);
-        HostileNPC.eid[npc] = 1;
-      }
-    }
+    // Initialize game state
+    // this.store.setEngine(this);
+    // this.store.setWorld(this.world);
   }
 
   public start() {
     if (this.animationFrameId !== null) return;
-    this.lastFrameTime = performance.now();
+    this.lastTime = performance.now();
     this.gameLoop(performance.now());
   }
 
@@ -74,41 +55,33 @@ export class GameEngine {
   }
 
   private gameLoop = (timestamp: number) => {
-    // Calculate time since last frame
-    const deltaTime = timestamp - this.lastFrameTime;
+    const deltaTime = timestamp - this.lastTime;
 
-    // Only update if enough time has passed
     if (deltaTime >= this.frameInterval) {
-      // Update last frame time, accounting for any excess time
-      this.lastFrameTime = timestamp - (deltaTime % this.frameInterval);
-
-      // Run all systems
+      this.lastTime = timestamp - (deltaTime % this.frameInterval);
       this.pipeline(this.world);
+
+      // Update game state
+      this.store.update(this.world);
     }
 
-    // Schedule next frame
     this.animationFrameId = requestAnimationFrame(this.gameLoop);
   };
 
-  public handleKeyDown = (event: KeyboardEvent) => {
-    if (!this.player) return;
+  handleKeyDown(event: KeyboardEvent) {
+    InputState.pressedKeys.add(event.key);
+  }
 
-    if (InBattle.eid[this.player]) {
-      this.inputSystem.handleBattleInput(this.player, event);
-    } else {
-      this.inputSystem.handleExplorationInput(this.player, event);
+  handleKeyUp(event: KeyboardEvent) {
+    // eslint-disable-next-line drizzle/enforce-delete-with-where
+    InputState.pressedKeys.delete(event.key);
+  }
+
+  cleanup() {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
     }
-  };
-
-  public handleKeyUp = (event: KeyboardEvent) => {
-    if (!this.player) return;
-
-    if (!InBattle.eid[this.player]) {
-      this.inputSystem.handleKeyUp(this.player, event);
-    }
-  };
-
-  public cleanup() {
-    this.stop();
+    InputState.pressedKeys.clear();
+    // this.store.reset();
   }
 }

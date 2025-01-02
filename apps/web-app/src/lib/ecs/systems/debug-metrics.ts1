@@ -2,7 +2,6 @@ import type { World } from "bitecs";
 import { query } from "bitecs";
 
 import {
-  DebugMetrics,
   HostileNPC,
   InBattle,
   Movement,

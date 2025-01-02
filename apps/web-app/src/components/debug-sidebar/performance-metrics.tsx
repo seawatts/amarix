@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { query } from "bitecs";
 import { Activity, Gauge, LayoutDashboard } from "lucide-react";
 
 import {
@@ -12,24 +11,21 @@ import {
 } from "@acme/ui/sidebar";
 
 import type { DataPoint } from "~/lib/ecs/types";
-import { DebugMetrics } from "~/lib/ecs/components";
-import { useGameEngine } from "~/lib/store/game-engine";
+import { useGameStore } from "~/providers/game-store-provider";
 import { PerformanceMetric } from "./performance-metric";
 
 export function PerformanceMetrics() {
-  const engine = useGameEngine((state) => state.engine);
+  const engine = useGameStore((state) => state.engine);
+  const metrics = useGameStore((state) => state.metrics);
   const [fpsHistory, setFpsHistory] = useState<DataPoint[]>([]);
   const [frameTimeHistory, setFrameTimeHistory] = useState<DataPoint[]>([]);
   const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
   const MAX_HISTORY = 50; // Keep 50 data points for all metrics
 
   useEffect(() => {
-    if (!engine) return;
+    if (!engine || !metrics) return;
 
     const interval = setInterval(() => {
-      const [metricsEntity] = query(engine.world, [DebugMetrics]);
-      if (!metricsEntity) return;
-
       const timestamp = Date.now();
 
       // Update FPS history
@@ -38,7 +34,7 @@ export function PerformanceMetrics() {
           ...previous,
           {
             timestamp,
-            value: DebugMetrics.fps[metricsEntity] ?? 0,
+            value: metrics.performance.fps,
           },
         ].slice(-MAX_HISTORY);
         return newHistory;
@@ -50,7 +46,7 @@ export function PerformanceMetrics() {
           ...previous,
           {
             timestamp,
-            value: DebugMetrics.frameTime[metricsEntity] ?? 0,
+            value: metrics.performance.frameTime,
           },
         ].slice(-MAX_HISTORY);
         return newHistory;
@@ -62,7 +58,7 @@ export function PerformanceMetrics() {
           ...previous,
           {
             timestamp,
-            value: DebugMetrics.memoryUsage[metricsEntity] ?? 0,
+            value: metrics.performance.memoryUsage,
           },
         ].slice(-MAX_HISTORY);
         return newHistory;
@@ -70,18 +66,13 @@ export function PerformanceMetrics() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [engine]);
+  }, [engine, metrics]);
 
-  if (!engine) return null;
+  if (!engine || !metrics) return null;
 
-  // Get metrics entity
-  const [metricsEntity] = query(engine.world, [DebugMetrics]);
-  if (!metricsEntity) return null;
-
-  // Get metrics values
-  const fps = DebugMetrics.fps[metricsEntity] ?? 0;
-  const frameTime = DebugMetrics.frameTime[metricsEntity] ?? 0;
-  const memoryUsage = DebugMetrics.memoryUsage[metricsEntity] ?? 0;
+  const fps = metrics.performance.fps;
+  const frameTime = metrics.performance.frameTime;
+  const memoryUsage = metrics.performance.memoryUsage;
   const memoryMB = memoryUsage / 1024 / 1024;
 
   return (
