@@ -3,10 +3,13 @@ import { query } from "bitecs";
 
 import type { GameStore } from "~/lib/stores/game-state";
 import { CurrentPlayer } from "./components";
+import { createCollisionSystem } from "./systems/collision";
 import { createKeyboardSystem } from "./systems/keyboard";
 import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
+import { createPhysicsSystem } from "./systems/physics";
 import { createRenderSystem } from "./systems/render";
+import { createTriggerSystem } from "./systems/trigger";
 import { createGameWorld } from "./world";
 
 export class GameEngine {
@@ -35,6 +38,9 @@ export class GameEngine {
       // createBattleSystem(),
       // createNPCInteractionSystem(),
       createMovementSystem(canvas),
+      createPhysicsSystem(),
+      createCollisionSystem(),
+      createTriggerSystem(),
       createRenderSystem(canvas, context),
     ] as ((world: World) => World)[];
   }
@@ -59,12 +65,19 @@ export class GameEngine {
 
       // Run each system in sequence
       let currentWorld = this.world;
+      const systemPerformance: Record<string, number> = {};
+
       for (const system of this.systems) {
+        const startTime = performance.now();
         currentWorld = system(currentWorld);
+        const endTime = performance.now();
+        // Get the system name from the function name or default to "unknown"
+        const systemName = system.name || "unknown";
+        systemPerformance[systemName] = endTime - startTime;
       }
 
-      // Update game state
-      this.store.update(currentWorld);
+      // Update game state with system performance metrics
+      this.store.update(currentWorld, systemPerformance);
     }
 
     this.animationFrameId = requestAnimationFrame(this.gameLoop);

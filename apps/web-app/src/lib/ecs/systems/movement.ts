@@ -7,7 +7,7 @@ const CELL_SIZE = 100;
 const MOVEMENT_SPEED = 8; // Pixels per frame
 
 export const createMovementSystem = (canvas: HTMLCanvasElement) => {
-  return (world: ReturnType<typeof createWorld>) => {
+  return function movementSystem(world: ReturnType<typeof createWorld>) {
     const entities = query(world, [Position, Movement, Player]);
 
     for (const eid of entities) {

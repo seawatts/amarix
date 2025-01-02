@@ -12,7 +12,7 @@ import {
 const CELL_SIZE = 50;
 
 export function createMouseSystem() {
-  return (world: World) => {
+  return function mouseSystem(world: World) {
     // Get current mouse position from MouseState
     const mouseEid = query(world, [CurrentPlayer, MouseState])[0];
     if (!mouseEid) return world;

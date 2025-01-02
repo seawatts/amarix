@@ -130,7 +130,7 @@ function handleExplorationInput(
 }
 
 export function createKeyboardSystem() {
-  return (world: ReturnType<typeof createWorld>) => {
+  return function keyboardSystem(world: ReturnType<typeof createWorld>) {
     // Query for entities with both CurrentPlayer and InputState components
     const players = query(world, [CurrentPlayer, KeyboardState]);
     for (const playerEid of players) {

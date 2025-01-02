@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Gauge, LayoutDashboard } from "lucide-react";
+import { Activity, Gauge, LayoutDashboard, Timer } from "lucide-react";
 
 import {
   SidebarGroup,
@@ -14,12 +14,15 @@ import type { DataPoint } from "~/lib/ecs/types";
 import { useGameStore } from "~/providers/game-store-provider";
 import { PerformanceMetric } from "./performance-metric";
 
+type SystemHistory = Record<string, DataPoint[]>;
+
 export function PerformanceMetrics() {
   const engine = useGameStore((state) => state.engine);
   const metrics = useGameStore((state) => state.metrics);
   const [fpsHistory, setFpsHistory] = useState<DataPoint[]>([]);
   const [frameTimeHistory, setFrameTimeHistory] = useState<DataPoint[]>([]);
   const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
+  const [systemHistory, setSystemHistory] = useState<SystemHistory>({});
   const MAX_HISTORY = 50; // Keep 50 data points for all metrics
 
   useEffect(() => {
@@ -61,6 +64,23 @@ export function PerformanceMetrics() {
             value: metrics.performance.memoryUsage,
           },
         ].slice(-MAX_HISTORY);
+        return newHistory;
+      });
+
+      // Update system performance history
+      setSystemHistory((previous) => {
+        const newHistory = { ...previous };
+        for (const [name, time] of Object.entries(
+          metrics.performance.systems,
+        )) {
+          newHistory[name] = [
+            ...(previous[name] ?? []),
+            {
+              timestamp,
+              value: time,
+            },
+          ].slice(-MAX_HISTORY);
+        }
         return newHistory;
       });
     }, 100);
@@ -108,6 +128,19 @@ export function PerformanceMetrics() {
             minDomain={0}
             maxDomain="auto"
           />
+          {Object.entries(metrics.performance.systems).map(([name, time]) => (
+            <PerformanceMetric
+              key={name}
+              label={`System: ${name}`}
+              value={time}
+              data={systemHistory[name] ?? []}
+              icon={Timer}
+              unit="ms"
+              minDomain={0}
+              maxDomain="auto"
+              formatValue={(v) => v.toFixed(2)}
+            />
+          ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

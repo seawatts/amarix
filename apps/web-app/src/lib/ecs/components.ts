@@ -104,6 +104,61 @@ export const MouseState = {
   y: new Float32Array(10),
 };
 
+// BoundingBox component for collision detection and interaction areas
+export const BoundingBox = {
+  height: new Float32Array(10),
+  width: new Float32Array(10),
+} as const;
+
+// Physics component for handling velocity, acceleration, and other physics properties
+export const Physics = {
+  // Acceleration in pixels per second squared
+  accelerationX: new Float32Array(10),
+  accelerationY: new Float32Array(10),
+  // Elasticity for bouncing (0.0 to 1.0, default 0.5)
+  elasticity: new Float32Array(10),
+  // Friction coefficient (0.0 to 1.0, default 0.1)
+  friction: new Float32Array(10),
+  // Mass for physics calculations (default 1.0)
+  mass: new Float32Array(10),
+  // Velocity in pixels per second
+  velocityX: new Float32Array(10),
+  velocityY: new Float32Array(10),
+} as const;
+
+// Component to mark entities that can collide and how they should respond
+export const Collidable = {
+  // Whether this object is static (immovable) or dynamic
+  isStatic: new Uint8Array(10),
+
+  // Layer mask for filtering collisions (e.g., player can collide with walls but not other players)
+  layer: new Uint8Array(10),
+
+  // Type of collision response: "solid" | "trigger" | "bounce"
+  type: Array.from({ length: 10 }).fill(""),
+} as const;
+
+// Component for trigger zones that can start quests, battles, or other events
+export const TriggerZone = {
+  // ID of the quest/battle/dialog to trigger
+  actionId: new Uint32Array(10),
+
+  // Cooldown time in milliseconds before trigger can be used again (if repeatable)
+  cooldown: new Float32Array(10),
+
+  // Whether this trigger has been activated
+  isActivated: new Uint8Array(10),
+
+  // Whether this trigger can be used multiple times
+  isRepeatable: new Uint8Array(10),
+
+  // Last time the trigger was activated (for cooldown)
+  lastActivatedTime: new Float32Array(10),
+
+  // Type of trigger: "quest" | "battle" | "dialog" | "checkpoint" etc.
+  type: Array.from({ length: 10 }).fill(""),
+} as const;
+
 export const Hoverable = {
   isHovered: new Uint8Array(10),
   type: Array.from({ length: 10 }).fill(""),

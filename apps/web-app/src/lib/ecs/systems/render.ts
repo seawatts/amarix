@@ -2,6 +2,7 @@ import type { World } from "bitecs";
 import { query } from "bitecs";
 
 import {
+  BoundingBox,
   Clickable,
   CurrentPlayer,
   Health,
@@ -20,10 +21,10 @@ function renderHealthBar(
   context: CanvasRenderingContext2D,
   x: number,
   y: number,
+  width: number,
   currentHealth: number,
   maxHealth: number,
 ) {
-  const width = CELL_SIZE - 4;
   const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth));
 
   // Background with better contrast
@@ -31,7 +32,7 @@ function renderHealthBar(
   context.fillRect(
     x + 2,
     y - HEALTH_BAR_OFFSET - HEALTH_BAR_HEIGHT,
-    width,
+    width - 4,
     HEALTH_BAR_HEIGHT,
   );
 
@@ -40,7 +41,7 @@ function renderHealthBar(
   context.fillRect(
     x + 2,
     y - HEALTH_BAR_OFFSET - HEALTH_BAR_HEIGHT,
-    width * healthPercentage,
+    (width - 4) * healthPercentage,
     HEALTH_BAR_HEIGHT,
   );
 
@@ -49,7 +50,7 @@ function renderHealthBar(
   context.strokeRect(
     x + 2,
     y - HEALTH_BAR_OFFSET - HEALTH_BAR_HEIGHT,
-    width,
+    width - 4,
     HEALTH_BAR_HEIGHT,
   );
 }
@@ -113,7 +114,7 @@ export function createRenderSystem(
     horizontalGradients.push(gradient);
   }
 
-  return (world: World) => {
+  return function renderSystem(world: World) {
     // Clear canvas
     context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -158,15 +159,22 @@ export function createRenderSystem(
       gradientIndex = (gradientIndex + 1) % horizontalGradients.length;
     }
 
-    // Query for entities with Position and NPC components
-    const npcs = query(world, [Position, NPC]);
+    // Query for entities with Position, BoundingBox, and other components
+    const npcs = query(world, [Position, NPC, BoundingBox]);
     const hostileNpcs = query(world, [Position, HostileNPC]);
-    const players = query(world, [Position, Player, CurrentPlayer]);
+    const players = query(world, [
+      Position,
+      Player,
+      CurrentPlayer,
+      BoundingBox,
+    ]);
 
     // Draw NPCs first (so player appears on top)
     for (const eid of npcs) {
       const x = Position.x[eid] ?? 0;
       const y = Position.y[eid] ?? 0;
+      const width = BoundingBox.width[eid] ?? 0;
+      const height = BoundingBox.height[eid] ?? 0;
       const isHostile = hostileNpcs.includes(eid);
       const isHovered = Hoverable.isHovered[eid] === 1;
       const isClicked = Clickable.isClicked[eid] === 1;
@@ -176,13 +184,8 @@ export function createRenderSystem(
       context.shadowColor = isHostile ? "#ff000066" : "#0066ff66";
       context.shadowBlur = isHovered ? 25 : 15;
 
-      // Draw centered on grid
-      context.fillRect(
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
-        CELL_SIZE - 4,
-        CELL_SIZE - 4,
-      );
+      // Draw centered on position
+      context.fillRect(x - width / 2, y - height / 2, width, height);
 
       // Reset shadow
       context.shadowBlur = 0;
@@ -190,20 +193,16 @@ export function createRenderSystem(
       // Add border for better definition
       context.strokeStyle = isHovered || isClicked ? "#ffffff" : "#ffffff66";
       context.lineWidth = isHovered || isClicked ? 3 : 2;
-      context.strokeRect(
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
-        CELL_SIZE - 4,
-        CELL_SIZE - 4,
-      );
+      context.strokeRect(x - width / 2, y - height / 2, width, height);
 
       // Draw health bar
       const health = Health.current[eid] ?? 0;
       const maxHealth = Health.max[eid] ?? 0;
       renderHealthBar(
         context,
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
+        x - width / 2,
+        y - height / 2,
+        width,
         health,
         maxHealth,
       );
@@ -218,6 +217,8 @@ export function createRenderSystem(
     for (const eid of players) {
       const x = Position.x[eid] ?? 0;
       const y = Position.y[eid] ?? 0;
+      const width = BoundingBox.width[eid] ?? 0;
+      const height = BoundingBox.height[eid] ?? 0;
 
       // Draw player with more vibrant color
       context.fillStyle = "#00ff88";
@@ -226,13 +227,8 @@ export function createRenderSystem(
       context.shadowColor = "#00ff8866";
       context.shadowBlur = 20;
 
-      // Draw centered on grid
-      context.fillRect(
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
-        CELL_SIZE - 4,
-        CELL_SIZE - 4,
-      );
+      // Draw centered on position
+      context.fillRect(x - width / 2, y - height / 2, width, height);
 
       // Reset shadow
       context.shadowBlur = 0;
@@ -240,20 +236,16 @@ export function createRenderSystem(
       // Add border for better definition
       context.strokeStyle = "#ffffff66";
       context.lineWidth = 2;
-      context.strokeRect(
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
-        CELL_SIZE - 4,
-        CELL_SIZE - 4,
-      );
+      context.strokeRect(x - width / 2, y - height / 2, width, height);
 
       // Draw health bar
       const health = Health.current[eid] ?? 0;
       const maxHealth = Health.max[eid] ?? 0;
       renderHealthBar(
         context,
-        x - CELL_SIZE / 2,
-        y - CELL_SIZE / 2,
+        x - width / 2,
+        y - height / 2,
+        width,
         health,
         maxHealth,
       );

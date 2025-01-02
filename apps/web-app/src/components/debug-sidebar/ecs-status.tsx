@@ -1,7 +1,10 @@
 "use client";
 
 import {
+  ChevronRight,
+  Component,
   Keyboard,
+  LayersIcon,
   MapPin,
   Mouse,
   Puzzle,
@@ -9,6 +12,11 @@ import {
   Swords,
 } from "lucide-react";
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@acme/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -20,6 +28,85 @@ import {
 } from "@acme/ui/sidebar";
 
 import { useGameStore } from "~/providers/game-store-provider";
+
+function formatValue(value: unknown): string {
+  if (typeof value === "boolean") {
+    return value ? "Yes" : "No";
+  }
+  if (typeof value === "number") {
+    return value.toString();
+  }
+  if (typeof value === "string") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.join(", ");
+  }
+  if (value && typeof value === "object") {
+    return Object.entries(value)
+      .map(([k, v]) => `${k}: ${formatValue(v)}`)
+      .join(", ");
+  }
+  return String(value);
+}
+
+interface ComponentTreeItem {
+  name: string;
+  value: unknown;
+  children?: ComponentTreeItem[];
+}
+
+function ComponentTree({ item }: { item: ComponentTreeItem }) {
+  if (!item.children) {
+    return (
+      <SidebarMenuButton className="data-[active=true]:bg-transparent">
+        <span className="text-muted-foreground">{item.name}:</span>
+        <span className="ml-2">{formatValue(item.value)}</span>
+      </SidebarMenuButton>
+    );
+  }
+
+  return (
+    <SidebarMenuItem>
+      <Collapsible className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90">
+        <CollapsibleTrigger asChild>
+          <SidebarMenuButton>
+            <ChevronRight className="transition-transform" />
+            <Component className="size-4" />
+            {item.name}
+          </SidebarMenuButton>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarMenuSub>
+            {item.children.map((child) => (
+              <ComponentTree key={`${item.name}-${child.name}`} item={child} />
+            ))}
+          </SidebarMenuSub>
+        </CollapsibleContent>
+      </Collapsible>
+    </SidebarMenuItem>
+  );
+}
+
+function transformComponentToTree(
+  name: string,
+  value: unknown,
+): ComponentTreeItem {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return {
+      children: Object.entries(value).map(([key, value_]) =>
+        transformComponentToTree(key, value_),
+      ),
+      name,
+      value,
+    };
+  }
+
+  return {
+    name,
+    value,
+  };
+}
 
 export function ECSStatus() {
   const metrics = useGameStore((state) => state.metrics);
@@ -157,6 +244,54 @@ export function ECSStatus() {
                   In Battle: {metrics.componentCounts.inBattle}
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  Bounding Boxes: {metrics.componentCounts.boundingBox}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  Physics: {metrics.componentCounts.physics}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  Collidable: {metrics.componentCounts.collidable}
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenuSub>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton>
+              <LayersIcon className="size-4" />
+              <span>Entity Tree</span>
+            </SidebarMenuButton>
+            <SidebarMenuSub>
+              {metrics.entities.map((entity) => (
+                <SidebarMenuItem key={entity.id}>
+                  <Collapsible className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90">
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton>
+                        <ChevronRight className="transition-transform" />
+                        <LayersIcon className="size-4" />
+                        Entity {entity.id}
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {Object.entries(entity.components).map(
+                          ([name, value]) => (
+                            <ComponentTree
+                              key={name}
+                              item={transformComponentToTree(name, value)}
+                            />
+                          ),
+                        )}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenuSub>
           </SidebarMenuItem>
         </SidebarMenu>
