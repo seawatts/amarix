@@ -42,5 +42,5 @@
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "cSpell.words": ["Omni", "openai"]
+  "cSpell.words": ["Collidable", "Omni", "openai"]
 }

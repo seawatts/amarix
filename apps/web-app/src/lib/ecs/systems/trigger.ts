@@ -39,6 +39,7 @@ export function createTriggerSystem() {
     if (players.length === 0) return world;
 
     const playerEid = players[0];
+    if (!playerEid) return world;
     const playerX = Position.x[playerEid] ?? 0;
     const playerY = Position.y[playerEid] ?? 0;
     const playerWidth = BoundingBox.width[playerEid] ?? 0;
@@ -56,8 +57,7 @@ export function createTriggerSystem() {
 
     for (const triggerEid of triggerEntities) {
       // Skip if not a trigger type collider
-      const collisionType = Collidable.type[triggerEid] ?? "";
-      if (collisionType !== "trigger") continue;
+      if (Collidable.isTrigger[triggerEid] !== 1) continue;
 
       const triggerX = Position.x[triggerEid] ?? 0;
       const triggerY = Position.y[triggerEid] ?? 0;

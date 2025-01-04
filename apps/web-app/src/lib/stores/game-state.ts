@@ -99,12 +99,13 @@ interface EntityComponentState {
     accelerationY: number;
     mass: number;
     friction: number;
-    elasticity: number;
+    restitution: number;
   };
   collidable?: {
-    type: string;
-    isStatic: boolean;
+    isActive: boolean;
+    isTrigger: boolean;
     layer: number;
+    mask: number;
   };
   triggerZone?: {
     type: string;
@@ -496,13 +497,13 @@ export const createGameStore = (initState: State = defaultInitState) => {
             Physics.accelerationY[eid] !== undefined &&
             Physics.mass[eid] !== undefined &&
             Physics.friction[eid] !== undefined &&
-            Physics.elasticity[eid] !== undefined
+            Physics.restitution[eid] !== undefined
           ) {
             hasComponents = true;
             components.physics = {
               accelerationX: Physics.accelerationX[eid] ?? 0,
               accelerationY: Physics.accelerationY[eid] ?? 0,
-              elasticity: Physics.elasticity[eid] ?? 0.5,
+              elasticity: Physics.restitution[eid] ?? 0.5,
               friction: Physics.friction[eid] ?? 0.1,
               mass: Physics.mass[eid] ?? 1,
               velocityX: Physics.velocityX[eid] ?? 0,
@@ -512,15 +513,17 @@ export const createGameStore = (initState: State = defaultInitState) => {
 
           // Collidable
           if (
-            Collidable.type[eid] !== undefined &&
-            Collidable.isStatic[eid] !== undefined &&
-            Collidable.layer[eid] !== undefined
+            Collidable.isActive[eid] !== undefined &&
+            Collidable.isTrigger[eid] !== undefined &&
+            Collidable.layer[eid] !== undefined &&
+            Collidable.mask[eid] !== undefined
           ) {
             hasComponents = true;
             components.collidable = {
-              isStatic: Collidable.isStatic[eid] === 1,
+              isActive: Collidable.isActive[eid] === 1,
+              isTrigger: Collidable.isTrigger[eid] === 1,
               layer: Collidable.layer[eid] ?? 0,
-              type: Collidable.type[eid] ?? "",
+              mask: Collidable.mask[eid] ?? 0xff_ff_ff_ff,
             };
           }
 
@@ -534,14 +537,14 @@ export const createGameStore = (initState: State = defaultInitState) => {
             TriggerZone.lastActivatedTime[eid] !== undefined
           ) {
             hasComponents = true;
-            components.triggerZone = {
-              actionId: TriggerZone.actionId[eid] ?? 0,
-              cooldown: TriggerZone.cooldown[eid] ?? 0,
-              isActivated: TriggerZone.isActivated[eid] === 1,
-              isRepeatable: TriggerZone.isRepeatable[eid] === 1,
-              lastActivatedTime: TriggerZone.lastActivatedTime[eid] ?? 0,
-              type: TriggerZone.type[eid] ?? "",
-            };
+            // components.triggerZone = {
+            //   actionId: TriggerZone.actionId[eid] ?? 0,
+            //   cooldown: TriggerZone.cooldown[eid] ?? 0,
+            //   isActivated: TriggerZone.isActivated[eid] === 1,
+            //   isRepeatable: TriggerZone.isRepeatable[eid] === 1,
+            //   lastActivatedTime: TriggerZone.lastActivatedTime[eid] ?? 0,
+            //   type: TriggerZone.type[eid] ?? "",
+            // };
           }
 
           // Only add entities that have at least one component

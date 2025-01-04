@@ -3,19 +3,25 @@ import { query } from "bitecs";
 
 import type { GameStore } from "~/lib/stores/game-state";
 import { CurrentPlayer } from "./components";
+import { createAnimationSystem } from "./systems/animation";
 import { createCollisionSystem } from "./systems/collision";
 import { createKeyboardSystem } from "./systems/keyboard";
 import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
+import { createParticleSystem } from "./systems/particle";
 import { createPhysicsSystem } from "./systems/physics";
 import { createRenderSystem } from "./systems/render";
+import { createSceneSystem } from "./systems/scene";
+import { createScriptSystem } from "./systems/script";
+import { createSoundSystem } from "./systems/sound";
+import { createSpriteSystem } from "./systems/sprite";
 import { createTriggerSystem } from "./systems/trigger";
 import { createGameWorld } from "./world";
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   world: World;
-  private systems: ((world: World) => World)[];
+  private systems: ((world: World, deltaTime: number) => World)[];
   private animationFrameId: number | null = null;
   private lastTime = performance.now();
   private frameInterval = 1000 / 60;
@@ -41,8 +47,14 @@ export class GameEngine {
       createPhysicsSystem(),
       createCollisionSystem(),
       createTriggerSystem(),
+      createScriptSystem(),
+      createSpriteSystem(),
+      createAnimationSystem(),
+      createSoundSystem(),
+      createParticleSystem(),
+      createSceneSystem(),
       createRenderSystem(canvas, context),
-    ] as ((world: World) => World)[];
+    ];
   }
 
   public start() {
@@ -69,7 +81,7 @@ export class GameEngine {
 
       for (const system of this.systems) {
         const startTime = performance.now();
-        currentWorld = system(currentWorld);
+        currentWorld = system(currentWorld, deltaTime);
         const endTime = performance.now();
         // Get the system name from the function name or default to "unknown"
         const systemName = system.name || "unknown";

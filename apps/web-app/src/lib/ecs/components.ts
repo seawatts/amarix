@@ -110,32 +110,51 @@ export const BoundingBox = {
   width: new Float32Array(10),
 } as const;
 
-// Physics component for handling velocity, acceleration, and other physics properties
+// Physics components
 export const Physics = {
-  // Acceleration in pixels per second squared
   accelerationX: new Float32Array(10),
   accelerationY: new Float32Array(10),
-  // Elasticity for bouncing (0.0 to 1.0, default 0.5)
-  elasticity: new Float32Array(10),
-  // Friction coefficient (0.0 to 1.0, default 0.1)
   friction: new Float32Array(10),
-  // Mass for physics calculations (default 1.0)
+  isKinematic: new Int8Array(10), // 1 = physics moves it, 0 = externally controlled
+  isStatic: new Int8Array(10), // 1 = immovable, 0 = movable
   mass: new Float32Array(10),
-  // Velocity in pixels per second
+  restitution: new Float32Array(10),
   velocityX: new Float32Array(10),
   velocityY: new Float32Array(10),
 } as const;
 
-// Component to mark entities that can collide and how they should respond
+// Collision components
 export const Collidable = {
-  // Whether this object is static (immovable) or dynamic
-  isStatic: new Uint8Array(10),
+  // Collision flags
+  isActive: new Int8Array(10), // 1 = can collide, 0 = no collision
+  isTrigger: new Int8Array(10), // 1 = trigger events only, 0 = physical collision
 
-  // Layer mask for filtering collisions (e.g., player can collide with walls but not other players)
-  layer: new Uint8Array(10),
+  // Collision layers (for filtering)
+  layer: new Int32Array(10), // Which layer this entity belongs to
+  mask: new Int32Array(10), // Bit mask of layers this can collide with
+} as const;
 
-  // Type of collision response: "solid" | "trigger" | "bounce"
-  type: Array.from({ length: 10 }).fill(""),
+// Collision manifold component - stores collision data
+export const CollisionManifold = {
+  // How deep the collision is
+  contactPointX: new Float32Array(10),
+
+  // Point of contact X
+  contactPointY: new Float32Array(10),
+
+  // Entity references
+  entity1: new Int32Array(10),
+
+  // First entity in collision
+  entity2: new Int32Array(10),
+
+  // Second entity in collision
+  // Collision normal (direction of impact)
+  normalX: new Float32Array(10),
+
+  normalY: new Float32Array(10),
+  // Collision details
+  penetrationDepth: new Float32Array(10), // Point of contact Y
 } as const;
 
 // Component for trigger zones that can start quests, battles, or other events
@@ -167,4 +186,153 @@ export const Hoverable = {
 export const Clickable = {
   isClicked: new Uint8Array(10),
   type: Array.from({ length: 10 }).fill(""),
+} as const;
+
+// Script component to define entity behaviors
+export const Script = {
+  // Whether the script is active
+  isActive: new Uint8Array(),
+  // Function index in the script registry
+  scriptId: new Float32Array(),
+  // State data for the script
+  state: new Float32Array(),
+  // Timer for time-based scripts
+  timer: new Float32Array(),
+} as const;
+
+// Sprite component for rendering images
+export const Sprite = {
+  // Current animation frame index
+  frame: new Uint32Array(10),
+
+  // Sprite sheet frame dimensions
+  frameHeight: new Float32Array(10),
+
+  // Current animation sequence name
+  frameSequence: Array.from({ length: 10 }).fill(""),
+
+  frameWidth: new Float32Array(10),
+
+  // Whether the sprite is flipped horizontally
+  isFlipped: new Uint8Array(10),
+
+  // Whether the sprite is visible
+  isVisible: new Uint8Array(10),
+
+  // Sprite offset from position
+  offsetX: new Float32Array(10),
+
+  offsetY: new Float32Array(10),
+
+  // Sprite opacity (0-1)
+  opacity: new Float32Array(10),
+
+  // Sprite rotation in radians
+  rotation: new Float32Array(10),
+
+  // Sprite scale
+  scaleX: new Float32Array(10),
+
+  scaleY: new Float32Array(10),
+  // Sprite sheet source path
+  src: Array.from({ length: 10 }).fill(""),
+} as const;
+
+// Animation component for sprite animations
+export const Animation = {
+  // Current animation sequence name
+  currentSequence: Array.from({ length: 10 }).fill(""),
+  // Duration of each frame in milliseconds
+  frameDuration: new Float32Array(10),
+  // Whether the animation should loop
+  isLooping: new Uint8Array(10),
+  // Whether the animation is playing
+  isPlaying: new Uint8Array(10),
+  // Time elapsed in current frame
+  timer: new Float32Array(10),
+} as const;
+
+// Sound component for audio playback
+export const Sound = {
+  // Whether the sound should loop
+  isLooping: new Uint8Array(10),
+  // Whether the sound is playing
+  isPlaying: new Uint8Array(10),
+  // Maximum distance at which the sound can be heard
+  maxDistance: new Float32Array(10),
+  // Sound spatial position relative to listener
+  panX: new Float32Array(10),
+  panY: new Float32Array(10),
+  // Sound playback rate (1 = normal speed)
+  playbackRate: new Float32Array(10),
+  // Current sound source path
+  src: Array.from({ length: 10 }).fill(""),
+  // Sound volume (0-1)
+  volume: new Float32Array(10),
+} as const;
+
+// Scene component for managing game scenes
+export const Scene = {
+  // Current scene name
+  current: Array.from({ length: 1 }).fill(""),
+  // Scene-specific data
+  data: Array.from({ length: 1 }).fill({}),
+  // Whether a scene transition is in progress
+  isTransitioning: new Uint8Array(1),
+  // Next scene to transition to
+  next: Array.from({ length: 1 }).fill(""),
+  // Scene transition progress (0-1)
+  transitionProgress: new Float32Array(1),
+} as const;
+
+// Particle component for visual effects
+export const Particle = {
+  // Current alpha/opacity (0-1)
+  alpha: new Float32Array(1000),
+  // Color in hex format
+  color: Array.from({ length: 1000 }).fill("#ffffff"),
+  // Whether the particle is active
+  isActive: new Uint8Array(1000),
+  // Current life of particle (0-1)
+  life: new Float32Array(1000),
+  // Maximum lifetime in milliseconds
+  maxLife: new Float32Array(1000),
+  // Size
+  size: new Float32Array(1000),
+  // Velocity
+  velocityX: new Float32Array(1000),
+  velocityY: new Float32Array(1000),
+  // Position
+  x: new Float32Array(1000),
+  y: new Float32Array(1000),
+} as const;
+
+// ParticleEmitter component for spawning particles
+export const ParticleEmitter = {
+  // Emission rate (particles per second)
+  emissionRate: new Float32Array(10),
+  // Time since last emission
+  emissionTimer: new Float32Array(10),
+  // Whether the emitter is active
+  isActive: new Uint8Array(10),
+  // Maximum number of particles to emit (-1 for infinite)
+  maxParticles: new Int32Array(10),
+  // Particle configuration
+  particleAlpha: new Float32Array(10),
+  particleColor: Array.from({ length: 10 }).fill("#ffffff"),
+  particleLife: new Float32Array(10),
+  particleSize: new Float32Array(10),
+  particleSpeedMax: new Float32Array(10),
+  particleSpeedMin: new Float32Array(10),
+  // Spawn area
+  spawnRadius: new Float32Array(10),
+  // Total particles emitted
+  totalEmitted: new Uint32Array(10),
+} as const;
+
+// Force component for constant forces like gravity
+export const Force = {
+  // Constant forces (like gravity, wind)
+  forceX: new Float32Array(10),
+  forceY: new Float32Array(10),
 } as const;

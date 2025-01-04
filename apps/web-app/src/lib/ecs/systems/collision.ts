@@ -1,9 +1,14 @@
 import type { World } from "bitecs";
-import { query } from "bitecs";
+import { addComponent, addEntity, query } from "bitecs";
 
-import { BoundingBox, Collidable, Physics, Position } from "../components";
+import {
+  BoundingBox,
+  Collidable,
+  CollisionManifold,
+  Position,
+} from "../components";
 
-// Helper function to check if two rectangles overlap
+// Helper function to check if two rectangles overlap and get collision info
 function checkCollision(
   x1: number,
   y1: number,
@@ -13,7 +18,8 @@ function checkCollision(
   y2: number,
   width2: number,
   height2: number,
-): boolean {
+) {
+  // Calculate bounds
   const left1 = x1 - width1 / 2;
   const right1 = x1 + width1 / 2;
   const top1 = y1 - height1 / 2;
@@ -24,95 +30,56 @@ function checkCollision(
   const top2 = y2 - height2 / 2;
   const bottom2 = y2 + height2 / 2;
 
-  return left1 < right2 && right1 > left2 && top1 < bottom2 && bottom1 > top2;
-}
-
-// Helper function to handle collision response based on type
-function handleCollision(
-  entity1: number,
-  entity2: number,
-  dx: number,
-  dy: number,
-  minDistance: number,
-) {
-  const type1 = Collidable.type[entity1] ?? "";
-  const type2 = Collidable.type[entity2] ?? "";
-  const isStatic1 = Collidable.isStatic[entity1] === 1;
-  const isStatic2 = Collidable.isStatic[entity2] === 1;
-
-  // If both objects are static or either is a trigger, no collision response needed
-  if (isStatic1 && isStatic2) return;
-  if (type1 === "trigger" || type2 === "trigger") return;
-
-  const angle = Math.atan2(dy, dx);
-  const overlap = minDistance - Math.hypot(dx, dy);
-  const pushX = Math.cos(angle) * overlap;
-  const pushY = Math.sin(angle) * overlap;
-
-  // Handle bounce collisions
-  if (type1 === "bounce" || type2 === "bounce") {
-    if (Physics.velocityX[entity1] !== undefined) {
-      const elasticity = Physics.elasticity[entity1] ?? 0.5;
-      const vx = Physics.velocityX[entity1] ?? 0;
-      const vy = Physics.velocityY[entity1] ?? 0;
-      Physics.velocityX[entity1] = -vx * elasticity;
-      Physics.velocityY[entity1] = -vy * elasticity;
-    }
-
-    if (Physics.velocityX[entity2] !== undefined) {
-      const elasticity = Physics.elasticity[entity2] ?? 0.5;
-      const vx = Physics.velocityX[entity2] ?? 0;
-      const vy = Physics.velocityY[entity2] ?? 0;
-      Physics.velocityX[entity2] = -vx * elasticity;
-      Physics.velocityY[entity2] = -vy * elasticity;
-    }
-    return;
+  // Check for overlap
+  if (
+    left1 >= right2 ||
+    right1 <= left2 ||
+    top1 >= bottom2 ||
+    bottom1 <= top2
+  ) {
+    return null;
   }
 
-  // Handle solid collisions by adjusting velocities
-  if (!isStatic1 && Physics.velocityX[entity1] !== undefined) {
-    const mass1 = Physics.mass[entity1] ?? 1;
-    if (isStatic2) {
-      // Full velocity change for entity1
-      Physics.velocityX[entity1] = pushX;
-      Physics.velocityY[entity1] = pushY;
-    } else {
-      // Split velocity change based on mass
-      const mass2 = Physics.mass[entity2] ?? 1;
-      const totalMass = mass1 + mass2;
-      const ratio1 = mass2 / totalMass;
-      Physics.velocityX[entity1] = pushX * ratio1;
-      Physics.velocityY[entity1] = pushY * ratio1;
-    }
+  // Calculate collision normal and penetration depth
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const overlapX = (width1 + width2) / 2 - Math.abs(dx);
+  const overlapY = (height1 + height2) / 2 - Math.abs(dy);
+
+  // Use the smallest overlap to determine collision normal
+  let normalX = 0;
+  let normalY = 0;
+  let penetrationDepth = 0;
+
+  if (overlapX < overlapY) {
+    normalX = dx > 0 ? 1 : -1;
+    penetrationDepth = overlapX;
+  } else {
+    normalY = dy > 0 ? 1 : -1;
+    penetrationDepth = overlapY;
   }
 
-  if (!isStatic2 && Physics.velocityX[entity2] !== undefined) {
-    const mass2 = Physics.mass[entity2] ?? 1;
-    if (isStatic1) {
-      // Full velocity change for entity2
-      Physics.velocityX[entity2] = -pushX;
-      Physics.velocityY[entity2] = -pushY;
-    } else {
-      // Split velocity change based on mass
-      const mass1 = Physics.mass[entity1] ?? 1;
-      const totalMass = mass1 + mass2;
-      const ratio2 = mass1 / totalMass;
-      Physics.velocityX[entity2] = -pushX * ratio2;
-      Physics.velocityY[entity2] = -pushY * ratio2;
-    }
-  }
-}
+  // Calculate contact point (middle of overlap)
+  const contactX = x1 + (normalX * penetrationDepth) / 2;
+  const contactY = y1 + (normalY * penetrationDepth) / 2;
 
-// Helper function to check if two layers should collide
-function shouldLayersCollide(layer1: number, layer2: number): boolean {
-  // Layer collision matrix
-  const collisionMatrix: Record<number, number[]> = {
-    1: [2, 3], // Player collides with NPCs and walls
-    2: [1, 2, 3], // NPCs collide with player, other NPCs, and walls
-    3: [1, 2], // Walls collide with player and NPCs
+  return {
+    contactX,
+    contactY,
+    normalX,
+    normalY,
+    penetrationDepth,
   };
+}
 
-  return collisionMatrix[layer1]?.includes(layer2) ?? false;
+// Check if two layers can collide using the layer masks
+function canLayersCollide(
+  layer1: number,
+  mask1: number,
+  layer2: number,
+  mask2: number,
+): boolean {
+  return (mask1 & (1 << layer2)) !== 0 && (mask2 & (1 << layer1)) !== 0;
 }
 
 export function createCollisionSystem() {
@@ -123,30 +90,62 @@ export function createCollisionSystem() {
     // Check collisions between all pairs of entities
     for (let index = 0; index < entities.length; index++) {
       const entity1 = entities[index];
+      if (!entity1) continue;
+
+      // Skip if collision checking is disabled
+      if (Collidable.isActive[entity1] !== 1) continue;
+
       const x1 = Position.x[entity1] ?? 0;
       const y1 = Position.y[entity1] ?? 0;
       const width1 = BoundingBox.width[entity1] ?? 0;
       const height1 = BoundingBox.height[entity1] ?? 0;
       const layer1 = Collidable.layer[entity1] ?? 0;
+      const mask1 = Collidable.mask[entity1] ?? 0xff_ff_ff_ff; // Default to colliding with everything
 
       for (let index_ = index + 1; index_ < entities.length; index_++) {
         const entity2 = entities[index_];
-        const layer2 = Collidable.layer[entity2] ?? 0;
+        if (!entity2) continue;
 
-        // Skip if layers shouldn't collide
-        if (!shouldLayersCollide(layer1, layer2)) continue;
+        // Skip if collision checking is disabled
+        if (Collidable.isActive[entity2] !== 1) continue;
+
+        const layer2 = Collidable.layer[entity2] ?? 0;
+        const mask2 = Collidable.mask[entity2] ?? 0xff_ff_ff_ff;
+
+        // Skip if layers can't collide
+        if (!canLayersCollide(layer1, mask1, layer2, mask2)) continue;
 
         const x2 = Position.x[entity2] ?? 0;
         const y2 = Position.y[entity2] ?? 0;
         const width2 = BoundingBox.width[entity2] ?? 0;
         const height2 = BoundingBox.height[entity2] ?? 0;
 
-        if (checkCollision(x1, y1, width1, height1, x2, y2, width2, height2)) {
-          const dx = x1 - x2;
-          const dy = y1 - y2;
-          const minDistance = (width1 + width2) / 2;
+        // Check for collision and get collision data
+        const collision = checkCollision(
+          x1,
+          y1,
+          width1,
+          height1,
+          x2,
+          y2,
+          width2,
+          height2,
+        );
 
-          handleCollision(entity1, entity2, dx, dy, minDistance);
+        if (collision) {
+          // Create collision manifold entity
+          const manifoldEid = addEntity(world);
+          addComponent(world, manifoldEid, CollisionManifold);
+
+          // Store collision data
+          CollisionManifold.entity1[manifoldEid] = entity1;
+          CollisionManifold.entity2[manifoldEid] = entity2;
+          CollisionManifold.normalX[manifoldEid] = collision.normalX;
+          CollisionManifold.normalY[manifoldEid] = collision.normalY;
+          CollisionManifold.penetrationDepth[manifoldEid] =
+            collision.penetrationDepth;
+          CollisionManifold.contactPointX[manifoldEid] = collision.contactX;
+          CollisionManifold.contactPointY[manifoldEid] = collision.contactY;
         }
       }
     }
