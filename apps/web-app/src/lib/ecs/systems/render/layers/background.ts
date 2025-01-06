@@ -9,6 +9,10 @@ export class BackgroundLayer implements RenderLayer {
   order = RENDER_LAYERS.BACKGROUND;
 
   render({ ctx, canvas }: RenderContext): void {
+    // Fill background with black
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     // Set grid style
     ctx.strokeStyle = `rgba(255, 255, 255, ${GRID_ALPHA})`;
     ctx.lineWidth = 1;

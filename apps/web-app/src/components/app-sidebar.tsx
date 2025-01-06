@@ -54,8 +54,8 @@ export function AppSidebar() {
     return (
       <SidebarMenu>
         {Array.from({ length: 5 }).map((_, index) => (
-          <SidebarMenuItem key={index}>
-            <SidebarMenuSkeleton />
+          <SidebarMenuItem key={`skeleton-${index}`}>
+            <SidebarMenuSkeleton index={index} />
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
@@ -186,6 +186,7 @@ export function AppSidebar() {
               <a
                 href="https://docs.boundary.ml"
                 target="_blank"
+                rel="noreferrer"
                 className="flex items-center justify-between"
               >
                 <span className="flex items-center gap-2">
@@ -201,6 +202,7 @@ export function AppSidebar() {
               <a
                 href="https://docs.boundary.ml"
                 target="_blank"
+                rel="noreferrer"
                 className="flex items-center justify-between"
               >
                 <span className="flex items-center gap-2">
@@ -216,6 +218,7 @@ export function AppSidebar() {
               <a
                 href="https://discord.gg/boundary"
                 target="_blank"
+                rel="noreferrer"
                 className="flex items-center justify-between"
               >
                 <span className="flex items-center gap-2">

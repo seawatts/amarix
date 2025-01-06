@@ -1,9 +1,10 @@
 "use client";
 
+import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 import { ViewVerticalIcon } from "@radix-ui/react-icons";
 import { Slot } from "@radix-ui/react-slot";
-import { cva, VariantProps } from "class-variance-authority";
+import { cva } from "class-variance-authority";
 
 import { useIsMobile } from "@acme/ui/hooks/use-mobile";
 import { cn } from "@acme/ui/lib/utils";
@@ -27,7 +28,7 @@ const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
 
-type SidebarContext = {
+interface SidebarContext {
   state: "expanded" | "collapsed";
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -35,7 +36,7 @@ type SidebarContext = {
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
   toggleSidebar: () => void;
-};
+}
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
 
@@ -59,8 +60,8 @@ const SidebarProvider = React.forwardRef<
   (
     {
       defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
+      open: openProperty,
+      onOpenChange: setOpenProperty,
       className,
       style,
       children,
@@ -74,12 +75,12 @@ const SidebarProvider = React.forwardRef<
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
     const [_open, _setOpen] = React.useState(defaultOpen);
-    const open = openProp ?? _open;
+    const open = openProperty ?? _open;
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value;
-        if (setOpenProp) {
-          setOpenProp(openState);
+        if (setOpenProperty) {
+          setOpenProperty(openState);
         } else {
           _setOpen(openState);
         }
@@ -87,7 +88,7 @@ const SidebarProvider = React.forwardRef<
         // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
       },
-      [setOpenProp, open],
+      [setOpenProperty, open],
     );
 
     // Helper to toggle the sidebar.
@@ -109,8 +110,8 @@ const SidebarProvider = React.forwardRef<
         }
       };
 
-      window.addEventListener("keydown", handleKeyDown);
-      return () => window.removeEventListener("keydown", handleKeyDown);
+      globalThis.addEventListener("keydown", handleKeyDown);
+      return () => globalThis.removeEventListener("keydown", handleKeyDown);
     }, [toggleSidebar]);
 
     // We add a state so that we can do data-state="expanded" or "collapsed".
@@ -119,12 +120,12 @@ const SidebarProvider = React.forwardRef<
 
     const contextValue = React.useMemo<SidebarContext>(
       () => ({
-        state,
-        open,
-        setOpen,
         isMobile,
+        open,
         openMobile,
+        setOpen,
         setOpenMobile,
+        state,
         toggleSidebar,
       }),
       [
@@ -523,21 +524,21 @@ SidebarMenuItem.displayName = "SidebarMenuItem";
 const sidebarMenuButtonVariants = cva(
   "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-none ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:!size-8 group-data-[collapsible=icon]:!p-2 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
+    defaultVariants: {
+      size: "default",
+      variant: "default",
+    },
     variants: {
+      size: {
+        default: "h-8 text-sm",
+        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
+        sm: "h-7 text-xs",
+      },
       variant: {
         default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
         outline:
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
-      size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
     },
   },
 );
@@ -571,7 +572,7 @@ const SidebarMenuButton = React.forwardRef<
         data-sidebar="menu-button"
         data-size={size}
         data-active={isActive}
-        className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        className={cn(sidebarMenuButtonVariants({ size, variant }), className)}
         {...props}
       />
     );
@@ -657,12 +658,12 @@ const SidebarMenuSkeleton = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
     showIcon?: boolean;
+    index?: number;
   }
->(({ className, showIcon = false, ...props }, ref) => {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
-  }, []);
+>(({ className, showIcon = false, index = 0, ...props }, ref) => {
+  // Use a fixed pattern of widths based on index to avoid hydration mismatches
+  const widths = ["75%", "60%", "85%", "70%", "80%"];
+  const width = widths[index % widths.length];
 
   return (
     <div

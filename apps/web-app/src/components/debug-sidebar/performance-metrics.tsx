@@ -1,13 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Gauge, LayoutDashboard, Timer } from "lucide-react";
+import { startCase } from "lodash-es";
+import {
+  Activity,
+  ChevronRight,
+  Gauge,
+  LayoutDashboard,
+  Timer,
+} from "lucide-react";
 
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@acme/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuSub,
 } from "@acme/ui/sidebar";
 
 import type { DataPoint } from "~/lib/ecs/types";
@@ -97,52 +111,86 @@ export function PerformanceMetrics() {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Performance</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          <PerformanceMetric
-            label="FPS"
-            value={fps}
-            data={fpsHistory}
-            icon={Gauge}
-            unit=""
-            minDomain={0}
-            maxDomain={100}
-            formatValue={(v) => Math.round(v).toString()}
-          />
-          <PerformanceMetric
-            label="Frame Time"
-            value={frameTime}
-            data={frameTimeHistory}
-            icon={Activity}
-            unit="ms"
-            minDomain={0}
-            maxDomain={100}
-          />
-          <PerformanceMetric
-            label="Memory"
-            value={memoryMB}
-            data={memoryHistory}
-            icon={LayoutDashboard}
-            unit="MB"
-            minDomain={0}
-            maxDomain="auto"
-          />
-          {Object.entries(metrics.performance.systems).map(([name, time]) => (
-            <PerformanceMetric
-              key={name}
-              label={`System: ${name}`}
-              value={time}
-              data={systemHistory[name] ?? []}
-              icon={Timer}
-              unit="ms"
-              minDomain={0}
-              maxDomain="auto"
-              formatValue={(v) => v.toFixed(2)}
-            />
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
+      <Collapsible className="group/performance">
+        <CollapsibleTrigger className="w-full">
+          <SidebarGroupLabel>
+            <div className="flex w-full items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Gauge className="size-4" />
+                <span>Performance</span>
+              </div>
+              <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/performance:rotate-90" />
+            </div>
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <PerformanceMetric
+                label="FPS"
+                value={fps}
+                data={fpsHistory}
+                icon={Gauge}
+                unit=""
+                minDomain={0}
+                maxDomain={100}
+                formatValue={(v) => Math.round(v).toString()}
+              />
+              <PerformanceMetric
+                label="Frame Time"
+                value={frameTime}
+                data={frameTimeHistory}
+                icon={Activity}
+                unit="ms"
+                minDomain={0}
+                maxDomain={100}
+              />
+              <PerformanceMetric
+                label="Memory"
+                value={memoryMB}
+                data={memoryHistory}
+                icon={LayoutDashboard}
+                unit="MB"
+                minDomain={0}
+                maxDomain="auto"
+              />
+              <Collapsible className="group/collapsible">
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton tooltip="Systems">
+                    <Timer className="size-4" />
+                    <span>Systems</span>
+                    <span>
+                      {Object.values(metrics.performance.systems)
+                        .reduce((sum, time) => sum + time, 0)
+                        .toFixed(2)}{" "}
+                      ms
+                    </span>
+                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <SidebarMenuSub>
+                  <CollapsibleContent>
+                    {Object.entries(metrics.performance.systems).map(
+                      ([name, time]) => (
+                        <PerformanceMetric
+                          key={name}
+                          label={startCase(name.replaceAll("System", ""))}
+                          value={time}
+                          data={systemHistory[name] ?? []}
+                          unit="ms"
+                          minDomain={0}
+                          maxDomain="auto"
+                          formatValue={(v) => v.toFixed(2)}
+                        />
+                      ),
+                    )}
+                  </CollapsibleContent>
+                </SidebarMenuSub>
+              </Collapsible>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </Collapsible>
     </SidebarGroup>
   );
 }

@@ -12,6 +12,7 @@ export class Renderer implements RenderSystem {
   }
 
   removeLayer(name: string): void {
+    // eslint-disable-next-line drizzle/enforce-delete-with-where
     this.layers.delete(name);
   }
 

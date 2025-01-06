@@ -1,0 +1,171 @@
+import type { World } from "bitecs";
+import { query } from "bitecs";
+
+import {
+  Force,
+  Gravity,
+  Position,
+  RigidBody,
+  Velocity,
+} from "../../components";
+import { collisionSystem } from "./collision";
+
+// Constants
+const FIXED_TIMESTEP = 1 / 60; // 60 Hz physics update
+const MAX_TIMESTEP = 0.1; // Maximum allowed timestep to prevent huge jumps
+const PIXELS_PER_METER = 10; // 100 pixels = 1 meter
+const METERS_TO_PIXELS = PIXELS_PER_METER;
+
+/**
+ * Applies forces to entities with Physics and Force components.
+ * Updates velocity based on force and mass (F = ma).
+ */
+export function applyForcesSystem(world: World, deltaTime: number) {
+  const entities = query(world, [Force, RigidBody]);
+
+  for (const eid of entities) {
+    if (RigidBody.isStatic[eid] === 1) {
+      // Clear force if static
+      Force.x[eid] = 0;
+      Force.y[eid] = 0;
+      continue;
+    }
+
+    const fx = Force.x[eid] ?? 0;
+    const fy = Force.y[eid] ?? 0;
+    const mass = Math.max(RigidBody.mass[eid] ?? 1, 0.0001);
+
+    // Linear velocity update (v = v0 + F/m * dt)
+    // Convert force to pixels/s²
+    const ax = (fx / mass) * METERS_TO_PIXELS;
+    const ay = (fy / mass) * METERS_TO_PIXELS;
+
+    Velocity.x[eid] = (Velocity.x[eid] ?? 0) + ax * deltaTime;
+    Velocity.y[eid] = (Velocity.y[eid] ?? 0) + ay * deltaTime;
+
+    // Clear forces
+    Force.x[eid] = 0;
+    Force.y[eid] = 0;
+  }
+
+  return world;
+}
+
+/**
+ * Integrates velocity into position and applies friction and damping.
+ */
+export function integrationSystem(world: World, deltaTime: number) {
+  const entities = query(world, [Position, RigidBody, Velocity]);
+
+  for (const eid of entities) {
+    if (RigidBody.isStatic[eid] === 1) continue;
+
+    // Position integration
+    const vx = Velocity.x[eid] ?? 0;
+    const vy = Velocity.y[eid] ?? 0;
+
+    // Debug position changes
+
+    // Position integration (p = p0 + v * dt)
+    Position.x[eid] = (Position.x[eid] ?? 0) + vx * deltaTime;
+    Position.y[eid] = (Position.y[eid] ?? 0) + vy * deltaTime;
+
+    // Rotation integration
+    const av = RigidBody.angularVelocity[eid] ?? 0;
+    RigidBody.rotation[eid] = (RigidBody.rotation[eid] ?? 0) + av * deltaTime;
+
+    // Damping
+    const linearDamping = RigidBody.linearDamping[eid] ?? 0;
+    if (linearDamping > 0) {
+      const speed = Math.hypot(vx, vy);
+      if (speed > 0.0001) {
+        const dampFactor = Math.max(0, 1 - linearDamping * deltaTime);
+        Velocity.x[eid] = vx * dampFactor;
+        Velocity.y[eid] = vy * dampFactor;
+      } else {
+        Velocity.x[eid] = 0;
+        Velocity.y[eid] = 0;
+      }
+    }
+
+    const angularDamping = RigidBody.angularDamping[eid] ?? 0;
+    if (angularDamping > 0) {
+      const newAV = av * Math.max(0, 1 - angularDamping * deltaTime);
+      RigidBody.angularVelocity[eid] = Math.abs(newAV) < 0.0001 ? 0 : newAV;
+    }
+
+    // Basic friction
+    const mass = Math.max(RigidBody.mass[eid] ?? 1, 0.0001);
+    const friction = RigidBody.friction[eid] ?? 0;
+    if (friction > 0) {
+      const frictionForce = friction * mass * METERS_TO_PIXELS; // Convert to pixels
+      const speed = Math.hypot(vx, vy);
+      if (speed > 0.0001) {
+        const frictionDelta = (frictionForce * deltaTime) / speed;
+        const speedAfter = Math.max(speed - frictionDelta, 0);
+        const ratio = speedAfter / speed;
+        Velocity.x[eid] = (Velocity.x[eid] ?? 0) * ratio;
+        Velocity.y[eid] = (Velocity.y[eid] ?? 0) * ratio;
+      } else {
+        Velocity.x[eid] = 0;
+        Velocity.y[eid] = 0;
+      }
+    }
+  }
+
+  return world;
+}
+
+/**
+ * Applies gravitational forces to entities
+ */
+function applyGravitySystem(world: World) {
+  const entities = query(world, [Gravity, RigidBody]);
+
+  for (const eid of entities) {
+    // Use a fixed gravity value of 9.81 m/s², converted to pixels/s²
+    const gravity = (Gravity.y[eid] ?? 0) * METERS_TO_PIXELS;
+    const mass = Math.max(RigidBody.mass[eid] ?? 1, 0.0001);
+
+    // Debug gravity application
+
+    // F = ma, where a is gravity (converted to pixels/s²)
+    Force.y[eid] = gravity * mass;
+  }
+
+  return world;
+}
+
+/**
+ * Master physics system that orchestrates the physics pipeline:
+ * 1. Apply forces
+ * 2. Integrate velocities
+ * 3. Handle collisions
+ *
+ * Uses sub-stepping to help mitigate tunneling at high speeds.
+ */
+export function createPhysicsSystem() {
+  return function physicsSystem(world: World, deltaTime: number) {
+    // Clamp deltaTime to prevent large jumps
+    const clampedDt = Math.min(deltaTime, MAX_TIMESTEP);
+
+    // Use fixed timestep for physics
+    const numberSteps = Math.ceil(clampedDt / FIXED_TIMESTEP);
+    const subDt = clampedDt / numberSteps;
+    console.log("numberSteps", numberSteps);
+
+    for (let index = 0; index < numberSteps; index++) {
+      // Apply gravity and other forces
+      applyGravitySystem(world);
+      applyForcesSystem(world, subDt);
+
+      // Update positions and apply friction/damping
+      integrationSystem(world, subDt);
+
+      // Handle collisions
+      collisionSystem(world);
+    }
+
+    return world;
+  };
+}

@@ -15,6 +15,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 
 import { AppSidebar } from "~/components/app-sidebar";
 import { env } from "~/env.server";
+import { DebugStoreProvider } from "~/providers/debug-provider";
 import { GameStoreProvider } from "~/providers/game-store-provider";
 
 export const metadata: Metadata = {
@@ -61,12 +62,14 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
         <ClerkProvider>
           <AnalyticsProviders identifyUser>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-              <GameStoreProvider>
-                <SidebarProvider defaultOpen={defaultOpen}>
-                  <AppSidebar />
-                  <main className="flex-1">{props.children}</main>
-                </SidebarProvider>
-              </GameStoreProvider>
+              <DebugStoreProvider>
+                <GameStoreProvider>
+                  <SidebarProvider defaultOpen={defaultOpen}>
+                    <AppSidebar />
+                    <main className="flex-1">{props.children}</main>
+                  </SidebarProvider>
+                </GameStoreProvider>
+              </DebugStoreProvider>
               <Toaster />
             </ThemeProvider>
           </AnalyticsProviders>

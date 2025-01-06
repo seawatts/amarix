@@ -37,8 +37,8 @@ export interface Dimensions {
 // Constants
 export const RENDER_LAYERS = {
   BACKGROUND: 0,
-  DEBUG: 400,
-  ENTITIES: 200,
-  PARTICLES: 100,
-  UI: 300,
+  DEBUG: 100,
+  ENTITIES: 10,
+  PARTICLES: 20,
+  SPRITES: 30,
 } as const;

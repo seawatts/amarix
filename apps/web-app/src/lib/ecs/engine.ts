@@ -1,10 +1,10 @@
 import type { World } from "bitecs";
 import { query } from "bitecs";
 
+import type { DebugStore } from "~/lib/stores/debug";
 import type { GameStore } from "~/lib/stores/game-state";
 import { CurrentPlayer } from "./components";
 import { createAnimationSystem } from "./systems/animation";
-import { createCollisionSystem } from "./systems/collision";
 import { createKeyboardSystem } from "./systems/keyboard";
 import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
@@ -18,18 +18,26 @@ import { createSpriteSystem } from "./systems/sprite";
 import { createTriggerSystem } from "./systems/trigger";
 import { createGameWorld } from "./world";
 
+type GameSystem = (world: World, deltaTime: number) => World;
+
 export class GameEngine {
   private canvas: HTMLCanvasElement;
   world: World;
-  private systems: ((world: World, deltaTime: number) => World)[];
+  private systems: GameSystem[];
   private animationFrameId: number | null = null;
   private lastTime = performance.now();
-  private frameInterval = 1000 / 60;
+  private frameInterval = 1 / 60;
   private store: GameStore;
+  private debugStore: DebugStore;
 
-  constructor(canvas: HTMLCanvasElement, store: GameStore) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    store: GameStore,
+    debugStore: DebugStore,
+  ) {
     this.canvas = canvas;
     this.store = store;
+    this.debugStore = debugStore;
     this.world = createGameWorld(canvas);
 
     const context = this.canvas.getContext("2d");
@@ -41,11 +49,8 @@ export class GameEngine {
     this.systems = [
       createKeyboardSystem(),
       createMouseSystem(),
-      // createBattleSystem(),
-      // createNPCInteractionSystem(),
       createMovementSystem(canvas),
       createPhysicsSystem(),
-      createCollisionSystem(),
       createTriggerSystem(),
       createScriptSystem(),
       createSpriteSystem(),
@@ -70,10 +75,11 @@ export class GameEngine {
   }
 
   private gameLoop = (timestamp: number) => {
-    const deltaTime = timestamp - this.lastTime;
+    const deltaTimeMs = timestamp - this.lastTime;
+    const deltaTime = deltaTimeMs / 1000;
 
-    if (deltaTime >= this.frameInterval) {
-      this.lastTime = timestamp - (deltaTime % this.frameInterval);
+    if (deltaTimeMs >= this.frameInterval * 1000) {
+      this.lastTime = timestamp - (deltaTimeMs % (this.frameInterval * 1000));
 
       // Run each system in sequence
       let currentWorld = this.world;
@@ -81,15 +87,23 @@ export class GameEngine {
 
       for (const system of this.systems) {
         const startTime = performance.now();
-        currentWorld = system(currentWorld, deltaTime);
-        const endTime = performance.now();
-        // Get the system name from the function name or default to "unknown"
+        // Only run the system if it's enabled in debug store
         const systemName = system.name || "unknown";
+        // if (
+        //   this.debugStore.systems[
+        //     systemName as keyof typeof this.debugStore.systems
+        //   ] !== false
+        // ) {
+        currentWorld = system(currentWorld, deltaTime);
+        // }
+        const endTime = performance.now();
         systemPerformance[systemName] = endTime - startTime;
       }
 
       // Update game state with system performance metrics
       this.store.update(currentWorld, systemPerformance);
+      // Update debug state with system performance metrics
+      this.debugStore.update(currentWorld);
     }
 
     this.animationFrameId = requestAnimationFrame(this.gameLoop);

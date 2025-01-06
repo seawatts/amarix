@@ -4,6 +4,10 @@ import { useEffect, useRef } from "react";
 
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
+import { DebugSidebarLeft } from "~/components/debug-sidebar/sidebar-left";
+import { DebugSidebarRight } from "~/components/debug-sidebar/sidebar-right";
+import { NPCInteractionManager } from "~/components/npc-interaction-manager";
+import { GameEngine } from "~/lib/ecs/engine";
 import { clearKeyDown, setKeyDown } from "~/lib/ecs/utils/keyboard";
 import {
   clearMouseButtonDown,
@@ -11,10 +15,8 @@ import {
   setMouseButtonDown,
   updateMousePosition,
 } from "~/lib/ecs/utils/mouse";
+import { useDebugStore } from "~/providers/debug-provider";
 import { useGameStore } from "~/providers/game-store-provider";
-import { DebugSidebar } from "../../components/debug-sidebar/sidebar";
-import { NPCInteractionManager } from "../../components/npc-interaction-manager";
-import { GameEngine } from "../../lib/ecs/engine";
 
 declare global {
   interface Performance {
@@ -29,6 +31,7 @@ declare global {
 export default function GamePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const store = useGameStore((state) => state);
+  const debugStore = useDebugStore((state) => state);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
@@ -42,7 +45,7 @@ export default function GamePage() {
     canvas.height = rect.height * dpr;
 
     // Create game engine
-    const newEngine = new GameEngine(canvas, store);
+    const newEngine = new GameEngine(canvas, store, debugStore);
     store.setEngine(newEngine);
     store.setWorld(newEngine.world);
 
@@ -104,7 +107,7 @@ export default function GamePage() {
 
   return (
     <SidebarProvider>
-      <DebugSidebar />
+      <DebugSidebarLeft />
       <SidebarInset>
         <main className="fixed inset-0 bg-zinc-800">
           <canvas
@@ -117,6 +120,7 @@ export default function GamePage() {
           <NPCInteractionManager />
         </main>
       </SidebarInset>
+      <DebugSidebarRight />
     </SidebarProvider>
   );
 }

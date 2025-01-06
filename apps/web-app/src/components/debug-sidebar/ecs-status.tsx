@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  ChevronRight,
-  Component,
-  Keyboard,
-  LayersIcon,
-  MapPin,
-  Mouse,
-  Puzzle,
-  Settings,
-  Swords,
-} from "lucide-react";
+import { ChevronRight, Component, LayersIcon, Settings } from "lucide-react";
 
 import {
   Collapsible,
@@ -27,6 +17,7 @@ import {
   SidebarMenuSub,
 } from "@acme/ui/sidebar";
 
+import { useDebugStore } from "~/providers/debug-provider";
 import { useGameStore } from "~/providers/game-store-provider";
 
 function formatValue(value: unknown): string {
@@ -68,12 +59,12 @@ function ComponentTree({ item }: { item: ComponentTreeItem }) {
 
   return (
     <SidebarMenuItem>
-      <Collapsible className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90">
+      <Collapsible className="group/collapsible">
         <CollapsibleTrigger asChild>
           <SidebarMenuButton>
-            <ChevronRight className="transition-transform" />
             <Component className="size-4" />
             {item.name}
+            <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />{" "}
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -88,214 +79,109 @@ function ComponentTree({ item }: { item: ComponentTreeItem }) {
   );
 }
 
-function transformComponentToTree(
-  name: string,
-  value: unknown,
-): ComponentTreeItem {
-  if (value && typeof value === "object" && !Array.isArray(value)) {
-    return {
-      children: Object.entries(value).map(([key, value_]) =>
-        transformComponentToTree(key, value_),
-      ),
-      name,
-      value,
-    };
-  }
-
-  return {
-    name,
-    value,
-  };
-}
-
 export function ECSStatus() {
   const metrics = useGameStore((state) => state.metrics);
+  const setSelectedEntityId = useDebugStore(
+    (state) => state.setSelectedEntityId,
+  );
 
   if (!metrics) return null;
 
+  // Count total entities
+  const totalEntities = metrics.entities.length;
+
+  // Count component types
+  const componentCounts = new Map<string, number>();
+  for (const entity of metrics.entities) {
+    for (const componentName of Object.keys(entity.components)) {
+      componentCounts.set(
+        componentName,
+        (componentCounts.get(componentName) ?? 0) + 1,
+      );
+    }
+  }
+
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>ECS Status</SidebarGroupLabel>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <MapPin className="size-4" />
-              <span>
-                Player Position [{metrics.playerPosition.gridX},{" "}
-                {metrics.playerPosition.gridY}]
-              </span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Keyboard className="size-4" />
-              <span>Input</span>
-            </SidebarMenuButton>
-            <SidebarMenuSub>
+      <Collapsible className="group/collapsible">
+        <CollapsibleTrigger className="w-full">
+          <SidebarGroupLabel>
+            <div className="flex w-full items-center justify-between">
+              <div className="flex items-center gap-2">
+                <LayersIcon className="size-4" />
+                <span>ECS</span>
+              </div>
+              <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </div>
+          </SidebarGroupLabel>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton>
-                  Keys:{" "}
-                  {metrics.input.pressedKeys.length > 0
-                    ? metrics.input.pressedKeys.join(" + ")
-                    : "None"}
+                  <LayersIcon className="size-4" />
+                  <span>Total Entities: {totalEntities}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
               <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Mouse className="size-4" />
-                  <span>Mouse</span>
-                </SidebarMenuButton>
-                <SidebarMenuSub>
-                  <SidebarMenuItem>
+                <Collapsible className="group/components [&[data-state=open]>button>svg:first-child]:rotate-90">
+                  <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      Position: [{metrics.input.mouse.position.x},{" "}
-                      {metrics.input.mouse.position.y}]
+                      <Settings className="size-4" />
+                      <span>Components</span>
+                      <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/components:rotate-90" />
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {[...componentCounts.entries()]
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([name, count]) => (
+                          <SidebarMenuItem key={name}>
+                            <SidebarMenuButton>
+                              {name}: {count}
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <Collapsible className="group/entities">
+                  <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
-                      Buttons:{" "}
-                      {[
-                        metrics.input.mouse.buttons.left && "Left",
-                        metrics.input.mouse.buttons.middle && "Middle",
-                        metrics.input.mouse.buttons.right && "Right",
-                      ]
-                        .filter(Boolean)
-                        .join(" + ") || "None"}
+                      <LayersIcon className="size-4" />
+                      <span>Entity Tree</span>
+                      <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/entities:rotate-90" />
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      Hovered: {metrics.input.mouse.hoveredEntity || "None"}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton>
-                      Clicked: {metrics.input.mouse.clickedEntity || "None"}
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenuSub>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {metrics.entities.map((entity) => (
+                        <SidebarMenuItem key={entity.id}>
+                          <SidebarMenuButton
+                            onClick={() => setSelectedEntityId(entity.id)}
+                          >
+                            <LayersIcon className="size-4" />
+                            {entity.name ?? `Entity ${entity.id}`}
+                            {/* <ChevronRight */}
+                            {/* className={`ml-auto size-4 transition-transform duration-200 group-data-[state=open]/entity-${entity.id}:rotate-90`} */}
+                            {/* /> */}
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
               </SidebarMenuItem>
-            </SidebarMenuSub>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Swords className="size-4" />
-              <span>Battle</span>
-            </SidebarMenuButton>
-            <SidebarMenuSub>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Active: {metrics.battle.isActive ? "Yes" : "No"}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Turn: {metrics.battle.currentTurn ?? "N/A"}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenuSub>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Puzzle className="size-4" />
-              <span>Entities: {metrics.componentCounts.position}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Settings className="size-4" />
-              <span>Components</span>
-            </SidebarMenuButton>
-            <SidebarMenuSub>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Position: {metrics.componentCounts.position}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Movement: {metrics.componentCounts.movement}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Player: {metrics.componentCounts.player}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  NPCs: {metrics.componentCounts.npc}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Hostile NPCs: {metrics.componentCounts.hostileNpc}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  NPC Interactions: {metrics.componentCounts.npcInteraction}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  In Battle: {metrics.componentCounts.inBattle}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Bounding Boxes: {metrics.componentCounts.boundingBox}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Physics: {metrics.componentCounts.physics}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  Collidable: {metrics.componentCounts.collidable}
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenuSub>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton>
-              <LayersIcon className="size-4" />
-              <span>Entity Tree</span>
-            </SidebarMenuButton>
-            <SidebarMenuSub>
-              {metrics.entities.map((entity) => (
-                <SidebarMenuItem key={entity.id}>
-                  <Collapsible className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90">
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton>
-                        <ChevronRight className="transition-transform" />
-                        <LayersIcon className="size-4" />
-                        Entity {entity.id}
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {Object.entries(entity.components).map(
-                          ([name, value]) => (
-                            <ComponentTree
-                              key={name}
-                              item={transformComponentToTree(name, value)}
-                            />
-                          ),
-                        )}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenuSub>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroupContent>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </CollapsibleContent>
+      </Collapsible>
     </SidebarGroup>
   );
 }
