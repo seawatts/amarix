@@ -38,13 +38,30 @@ export default function GamePage() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Set initial canvas size
+    // Get the viewport size and set up canvas
     const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    const viewportWidth = rect.width;
+    const viewportHeight = rect.height;
 
-    // Create game engine
+    // Set canvas size to match viewport but with higher resolution
+    const RESOLUTION_SCALE = 2; // Increase this for higher resolution
+    canvas.width = viewportWidth * RESOLUTION_SCALE;
+    canvas.height = viewportHeight * RESOLUTION_SCALE;
+
+    // Scale the canvas display size to match the viewport
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+
+    // Get the context after setting size
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+
+    // Clear the canvas to ensure clean state
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Create game engine after canvas is properly sized
     const newEngine = new GameEngine(canvas, store, debugStore);
     store.setEngine(newEngine);
     store.setWorld(newEngine.world);
@@ -52,12 +69,16 @@ export default function GamePage() {
     // Define keyboard handlers
     const handleKeyDown = (event: KeyboardEvent) => {
       const playerEid = newEngine.getPlayerEid();
+      const cameraEid = newEngine.getCameraEid();
       setKeyDown(playerEid, event.code);
+      setKeyDown(cameraEid, event.code);
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
       const playerEid = newEngine.getPlayerEid();
+      const cameraEid = newEngine.getCameraEid();
       clearKeyDown(playerEid, event.code);
+      clearKeyDown(cameraEid, event.code);
     };
 
     // Define mouse handlers

@@ -2,16 +2,21 @@ import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
 import {
-  Acceleration,
   Collidable,
   CollisionMask,
-  Force,
+  Debug,
   Named,
   Polygon,
-  Position,
   RigidBody,
-  Velocity,
+  Transform,
 } from "../components";
+
+interface CreateGroundOptions {
+  height: number;
+  width: number;
+  x: number;
+  y: number;
+}
 
 function createBoxPolygon(
   width: number,
@@ -43,62 +48,52 @@ function createBoxPolygon(
   return { x, y };
 }
 
-interface CreateGroundOptions {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export function createGround(world: World, options: CreateGroundOptions) {
-  const groundEid = addEntity(world);
+  const eid = addEntity(world);
+
+  // Add ground components
   addComponent(
     world,
-    groundEid,
-    Position,
+    eid,
+    Transform,
     Polygon,
     RigidBody,
     Collidable,
-    Acceleration,
-    Velocity,
-    Force,
     Named,
+    Debug,
   );
 
-  // Position the ground
-  Position.x[groundEid] = options.x;
-  Position.y[groundEid] = options.y;
+  // Set transform values
+  Transform.x[eid] = options.x;
+  Transform.y[eid] = options.y;
+  Transform.rotation[eid] = 0;
+  Transform.scaleX[eid] = 1;
+  Transform.scaleY[eid] = 1;
 
   // Set ground polygon
   const groundBox = createBoxPolygon(options.width, options.height);
-  Polygon.isConvex[groundEid] = 1;
-  Polygon.rotation[groundEid] = 0;
-  Polygon.vertexCount[groundEid] = 4;
-  Polygon.originX[groundEid] = 0;
-  Polygon.originY[groundEid] = 0;
-  Polygon.verticesX[groundEid] = groundBox.x;
-  Polygon.verticesY[groundEid] = groundBox.y;
+  Polygon.isConvex[eid] = 1;
+  Polygon.rotation[eid] = 0;
+  Polygon.vertexCount[eid] = 4;
+  Polygon.originX[eid] = 0;
+  Polygon.originY[eid] = 0;
+  Polygon.verticesX[eid] = groundBox.x;
+  Polygon.verticesY[eid] = groundBox.y;
 
   // Set physics values for ground
-  Velocity.x[groundEid] = 0;
-  Velocity.y[groundEid] = 0;
-  Acceleration.x[groundEid] = 0;
-  Acceleration.y[groundEid] = 0;
-  RigidBody.mass[groundEid] = 1000; // Very heavy
-  RigidBody.friction[groundEid] = 0.3;
-  RigidBody.restitution[groundEid] = 0;
-  RigidBody.isStatic[groundEid] = 1;
-  Force.x[groundEid] = 0;
-  Force.y[groundEid] = 0; // No gravity for ground
+  RigidBody.mass[eid] = 0; // Infinite mass
+  RigidBody.friction[eid] = 0.5;
+  RigidBody.restitution[eid] = 0.2;
+  RigidBody.isStatic[eid] = 1;
 
   // Set collision values for ground
-  Collidable.isActive[groundEid] = 1;
-  Collidable.isTrigger[groundEid] = 0;
-  Collidable.layer[groundEid] = 2; // Ground layer
-  Collidable.mask[groundEid] = CollisionMask.Wall;
+  Collidable.isActive[eid] = 1;
+  Collidable.isTrigger[eid] = 0;
+  Collidable.layer[eid] = CollisionMask.Wall;
+  Collidable.mask[eid] = CollisionMask.Player | CollisionMask.NPC;
 
   // Set name
-  Named.name[groundEid] = "Ground";
+  Named.name[eid] = "Ground";
 
-  return groundEid;
+  return eid;
 }

@@ -7,6 +7,7 @@ const GRID_ALPHA = 0.1;
 export class BackgroundLayer implements RenderLayer {
   name = "background";
   order = RENDER_LAYERS.BACKGROUND;
+  ignoreCamera = true;
 
   render({ ctx, canvas }: RenderContext): void {
     // Fill background with black

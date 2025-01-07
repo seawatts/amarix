@@ -1,7 +1,7 @@
 import type { World } from "bitecs";
 import { query } from "bitecs";
 
-import { Position, Sound } from "../components";
+import { Sound, Transform } from "../components";
 
 // Cache for loaded audio
 const audioCache = new Map<string, HTMLAudioElement>();
@@ -31,7 +31,7 @@ export function createSoundSystem() {
 
   return function soundSystem(world: World) {
     const entities = query(world, [Sound]);
-    const entitiesWithPosition = query(world, [Sound, Position]);
+    const entitiesWithPosition = query(world, [Sound, Transform]);
 
     // Load any new sounds
     for (const eid of entities) {
@@ -99,8 +99,8 @@ export function createSoundSystem() {
       const playingAudio = playingSounds.get(eid);
       if (!playingAudio) continue;
 
-      const x = Position.x[eid] ?? 0;
-      const y = Position.y[eid] ?? 0;
+      const x = Transform.x[eid] ?? 0;
+      const y = Transform.y[eid] ?? 0;
       const panX = Sound.panX[eid] ?? 0;
       const panY = Sound.panY[eid] ?? 0;
       const maxDistance = Sound.maxDistance[eid] ?? 1000;

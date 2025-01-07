@@ -2,6 +2,8 @@ import { query } from "bitecs";
 
 import type { RenderContext, RenderLayer } from "../types";
 import {
+  Box,
+  Circle,
   Clickable,
   CurrentPlayer,
   Health,
@@ -10,7 +12,9 @@ import {
   NPC,
   Player,
   Polygon,
-  Position,
+  Shape,
+  Style,
+  Transform,
 } from "../../../components";
 // import { PIXELS_PER_METER } from "../../physics";
 import { RENDER_LAYERS } from "../types";
@@ -88,8 +92,8 @@ function renderPolygon(
   shadowColor?: string,
   shadowBlur?: number,
 ): void {
-  const x = (Position.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y = (Position.y[eid] ?? 0) * PIXELS_PER_METER;
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
   const rotation = Polygon.rotation[eid] ?? 0;
   const vertCount = Polygon.vertexCount[eid] ?? 0;
 
@@ -124,25 +128,102 @@ function renderPolygon(
   context.restore();
 }
 
+function renderBox(context: CanvasRenderingContext2D, eid: number): void {
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+  const width = (Box.width[eid] ?? 0) * PIXELS_PER_METER;
+  const height = (Box.height[eid] ?? 0) * PIXELS_PER_METER;
+  const rotation = Box.rotation[eid] ?? 0;
+  const isWireframe = Box.isWireframe[eid] === 1;
+  const originX = (Box.originX[eid] ?? 0) * PIXELS_PER_METER;
+  const originY = (Box.originY[eid] ?? 0) * PIXELS_PER_METER;
+
+  // Apply styles
+  context.fillStyle = Style.fillColor[eid] ?? "#ffffff";
+  context.strokeStyle = Style.strokeColor[eid] ?? "#000000";
+  context.lineWidth = Style.strokeWidth[eid] ?? 1;
+  context.globalAlpha = Style.fillOpacity[eid] ?? 1;
+
+  context.save();
+  context.translate(x, y);
+  context.rotate(rotation);
+  context.translate(-originX, -originY);
+
+  if (!isWireframe) {
+    context.fillRect(-width / 2, -height / 2, width, height);
+  }
+  context.strokeRect(-width / 2, -height / 2, width, height);
+
+  context.restore();
+  context.globalAlpha = 1;
+}
+
+function renderCircle(context: CanvasRenderingContext2D, eid: number): void {
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+  const radius = (Circle.radius[eid] ?? 0) * PIXELS_PER_METER;
+  const startAngle = Circle.startAngle[eid] ?? 0;
+  const endAngle = Circle.endAngle[eid] ?? Math.PI * 2;
+  const isWireframe = Circle.isWireframe[eid] === 1;
+  const originX = (Circle.originX[eid] ?? 0) * PIXELS_PER_METER;
+  const originY = (Circle.originY[eid] ?? 0) * PIXELS_PER_METER;
+
+  // Apply styles
+  context.fillStyle = Style.fillColor[eid] ?? "#ffffff";
+  context.strokeStyle = Style.strokeColor[eid] ?? "#000000";
+  context.lineWidth = Style.strokeWidth[eid] ?? 1;
+  context.globalAlpha = Style.fillOpacity[eid] ?? 1;
+
+  context.save();
+  context.translate(x, y);
+  context.translate(-originX, -originY);
+
+  context.beginPath();
+  context.arc(0, 0, radius, startAngle, endAngle, false);
+
+  if (!isWireframe) {
+    context.fill();
+  }
+  context.stroke();
+
+  context.restore();
+  context.globalAlpha = 1;
+}
+
 export class EntityLayer implements RenderLayer {
   name = "entities";
   order = RENDER_LAYERS.ENTITIES;
 
   render({ ctx, world }: RenderContext): void {
-    const npcs = query(world, [Position, NPC, Polygon]);
-    const hostileNpcs = query(world, [Position, HostileNPC]);
-    const players = query(world, [Position, Player, CurrentPlayer, Polygon]);
+    const npcs = query(world, [Transform, NPC, Polygon]);
+    const hostileNpcs = query(world, [Transform, HostileNPC]);
+    const players = query(world, [Transform, Player, CurrentPlayer, Polygon]);
+    const boxes = query(world, [Transform, Box, Shape, Style]);
+    const circles = query(world, [Transform, Circle, Shape, Style]);
 
-    // Sort entities by y position for proper layering
-    const renderOrder = [...npcs, ...players].sort((a, b) => {
-      const yA = (Position.y[a] ?? 0) * PIXELS_PER_METER;
-      const yB = (Position.y[b] ?? 0) * PIXELS_PER_METER;
-      return yA - yB;
-    });
+    // Sort all entities by y position for proper layering
+    const renderOrder = [...npcs, ...players, ...boxes, ...circles].sort(
+      (a, b) => {
+        const yA = (Transform.y[a] ?? 0) * PIXELS_PER_METER;
+        const yB = (Transform.y[b] ?? 0) * PIXELS_PER_METER;
+        return yA - yB;
+      },
+    );
 
     for (const eid of renderOrder) {
-      const x = (Position.x[eid] ?? 0) * PIXELS_PER_METER;
-      const y = (Position.y[eid] ?? 0) * PIXELS_PER_METER;
+      // Render shapes first
+      if (boxes.includes(eid)) {
+        renderBox(ctx, eid);
+        continue;
+      }
+
+      if (circles.includes(eid)) {
+        renderCircle(ctx, eid);
+        continue;
+      }
+
+      const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+      const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
       const { width, height } = getPolygonBounds(eid);
 
       if (npcs.includes(eid)) {

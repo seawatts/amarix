@@ -1,20 +1,14 @@
 import type { World } from "bitecs";
-import {
-  addComponent,
-  addEntity,
-  hasComponent,
-  query,
-  removeComponent,
-  removeEntity,
-} from "bitecs";
+import { hasComponent, query, removeComponent, removeEntity } from "bitecs";
 
 import {
   CollisionManifold,
   Polygon,
-  Position,
   RigidBody,
+  Transform,
   Velocity,
 } from "../../components";
+import { createCollisionManifold } from "../../entities/collision-manifold";
 
 /**
  * Gets edge normal (perpendicular vector) for SAT collision detection
@@ -73,8 +67,8 @@ function centroid(verts: number[][]): [number, number] {
  * Includes rotation from RigidBody if present.
  */
 function getWorldVertices(eid: number): number[][] {
-  const x0 = Position.x[eid] ?? 0;
-  const y0 = Position.y[eid] ?? 0;
+  const x0 = Transform.x[eid] ?? 0;
+  const y0 = Transform.y[eid] ?? 0;
   const vertCount = Polygon.vertexCount[eid] ?? 0;
   const xs = Polygon.verticesX[eid];
   const ys = Polygon.verticesY[eid];
@@ -151,7 +145,7 @@ function satCollision(
  * Collision detection and resolution using SAT
  */
 export function collisionSystem(world: World) {
-  const entities = query(world, [Position, Polygon]);
+  const entities = query(world, [Transform, Polygon]);
 
   // Clear old collision manifolds and their entities
   const manifolds = query(world, [CollisionManifold]);
@@ -201,9 +195,7 @@ export function collisionSystem(world: World) {
       if (!collided) continue;
 
       // Create collision manifold
-      const manifoldEid = addEntity(world);
-      addComponent(world, manifoldEid, CollisionManifold);
-
+      const manifoldEid = createCollisionManifold(world);
       // Determine push-out direction from A->B
       const centerA = centroid(vertsA);
       const centerB = centroid(vertsB);
@@ -235,17 +227,21 @@ export function collisionSystem(world: World) {
 
       // Push out A
       if (hasRbA && !isStaticA) {
-        Position.x[entityA] =
-          (Position.x[entityA] ?? 0) - (overlapAxis[0] ?? 0) * moveDistribution;
-        Position.y[entityA] =
-          (Position.y[entityA] ?? 0) - (overlapAxis[1] ?? 0) * moveDistribution;
+        Transform.x[entityA] =
+          (Transform.x[entityA] ?? 0) -
+          (overlapAxis[0] ?? 0) * moveDistribution;
+        Transform.y[entityA] =
+          (Transform.y[entityA] ?? 0) -
+          (overlapAxis[1] ?? 0) * moveDistribution;
       }
       // Push out B
       if (hasRbB && !isStaticB) {
-        Position.x[entityB] =
-          (Position.x[entityB] ?? 0) + (overlapAxis[0] ?? 0) * moveDistribution;
-        Position.y[entityB] =
-          (Position.y[entityB] ?? 0) + (overlapAxis[1] ?? 0) * moveDistribution;
+        Transform.x[entityB] =
+          (Transform.x[entityB] ?? 0) +
+          (overlapAxis[0] ?? 0) * moveDistribution;
+        Transform.y[entityB] =
+          (Transform.y[entityB] ?? 0) +
+          (overlapAxis[1] ?? 0) * moveDistribution;
       }
 
       // Simple linear bounce

@@ -27,7 +27,7 @@ export function registerScene(name: string, config: SceneConfig) {
 export function changeScene(
   world: World,
   sceneName: string,
-  data?: unknown,
+  data?: Record<string, unknown>,
   _transitionDuration = 500,
 ) {
   const sceneEntities = query(world, [Scene]);
@@ -69,7 +69,7 @@ export function createSceneSystem() {
       if (nextProgress >= 1) {
         // Exit current scene
         if (currentScene) {
-          const currentConfig = sceneRegistry.get(currentScene as string);
+          const currentConfig = sceneRegistry.get(currentScene);
           if (currentConfig?.onExit) {
             currentConfig.onExit(world, Scene.data[sceneEid]);
           }
@@ -82,7 +82,7 @@ export function createSceneSystem() {
           Scene.isTransitioning[sceneEid] = 0;
           Scene.transitionProgress[sceneEid] = 0;
 
-          const nextConfig = sceneRegistry.get(nextScene as string);
+          const nextConfig = sceneRegistry.get(nextScene);
           if (nextConfig?.onEnter) {
             nextConfig.onEnter(world, Scene.data[sceneEid]);
           }
@@ -91,7 +91,7 @@ export function createSceneSystem() {
     }
     // Update current scene
     else if (currentScene) {
-      const config = sceneRegistry.get(currentScene as string);
+      const config = sceneRegistry.get(currentScene);
       if (config?.onUpdate) {
         config.onUpdate(world, Scene.data[sceneEid]);
       }

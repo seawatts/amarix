@@ -5,12 +5,20 @@ export interface RenderContext {
   ctx: CanvasRenderingContext2D;
   world: World;
   deltaTime: number;
+  camera: {
+    x: number;
+    y: number;
+    zoom: number;
+    rotation: number;
+  };
 }
 
 export interface RenderLayer {
   name: string;
   order: number;
   render: (context: RenderContext) => void;
+  // Whether this layer should ignore camera transform (e.g., UI elements)
+  ignoreCamera?: boolean;
 }
 
 export interface RenderSystem {
@@ -41,4 +49,5 @@ export const RENDER_LAYERS = {
   ENTITIES: 10,
   PARTICLES: 20,
   SPRITES: 30,
+  UI: 200, // New layer for UI elements that shouldn't be affected by camera
 } as const;

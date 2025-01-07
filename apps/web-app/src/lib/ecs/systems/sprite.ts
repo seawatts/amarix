@@ -1,7 +1,7 @@
 import type { World } from "bitecs";
 import { query } from "bitecs";
 
-import { Position, Sprite } from "../components";
+import { Sprite, Transform } from "../components";
 
 // Cache for loaded sprite images
 export const spriteCache = new Map<string, HTMLImageElement>();
@@ -28,7 +28,7 @@ export function createSpriteSystem() {
   const loadedSprites = new Set<string>();
 
   return function spriteSystem(world: World) {
-    const entities = query(world, [Position, Sprite]);
+    const entities = query(world, [Transform, Sprite]);
 
     // Load any new sprites
     for (const eid of entities) {

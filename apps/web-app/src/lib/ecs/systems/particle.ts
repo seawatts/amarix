@@ -1,7 +1,7 @@
 import type { World } from "bitecs";
 import { addComponent, addEntity, query, removeEntity } from "bitecs";
 
-import { Particle, ParticleEmitter, Position } from "../components";
+import { Particle, ParticleEmitter, Transform } from "../components";
 
 // Create a new particle
 function createParticle(
@@ -38,7 +38,7 @@ function createParticle(
 // Create the particle system
 export function createParticleSystem() {
   return function particleSystem(world: World) {
-    const emitters = query(world, [ParticleEmitter, Position]);
+    const emitters = query(world, [ParticleEmitter, Transform]);
     const particles = query(world, [Particle]);
 
     // Update emitters
@@ -65,8 +65,8 @@ export function createParticleSystem() {
         ParticleEmitter.emissionTimer[emitterEid] = 0;
 
         // Get spawn position
-        const x = Position.x[emitterEid] ?? 0;
-        const y = Position.y[emitterEid] ?? 0;
+        const x = Transform.x[emitterEid] ?? 0;
+        const y = Transform.y[emitterEid] ?? 0;
         const radius = ParticleEmitter.spawnRadius[emitterEid] ?? 0;
 
         // Add random offset within spawn radius
@@ -135,12 +135,12 @@ export function createParticleEmitter(
   },
 ): number {
   const eid = addEntity(world);
-  addComponent(world, eid, Position);
+  addComponent(world, eid, Transform);
   addComponent(world, eid, ParticleEmitter);
 
   // Set position
-  Position.x[eid] = config.x;
-  Position.y[eid] = config.y;
+  Transform.x[eid] = config.x;
+  Transform.y[eid] = config.y;
 
   // Set emitter properties
   ParticleEmitter.isActive[eid] = 1;

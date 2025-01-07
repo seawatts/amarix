@@ -1,7 +1,7 @@
 import { query } from "bitecs";
 
 import type { RenderContext, RenderLayer } from "../types";
-import { Position, Sprite } from "../../../components";
+import { Sprite, Transform } from "../../../components";
 import { spriteCache } from "../../sprite";
 import { RENDER_LAYERS } from "../types";
 
@@ -10,12 +10,12 @@ export class SpriteLayer implements RenderLayer {
   order = RENDER_LAYERS.ENTITIES;
 
   render({ ctx, world }: RenderContext): void {
-    const sprites = query(world, [Position, Sprite]);
+    const sprites = query(world, [Transform, Sprite]);
 
     // Sort sprites by y position for proper layering
     const sortedSprites = [...sprites].sort((a, b) => {
-      const yA = Position.y[a] ?? 0;
-      const yB = Position.y[b] ?? 0;
+      const yA = Transform.y[a] ?? 0;
+      const yB = Transform.y[b] ?? 0;
       return yA - yB;
     });
 
@@ -29,8 +29,8 @@ export class SpriteLayer implements RenderLayer {
       const sprite = spriteCache.get(source);
       if (!sprite) continue;
 
-      const x = Position.x[eid] ?? 0;
-      const y = Position.y[eid] ?? 0;
+      const x = Transform.x[eid] ?? 0;
+      const y = Transform.y[eid] ?? 0;
       const offsetX = Sprite.offsetX[eid] ?? 0;
       const offsetY = Sprite.offsetY[eid] ?? 0;
       const frameWidth = Sprite.frameWidth[eid] ?? sprite.width;

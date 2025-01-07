@@ -10,7 +10,7 @@ import {
   Movement,
   NPC,
   Player,
-  Position,
+  Transform,
   ValidActions,
 } from "../components";
 
@@ -54,19 +54,19 @@ function getValidMoves(x: number, y: number) {
 
 export function createBattleSystem() {
   return (world: ReturnType<typeof createWorld>) => {
-    const players = query(world, [Position, Player, Movement]);
-    const hostileNpcs = query(world, [Position, NPC, HostileNPC]);
+    const players = query(world, [Transform, Player, Movement]);
+    const hostileNpcs = query(world, [Transform, NPC, HostileNPC]);
     const battling = query(world, [InBattle]);
 
     // Check for battle initiation
     if (battling.length === 0) {
       for (const playerEid of players) {
-        const playerX = Position.x[playerEid] ?? 0;
-        const playerY = Position.y[playerEid] ?? 0;
+        const playerX = Transform.x[playerEid] ?? 0;
+        const playerY = Transform.y[playerEid] ?? 0;
 
         for (const npcEid of hostileNpcs) {
-          const npcX = Position.x[npcEid] ?? 0;
-          const npcY = Position.y[npcEid] ?? 0;
+          const npcX = Transform.x[npcEid] ?? 0;
+          const npcY = Transform.y[npcEid] ?? 0;
 
           // Check if player and hostile NPC are in the same cell
           if (

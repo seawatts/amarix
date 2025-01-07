@@ -23,6 +23,8 @@ interface EntityDetailsSidebarProps {
   entityId: number;
 }
 
+type TypedArray = Float32Array | Uint8Array | Uint32Array | Int32Array;
+
 export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
   const metrics = useGameStore((state) => state.metrics);
   const engine = useGameStore((state) => state.engine);
@@ -109,14 +111,12 @@ export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
                                   ? Number(event.target.value)
                                   : event.target.value;
 
-                              // // Update the component's TypedArray or Array directly
+                              // Update the component's TypedArray or Array directly
                               if (ArrayBuffer.isView(component[key])) {
-                                (
-                                  component[key] as
-                                    | Float32Array
-                                    | Uint8Array
-                                    | Uint32Array
-                                )[entityId] = newValue;
+                                const typedArray = component[key] as TypedArray;
+                                if (typeof newValue === "number") {
+                                  typedArray[entityId] = newValue;
+                                }
                               } else if (Array.isArray(component[key])) {
                                 component[key][entityId] = newValue;
                               }

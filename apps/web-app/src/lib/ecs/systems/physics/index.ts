@@ -1,22 +1,16 @@
 import type { World } from "bitecs";
-import {
-  addComponent,
-  addEntity,
-  hasComponent,
-  query,
-  removeComponent,
-  removeEntity,
-} from "bitecs";
+import { hasComponent, query, removeComponent, removeEntity } from "bitecs";
 
 import {
   CollisionManifold,
   Force,
   Gravity,
   Polygon,
-  Position,
   RigidBody,
+  Transform,
   Velocity,
 } from "../../components";
+import { createCollisionManifold } from "../../entities/collision-manifold";
 
 /* ----------------------------------------------------------------------------
  * 1) CONSTANTS
@@ -101,8 +95,8 @@ function centroid(verts: [number, number][]): [number, number] {
  * If you want advanced rotation from RigidBody.rotation, apply it here as well.
  */
 function getWorldVertices(world: World, eid: number): [number, number][] {
-  const px = Position.x[eid] ?? 0;
-  const py = Position.y[eid] ?? 0;
+  const px = Transform.x[eid] ?? 0;
+  const py = Transform.y[eid] ?? 0;
   const count = Polygon.vertexCount[eid] ?? 0;
   const xs = Polygon.verticesX[eid];
   const ys = Polygon.verticesY[eid];
@@ -245,7 +239,7 @@ export function applyForcesSystem(world: World, dt: number) {
  * handle friction, damping, etc.
  */
 export function integrationSystem(world: World, dt: number) {
-  const entities = query(world, [Position, RigidBody, Velocity]);
+  const entities = query(world, [Transform, RigidBody, Velocity]);
 
   for (const eid of entities) {
     if ((RigidBody.isStatic[eid] ?? 0) === 1) continue;
@@ -254,8 +248,8 @@ export function integrationSystem(world: World, dt: number) {
     let vy = Velocity.y[eid] ?? 0;
 
     // position
-    Position.x[eid] = (Position.x[eid] ?? 0) + vx * dt;
-    Position.y[eid] = (Position.y[eid] ?? 0) + vy * dt;
+    Transform.x[eid] = (Transform.x[eid] ?? 0) + vx * dt;
+    Transform.y[eid] = (Transform.y[eid] ?? 0) + vy * dt;
 
     // rotation
     let av = RigidBody.angularVelocity[eid] ?? 0;
@@ -321,7 +315,7 @@ export function collisionSystem(world: World) {
   const manifoldsToRemove = new Set(oldManifolds);
 
   // get all polygon entities
-  const entities = query(world, [Position, Polygon]);
+  const entities = query(world, [Transform, Polygon]);
 
   // naive O(n^2)
   for (const entityA of entities) {
@@ -372,8 +366,7 @@ export function collisionSystem(world: World) {
       if (!collided) continue;
 
       // create manifold
-      const mEid = addEntity(world);
-      addComponent(world, mEid, CollisionManifold);
+      const mEid = createCollisionManifold(world);
 
       // Remove this manifold from the cleanup set since we're reusing it
       manifoldsToRemove.delete(mEid);
@@ -407,16 +400,16 @@ export function collisionSystem(world: World) {
         const pushA = (invMassA / totalInvMass) * pushOverlap;
         const pushB = (invMassB / totalInvMass) * pushOverlap;
         if (!isStaticA) {
-          Position.x[entityA] =
-            (Position.x[entityA] ?? 0) - overlapAxis[0] * pushA;
-          Position.y[entityA] =
-            (Position.y[entityA] ?? 0) - overlapAxis[1] * pushA;
+          Transform.x[entityA] =
+            (Transform.x[entityA] ?? 0) - overlapAxis[0] * pushA;
+          Transform.y[entityA] =
+            (Transform.y[entityA] ?? 0) - overlapAxis[1] * pushA;
         }
         if (!isStaticB) {
-          Position.x[entityB] =
-            (Position.x[entityB] ?? 0) + overlapAxis[0] * pushB;
-          Position.y[entityB] =
-            (Position.y[entityB] ?? 0) + overlapAxis[1] * pushB;
+          Transform.x[entityB] =
+            (Transform.x[entityB] ?? 0) + overlapAxis[0] * pushB;
+          Transform.y[entityB] =
+            (Transform.y[entityB] ?? 0) + overlapAxis[1] * pushB;
         }
       }
 

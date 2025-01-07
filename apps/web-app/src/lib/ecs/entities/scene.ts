@@ -1,25 +1,26 @@
 import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
-import { Named, Scene } from "../components";
-import { SCENES } from "../systems/scene";
+import { Debug, Named, Scene } from "../components";
 
 interface CreateSceneOptions {
-  initialScene: keyof typeof SCENES;
+  initialScene: string;
 }
 
 export function createScene(world: World, options: CreateSceneOptions) {
-  const sceneEid = addEntity(world);
-  addComponent(world, sceneEid, Scene, Named);
+  const eid = addEntity(world);
 
-  Scene.current[sceneEid] = SCENES[options.initialScene];
-  Scene.next[sceneEid] = "";
-  Scene.isTransitioning[sceneEid] = 0;
-  Scene.transitionProgress[sceneEid] = 0;
-  Scene.data[sceneEid] = {};
+  // Add scene components
+  addComponent(world, eid, Scene, Named, Debug);
+
+  // Set scene values
+  Scene.current[0] = options.initialScene;
+  Scene.isTransitioning[eid] = 0;
+  Scene.next[0] = "";
+  Scene.transitionProgress[eid] = 0;
 
   // Set name
-  Named.name[sceneEid] = `Scene ${options.initialScene}`;
+  Named.name[eid] = "Scene Manager";
 
-  return sceneEid;
+  return eid;
 }

@@ -1,6 +1,8 @@
 import { createWorld } from "bitecs";
 
 import {
+  createCamera,
+  createDebug,
   createGround,
   createHostileNPC,
   createNPC,
@@ -51,8 +53,8 @@ const HOSTILE_NPC_ANIMATIONS = {
 
 function getInitialPlayerPosition(canvas: HTMLCanvasElement) {
   return {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
+    x: Math.floor(canvas.width / 2),
+    y: Math.floor(canvas.height / 2),
   };
 }
 
@@ -80,6 +82,17 @@ export function createGameWorld(canvas: HTMLCanvasElement) {
   // Create the world first
   const world = createWorld();
 
+  // Create debug entity first (so it has ID 1)
+  createDebug(world, {
+    logLevel: 3, // INFO level
+    showBoundingBox: false,
+    showColliders: false,
+    showForceVectors: false,
+    showOrigin: false,
+    showTriggerZones: false,
+    showVelocityVector: false,
+  });
+
   // Register animations
   for (const [name, sequence] of Object.entries(PLAYER_ANIMATIONS)) {
     registerAnimation("/sprites/player.png", name, sequence);
@@ -93,7 +106,7 @@ export function createGameWorld(canvas: HTMLCanvasElement) {
 
   // Create player
   const { x: playerX, y: playerY } = getInitialPlayerPosition(canvas);
-  createPlayer(world, { x: playerX, y: playerY });
+  const playerEntity = createPlayer(world, { x: playerX, y: playerY });
 
   // Create NPCs
   const takenPositions = [{ x: playerX, y: playerY }];
@@ -131,12 +144,14 @@ export function createGameWorld(canvas: HTMLCanvasElement) {
   // Create ground entity
   createGround(world, {
     height: 20,
-
     // 10 pixels from bottom
     width: canvas.width,
     x: canvas.width / 2,
     y: canvas.height - 10,
   });
+
+  // Create camera targeting the player
+  createCamera(world, { target: playerEntity });
 
   return world;
 }

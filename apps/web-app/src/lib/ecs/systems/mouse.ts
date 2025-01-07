@@ -6,7 +6,7 @@ import {
   CurrentPlayer,
   Hoverable,
   MouseState,
-  Position,
+  Transform,
 } from "../components";
 
 const CELL_SIZE = 50;
@@ -25,10 +25,10 @@ export function createMouseSystem() {
     MouseState.hoveredEntity[mouseEid] = 0;
 
     // Check for hover over hoverable entities
-    const hoverables = query(world, [Position, Hoverable]);
+    const hoverables = query(world, [Transform, Hoverable]);
     for (const eid of hoverables) {
-      const entityX = Position.x[eid] ?? 0;
-      const entityY = Position.y[eid] ?? 0;
+      const entityX = Transform.x[eid] ?? 0;
+      const entityY = Transform.y[eid] ?? 0;
 
       // Check if mouse is within entity bounds
       const isHovered =
@@ -46,10 +46,10 @@ export function createMouseSystem() {
     }
 
     // Handle clicks on clickable entities
-    const clickables = query(world, [Position, Clickable]);
+    const clickables = query(world, [Transform, Clickable]);
     for (const eid of clickables) {
-      const entityX = Position.x[eid] ?? 0;
-      const entityY = Position.y[eid] ?? 0;
+      const entityX = Transform.x[eid] ?? 0;
+      const entityY = Transform.y[eid] ?? 0;
 
       // Check if mouse is within entity bounds
       const isClicked =

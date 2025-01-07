@@ -2,12 +2,13 @@ import type { createWorld } from "bitecs";
 import { addComponent, query, removeComponent } from "bitecs";
 
 import {
+  CollisionManifold,
   InteractionCooldown,
   Movement,
   NPC,
   NPCInteraction,
   Player,
-  Position,
+  Transform,
 } from "../components";
 
 interface WorldWithTime extends ReturnType<typeof createWorld> {
@@ -17,12 +18,29 @@ interface WorldWithTime extends ReturnType<typeof createWorld> {
 }
 
 const INTERACTION_COOLDOWN = 0.5; // seconds
+const INITIAL_DELAY = 1; // 1 second delay before interactions can start
 
 export function createNPCInteractionSystem() {
+  let systemStartTime = 0;
+  let isInitialized = false;
+
   return (world: WorldWithTime) => {
-    const players = query(world, [Position, Player]);
-    const npcs = query(world, [Position, NPC]);
+    // Initialize start time on first run
+    if (!isInitialized) {
+      systemStartTime = Date.now();
+      isInitialized = true;
+      return world;
+    }
+
+    // Don't process interactions during initial delay
+    if (Date.now() - systemStartTime < INITIAL_DELAY * 1000) {
+      return world;
+    }
+
+    const players = query(world, [Transform, Player]);
+    const npcs = query(world, [Transform, NPC]);
     const interacting = query(world, [NPCInteraction]);
+    const collisions = query(world, [CollisionManifold]);
 
     // Process cooldowns and remove completed interactions
     for (const eid of interacting) {
@@ -30,36 +48,38 @@ export function createNPCInteractionSystem() {
       if (timer > 0) {
         InteractionCooldown.timer[eid] = timer - (world.time?.delta ?? 0);
       } else {
-        // Properly remove the interaction component
         removeComponent(world, eid, NPCInteraction, InteractionCooldown);
       }
     }
 
-    // Check for player-NPC interactions
-    for (const playerEid of players) {
-      const playerX = Position.x[playerEid] ?? 0;
-      const playerY = Position.y[playerEid] ?? 0;
+    // Check for player-NPC collisions
+    for (const collisionEid of collisions) {
+      const entity1 = CollisionManifold.entity1[collisionEid] ?? 0;
+      const entity2 = CollisionManifold.entity2[collisionEid] ?? 0;
 
-      for (const npcEid of npcs) {
-        const npcX = Position.x[npcEid] ?? 0;
-        const npcY = Position.y[npcEid] ?? 0;
+      // Find player and NPC from collision pair
+      let playerEid = 0;
+      let npcEid = 0;
 
-        // Check if player and NPC are in the same cell
-        if (
-          Math.abs(playerX - npcX) < 50 &&
-          Math.abs(playerY - npcY) < 50 && // Only interact if not already interacting
-          !interacting.includes(npcEid)
-        ) {
-          // Add interaction components
-          addComponent(world, npcEid, NPCInteraction, InteractionCooldown);
-          NPCInteraction.message[npcEid] =
-            "Hello traveler! How can I help you today?";
-          InteractionCooldown.timer[npcEid] = INTERACTION_COOLDOWN;
+      if (players.includes(entity1) && npcs.includes(entity2)) {
+        playerEid = entity1;
+        npcEid = entity2;
+      } else if (players.includes(entity2) && npcs.includes(entity1)) {
+        playerEid = entity2;
+        npcEid = entity1;
+      }
 
-          // Stop player movement during interaction
-          Movement.dx[playerEid] = 0;
-          Movement.dy[playerEid] = 0;
-        }
+      // If we found a player-NPC collision and NPC isn't already interacting
+      if (playerEid && npcEid && !interacting.includes(npcEid)) {
+        // Add interaction components
+        addComponent(world, npcEid, NPCInteraction, InteractionCooldown);
+        NPCInteraction.message[npcEid] =
+          "Hello traveler! How can I help you today?";
+        InteractionCooldown.timer[npcEid] = INTERACTION_COOLDOWN;
+
+        // Stop player movement during interaction
+        Movement.dx[playerEid] = 0;
+        Movement.dy[playerEid] = 0;
       }
     }
 

@@ -5,7 +5,7 @@ import type { RenderContext, RenderLayer } from "../types";
 import {
   CollisionManifold,
   Polygon,
-  Position,
+  Transform,
   Velocity,
 } from "../../../components";
 import { PIXELS_PER_METER } from "../../../systems/physics";
@@ -15,8 +15,8 @@ import { RENDER_LAYERS } from "../types";
  * Transforms local-space polygon vertices to world-space
  */
 function getWorldVertices(eid: number): number[][] {
-  const x0 = (Position.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y0 = (Position.y[eid] ?? 0) * PIXELS_PER_METER;
+  const x0 = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y0 = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
   const rotation = Polygon.rotation[eid] ?? 0;
   const vertCount = Polygon.vertexCount[eid] ?? 0;
   const result: number[][] = [];
@@ -71,7 +71,7 @@ export class DebugLayer implements RenderLayer {
   private hoveredEntity: number | null = null;
 
   updateHoveredEntity(mouseX: number, mouseY: number, world: World): void {
-    const entities = query(world, [Position, Polygon]);
+    const entities = query(world, [Transform, Polygon]);
     this.hoveredEntity = null;
 
     for (const eid of entities) {
@@ -90,10 +90,10 @@ export class DebugLayer implements RenderLayer {
     context.textBaseline = "top";
 
     // Draw collision shapes
-    const entities = query(world, [Position, Polygon]);
+    const entities = query(world, [Transform, Polygon]);
     for (const eid of entities) {
-      const x = (Position.x[eid] ?? 0) * PIXELS_PER_METER;
-      const y = (Position.y[eid] ?? 0) * PIXELS_PER_METER;
+      const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+      const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
 
       // Get polygon vertices in world space
       const polygon = getWorldVertices(eid);

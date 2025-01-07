@@ -9,7 +9,7 @@ import {
   Movement,
   ValidActions,
 } from "../components";
-import { isKeyDown, KEY_CODES } from "../utils/keyboard";
+import { isKeyDown } from "../utils/keyboard";
 
 const CELL_SIZE = 50;
 
@@ -30,7 +30,7 @@ function handleBattleInput(
   const validMoves = (ValidActions.cells[playerEid] ?? []) as ValidMove[];
 
   // Check each movement key
-  if (isKeyDown(playerEid, KEY_CODES.ARROW_LEFT)) {
+  if (isKeyDown(playerEid, "ArrowLeft")) {
     const targetX = playerX - CELL_SIZE;
     const targetY = playerY;
     if (
@@ -42,7 +42,7 @@ function handleBattleInput(
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, KEY_CODES.ARROW_RIGHT)) {
+  } else if (isKeyDown(playerEid, "ArrowRight")) {
     const targetX = playerX + CELL_SIZE;
     const targetY = playerY;
     if (
@@ -54,7 +54,7 @@ function handleBattleInput(
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, KEY_CODES.ARROW_UP)) {
+  } else if (isKeyDown(playerEid, "ArrowUp")) {
     const targetX = playerX;
     const targetY = playerY - CELL_SIZE;
     if (
@@ -66,7 +66,7 @@ function handleBattleInput(
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, KEY_CODES.ARROW_DOWN)) {
+  } else if (isKeyDown(playerEid, "ArrowDown")) {
     const targetX = playerX;
     const targetY = playerY + CELL_SIZE;
     if (
@@ -81,10 +81,7 @@ function handleBattleInput(
   }
 
   // Check for attack action
-  if (
-    isKeyDown(playerEid, KEY_CODES.SPACE) ||
-    isKeyDown(playerEid, KEY_CODES.ENTER)
-  ) {
+  if (isKeyDown(playerEid, "Space") || isKeyDown(playerEid, "Enter")) {
     const attackMove = validMoves.find((move: ValidMove) => {
       // Find a valid move that's not the player's current position
       return move.x !== playerX || move.y !== playerY;
@@ -106,18 +103,18 @@ function handleExplorationInput(
   Movement.dy[playerEid] = 0;
 
   // Handle horizontal movement
-  if (isKeyDown(playerEid, KEY_CODES.ARROW_LEFT)) {
+  if (isKeyDown(playerEid, "ArrowLeft")) {
     Movement.dx[playerEid] -= 1;
   }
-  if (isKeyDown(playerEid, KEY_CODES.ARROW_RIGHT)) {
+  if (isKeyDown(playerEid, "ArrowRight")) {
     Movement.dx[playerEid] += 1;
   }
 
   // Handle vertical movement
-  if (isKeyDown(playerEid, KEY_CODES.ARROW_UP)) {
+  if (isKeyDown(playerEid, "ArrowUp")) {
     Movement.dy[playerEid] -= 1;
   }
-  if (isKeyDown(playerEid, KEY_CODES.ARROW_DOWN)) {
+  if (isKeyDown(playerEid, "ArrowDown")) {
     Movement.dy[playerEid] += 1;
   }
 

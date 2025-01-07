@@ -3,8 +3,10 @@ import { query } from "bitecs";
 
 import type { DebugStore } from "~/lib/stores/debug";
 import type { GameStore } from "~/lib/stores/game-state";
-import { CurrentPlayer } from "./components";
+import { Camera, CurrentPlayer } from "./components";
 import { createAnimationSystem } from "./systems/animation";
+import { createCameraSystem } from "./systems/camera";
+import { createDebugSystem } from "./systems/debug";
 import { createKeyboardSystem } from "./systems/keyboard";
 import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
@@ -58,7 +60,9 @@ export class GameEngine {
       createSoundSystem(),
       createParticleSystem(),
       createSceneSystem(),
+      createCameraSystem(),
       createRenderSystem(canvas, context),
+      createDebugSystem(this.debugStore, this.store),
     ];
   }
 
@@ -112,6 +116,11 @@ export class GameEngine {
   public getPlayerEid() {
     const players = query(this.world, [CurrentPlayer]);
     return players[0] ?? 0;
+  }
+
+  public getCameraEid() {
+    const cameras = query(this.world, [Camera]);
+    return cameras[0] ?? 0;
   }
 
   cleanup() {

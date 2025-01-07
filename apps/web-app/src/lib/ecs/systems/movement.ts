@@ -1,39 +1,60 @@
 import type { createWorld } from "bitecs";
 import { query } from "bitecs";
 
-import { Movement, Player, Position } from "../components";
+import {
+  Force,
+  KeyboardState,
+  Player,
+  RigidBody,
+  Transform,
+} from "../components";
+import { getMovementInput } from "../utils/keyboard";
 
-const CELL_SIZE = 100;
-const MOVEMENT_SPEED = 8; // Pixels per frame
+// Constants based on player size (100 pixels) and physics scale
+const PIXELS_PER_METER = 100; // 1 meter = 100 pixels
+const BASE_MOVEMENT_FORCE = 2000; // Base force in Newtons
+const MOVEMENT_FORCE = BASE_MOVEMENT_FORCE * PIXELS_PER_METER; // Scale force by pixel ratio
+const MAX_SPEED = 10 * PIXELS_PER_METER; // 10 meters per second
+const DAMPING = 0.95; // Smoother damping for more natural movement
 
-export const createMovementSystem = (canvas: HTMLCanvasElement) => {
+export const createMovementSystem = (_canvas: HTMLCanvasElement) => {
   return function movementSystem(world: ReturnType<typeof createWorld>) {
-    const entities = query(world, [Position, Movement, Player]);
+    const entities = query(world, [
+      Transform,
+      Force,
+      RigidBody,
+      KeyboardState,
+      Player,
+    ]);
 
     for (const eid of entities) {
-      const dx = Movement.dx[eid] ?? 0;
-      const dy = Movement.dy[eid] ?? 0;
+      // Get movement input using helper function
+      const { dx, dy } = getMovementInput(eid);
 
-      if (dx === 0 && dy === 0) continue;
+      if (dx === 0 && dy === 0) {
+        // Apply smoother damping when no input
+        Force.x[eid] = (Force.x[eid] ?? 0) * DAMPING;
+        Force.y[eid] = (Force.y[eid] ?? 0) * DAMPING;
+        continue;
+      }
 
       // Normalize diagonal movement
       const length = Math.hypot(dx, dy);
       const normalizedDx = dx / length;
       const normalizedDy = dy / length;
 
-      const newX = (Position.x[eid] ?? 0) + normalizedDx * MOVEMENT_SPEED;
-      const newY = (Position.y[eid] ?? 0) + normalizedDy * MOVEMENT_SPEED;
+      // Apply force based on movement direction and mass
+      const mass = RigidBody.mass[eid] ?? 1;
+      const scaledForce = MOVEMENT_FORCE / PIXELS_PER_METER; // Convert to world units
+      Force.x[eid] = normalizedDx * scaledForce * mass;
+      Force.y[eid] = normalizedDy * scaledForce * mass;
 
-      // Check canvas bounds with padding
-      const padding = CELL_SIZE / 2;
-      if (
-        newX >= padding &&
-        newX <= canvas.width - padding &&
-        newY >= padding &&
-        newY <= canvas.height - padding
-      ) {
-        Position.x[eid] = newX;
-        Position.y[eid] = newY;
+      // Clamp force to prevent excessive speed
+      const currentForce = Math.hypot(Force.x[eid] ?? 0, Force.y[eid] ?? 0);
+      if (currentForce > MAX_SPEED) {
+        const scale = MAX_SPEED / currentForce;
+        Force.x[eid] = (Force.x[eid] ?? 0) * scale;
+        Force.y[eid] = (Force.y[eid] ?? 0) * scale;
       }
     }
 

@@ -1,7 +1,7 @@
 import type { World } from "bitecs";
 import { query } from "bitecs";
 
-import { Position, Script } from "../components";
+import { Script, Transform } from "../components";
 
 // Script registry to store script functions
 type ScriptFunction = (eid: number, world: World, deltaTime: number) => void;
@@ -30,10 +30,10 @@ export function createOscillateScript(
     Script.state[eid] = offset;
 
     // Update position if entity has Position component
-    const entities = query(world, [Position]);
+    const entities = query(world, [Transform]);
     if (entities.includes(eid)) {
-      const baseY = Position.y[eid] ?? 0;
-      Position.y[eid] = baseY + offset;
+      const baseY = Transform.y[eid] ?? 0;
+      Transform.y[eid] = baseY + offset;
     }
   };
 }

@@ -38,7 +38,9 @@ export function DebugSidebarRight() {
         </Button>
       </SidebarHeader>
       <SidebarContent>
-        <EntityDetailsSidebar entityId={selectedEntityId} />
+        {selectedEntityId && (
+          <EntityDetailsSidebar entityId={selectedEntityId} />
+        )}
       </SidebarContent>
     </Sidebar>
   );

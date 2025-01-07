@@ -5,7 +5,7 @@ import {
   BoundingBox,
   Collidable,
   CurrentPlayer,
-  Position,
+  Transform,
   TriggerZone,
 } from "../components";
 
@@ -35,19 +35,19 @@ function checkOverlap(
 export function createTriggerSystem() {
   return function triggerSystem(world: World) {
     // Get the current player
-    const players = query(world, [CurrentPlayer, Position, BoundingBox]);
+    const players = query(world, [CurrentPlayer, Transform, BoundingBox]);
     if (players.length === 0) return world;
 
     const playerEid = players[0];
     if (!playerEid) return world;
-    const playerX = Position.x[playerEid] ?? 0;
-    const playerY = Position.y[playerEid] ?? 0;
+    const playerX = Transform.x[playerEid] ?? 0;
+    const playerY = Transform.y[playerEid] ?? 0;
     const playerWidth = BoundingBox.width[playerEid] ?? 0;
     const playerHeight = BoundingBox.height[playerEid] ?? 0;
 
     // Get all trigger zones
     const triggerEntities = query(world, [
-      Position,
+      Transform,
       BoundingBox,
       Collidable,
       TriggerZone,
@@ -59,8 +59,8 @@ export function createTriggerSystem() {
       // Skip if not a trigger type collider
       if (Collidable.isTrigger[triggerEid] !== 1) continue;
 
-      const triggerX = Position.x[triggerEid] ?? 0;
-      const triggerY = Position.y[triggerEid] ?? 0;
+      const triggerX = Transform.x[triggerEid] ?? 0;
+      const triggerY = Transform.y[triggerEid] ?? 0;
       const triggerWidth = BoundingBox.width[triggerEid] ?? 0;
       const triggerHeight = BoundingBox.height[triggerEid] ?? 0;
 

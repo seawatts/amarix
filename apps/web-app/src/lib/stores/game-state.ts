@@ -81,17 +81,15 @@ export const createGameStore = (initState: State = defaultInitState) => {
             const data: Record<string, unknown> = {};
 
             // Handle array-based components (TypedArrays)
+
             for (const [key, value] of Object.entries(component)) {
-              if (ArrayBuffer.isView(value)) {
-                data[key] = (value as unknown as ArrayLike<unknown>)[eid];
-              } else if (Array.isArray(value)) {
-                data[key] = value[eid];
-              }
+              if (key === "_name") continue;
+              data[key] = (value as any)[eid];
             }
 
             // Only add components that have data
             if (Object.keys(data).length > 0) {
-              componentData[(component as any)._name] = {
+              componentData[component._name as string] = {
                 component,
                 data,
               };

@@ -16,6 +16,21 @@ export class Renderer implements RenderSystem {
     this.layers.delete(name);
   }
 
+  private applyCameraTransform(context: RenderContext): void {
+    const { ctx, canvas, camera } = context;
+
+    // 1. Move to the center of the viewport
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+
+    // 2. Apply zoom and rotation
+    ctx.scale(camera.zoom, camera.zoom);
+    ctx.rotate(camera.rotation);
+
+    // 3. Move the world so the camera/target position is at the center
+    // We negate the camera position because we're moving the world opposite to the camera
+    ctx.translate(-camera.x, -camera.y);
+  }
+
   render(context: RenderContext): void {
     const { ctx, canvas } = context;
 
@@ -30,6 +45,11 @@ export class Renderer implements RenderSystem {
     for (const layer of sortedLayers) {
       // Save context state
       ctx.save();
+
+      // Apply camera transform unless the layer should ignore it
+      if (!layer.ignoreCamera) {
+        this.applyCameraTransform(context);
+      }
 
       // Render layer
       layer.render(context);

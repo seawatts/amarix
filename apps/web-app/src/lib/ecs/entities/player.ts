@@ -8,25 +8,39 @@ import {
   Collidable,
   CollisionMask,
   CurrentPlayer,
+  Debug,
   Force,
   Gravity,
   Health,
   KeyboardState,
   MouseState,
-  Movement,
   Named,
   Player,
   Polygon,
-  Position,
   RigidBody,
   Sound,
   Sprite,
+  Transform,
   Velocity,
 } from "../components";
+import { createDebug } from "./debug";
 
-const PLAYER_SIZE = 100;
+// Physics scale
+const PIXELS_PER_METER = 100; // 1 meter = 100 pixels
+
+// Player dimensions (1 meter x 1 meter)
+const PLAYER_SIZE = PIXELS_PER_METER;
+
+// Physics constants
+const GRAVITY = 9.81 * PIXELS_PER_METER; // m/s² scaled to pixels
+const PLAYER_MASS = 70; // kg
+const PLAYER_FRICTION = 0.2; // Increased friction for better control
+const PLAYER_RESTITUTION = 0.1; // Reduced bounciness
+const PLAYER_LINEAR_DAMPING = 0.9; // Increased air resistance for better control
+const PLAYER_ANGULAR_DAMPING = 0.95; // Increased rotational resistance
+
+// Game constants
 const INITIAL_HEALTH = 100;
-const GRAVITY = 9.81; // m/s²
 const PLAYER_FOOTSTEP = "/sounds/footstep.mp3";
 
 const PLAYER_ANIMATIONS = {
@@ -84,8 +98,7 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   addComponent(
     world,
     playerEid,
-    Position,
-    Movement,
+    Transform,
     Player,
     Health,
     CurrentPlayer,
@@ -103,19 +116,35 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
     Velocity,
     Force,
     Named,
+    Debug,
   );
-  Clickable.isClicked[playerEid] = 0;
+
   // Set player values
-  Position.x[playerEid] = options.x;
-  Position.y[playerEid] = options.y;
-  Movement.dx[playerEid] = 0;
-  Movement.dy[playerEid] = 0;
+  Transform.x[playerEid] = options.x;
+  Transform.y[playerEid] = options.y;
+  Transform.rotation[playerEid] = 0;
+  Transform.scaleX[playerEid] = 1;
+  Transform.scaleY[playerEid] = 1;
   Player.eid[playerEid] = 1;
   Health.current[playerEid] = INITIAL_HEALTH;
   Health.max[playerEid] = INITIAL_HEALTH;
   CurrentPlayer.eid[playerEid] = 1;
+
+  // Set physics values for player
+  Velocity.x[playerEid] = 0;
+  Velocity.y[playerEid] = 0;
+  Acceleration.x[playerEid] = 0;
+  Acceleration.y[playerEid] = 0;
   Force.x[playerEid] = 0;
   Force.y[playerEid] = 0;
+  RigidBody.mass[playerEid] = PLAYER_MASS;
+  RigidBody.friction[playerEid] = PLAYER_FRICTION;
+  RigidBody.restitution[playerEid] = PLAYER_RESTITUTION;
+  RigidBody.isStatic[playerEid] = 0;
+  RigidBody.linearDamping[playerEid] = PLAYER_LINEAR_DAMPING;
+  RigidBody.angularDamping[playerEid] = PLAYER_ANGULAR_DAMPING;
+  Gravity.x[playerEid] = 0;
+  Gravity.y[playerEid] = GRAVITY;
 
   // Set player polygon
   const playerBox = createBoxPolygon(PLAYER_SIZE, PLAYER_SIZE);
@@ -127,23 +156,15 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   Polygon.verticesX[playerEid] = playerBox.x;
   Polygon.verticesY[playerEid] = playerBox.y;
 
-  // Set physics values for player
-  Velocity.x[playerEid] = 0;
-  Velocity.y[playerEid] = 0;
-  Acceleration.x[playerEid] = 0;
-  Acceleration.y[playerEid] = 0;
-  RigidBody.mass[playerEid] = 70;
-  RigidBody.friction[playerEid] = 0;
-  RigidBody.restitution[playerEid] = 0;
-  RigidBody.isStatic[playerEid] = 0;
-  Gravity.x[playerEid] = 0;
-  Gravity.y[playerEid] = GRAVITY;
-
   // Set collision values for player
   Collidable.isActive[playerEid] = 1;
   Collidable.isTrigger[playerEid] = 0;
-  Collidable.layer[playerEid] = 1; // Player layer
-  Collidable.mask[playerEid] = CollisionMask.Player;
+  Collidable.layer[playerEid] = CollisionMask.Player;
+  Collidable.mask[playerEid] =
+    CollisionMask.Wall |
+    CollisionMask.NPC |
+    CollisionMask.Item |
+    CollisionMask.Trigger;
 
   // Initialize keyboard state
   KeyboardState.keys[playerEid] = 0;
@@ -171,11 +192,10 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   Sound.panX[playerEid] = 0;
   Sound.panY[playerEid] = 0;
   Sound.maxDistance[playerEid] = 500;
-  Force.x[playerEid] = 0;
-  Force.y[playerEid] = GRAVITY; // Apply gravity force
 
   // Set name
   Named.name[playerEid] = "Player";
+  createDebug(playerEid);
 
   return playerEid;
 }
