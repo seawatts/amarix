@@ -22,12 +22,13 @@ export class Renderer implements RenderSystem {
     // 1. Move to the center of the viewport
     ctx.translate(canvas.width / 2, canvas.height / 2);
 
-    // 2. Apply zoom and rotation
+    // 2. Apply zoom
     ctx.scale(camera.zoom, camera.zoom);
+
+    // 3. Apply rotation
     ctx.rotate(camera.rotation);
 
-    // 3. Move the world so the camera/target position is at the center
-    // We negate the camera position because we're moving the world opposite to the camera
+    // 4. Move world opposite to camera position
     ctx.translate(-camera.x, -camera.y);
   }
 
@@ -43,19 +44,21 @@ export class Renderer implements RenderSystem {
     );
 
     for (const layer of sortedLayers) {
-      // Save context state
+      // Save context state before any transformations
       ctx.save();
 
-      // Apply camera transform unless the layer should ignore it
-      if (!layer.ignoreCamera) {
-        this.applyCameraTransform(context);
+      try {
+        // Apply camera transform unless the layer should ignore it
+        if (!layer.ignoreCamera) {
+          this.applyCameraTransform(context);
+        }
+
+        // Render layer
+        layer.render(context);
+      } finally {
+        // Always restore context state, even if rendering fails
+        ctx.restore();
       }
-
-      // Render layer
-      layer.render(context);
-
-      // Restore context state
-      ctx.restore();
     }
   }
 }

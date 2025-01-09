@@ -1,87 +1,121 @@
-import type { World } from "bitecs";
+import type { createWorld } from "bitecs";
 import { query } from "bitecs";
 
 import { Animation, Sprite } from "../components";
 
-// Animation sequence definition
 interface AnimationSequence {
   frames: number[];
   frameDuration: number;
-  isLooping?: boolean;
+  isLooping: boolean;
 }
 
-// Animation registry to store animation sequences
-type AnimationRegistry = Record<string, Record<string, AnimationSequence>>;
+type AnimationMap = Record<string, AnimationSequence>;
 
-// Cache for animation sequences
-const animationRegistry: AnimationRegistry = {};
+export const animationRegistry: Record<string, AnimationMap> = {};
 
-// Register an animation sequence for a sprite
 export function registerAnimation(
-  spriteId: string,
+  spriteSource: string,
   sequenceName: string,
   sequence: AnimationSequence,
-) {
-  if (!animationRegistry[spriteId]) {
-    animationRegistry[spriteId] = {};
+): void {
+  if (!animationRegistry[spriteSource]) {
+    animationRegistry[spriteSource] = {};
   }
-  animationRegistry[spriteId][sequenceName] = sequence;
+  animationRegistry[spriteSource][sequenceName] = sequence;
 }
 
-// Create the animation system
+function getAnimationSequence(
+  spriteSource: string,
+  sequenceName: string,
+): AnimationSequence | undefined {
+  const spriteAnimations = animationRegistry[spriteSource];
+  if (!spriteAnimations || typeof spriteAnimations !== "object") {
+    return undefined;
+  }
+
+  const sequence = spriteAnimations[sequenceName];
+  if (!sequence || typeof sequence !== "object") {
+    return undefined;
+  }
+
+  if (
+    !Array.isArray(sequence.frames) ||
+    typeof sequence.frameDuration !== "number"
+  ) {
+    return undefined;
+  }
+
+  return sequence;
+}
+
 export function createAnimationSystem() {
-  return function animationSystem(world: World) {
+  return (world: ReturnType<typeof createWorld>, deltaTime: number) => {
     const entities = query(world, [Animation, Sprite]);
 
     for (const eid of entities) {
-      // Skip if animation is not playing
-      if (!(Animation.isPlaying[eid] ?? 0)) continue;
+      // Skip if not playing
+      if ((Animation.isPlaying[eid] ?? 0) !== 1) {
+        Animation.timer[eid] = 0;
+        continue;
+      }
 
-      const spriteSource = Sprite.src[eid];
-      const sequenceName = Animation.currentSequence[eid];
+      // Get animation sequence
+      const maybeSpriteSource = Sprite.src[eid];
+      const maybeSequenceName = Animation.currentSequence[eid];
 
       if (
-        typeof spriteSource !== "string" ||
-        typeof sequenceName !== "string" ||
-        !spriteSource ||
-        !sequenceName
-      )
-        continue;
-
-      const spriteAnimations = animationRegistry[spriteSource];
-      if (!spriteAnimations) continue;
-
-      const sequence = spriteAnimations[sequenceName];
-      if (!sequence) continue;
-
-      // Update animation timer
-      const timer = (Animation.timer[eid] ?? 0) + 1000 / 60; // Add one frame at 60fps
-      Animation.timer[eid] = timer;
-
-      const frameDuration =
-        Animation.frameDuration[eid] ?? sequence.frameDuration;
-      if (timer >= frameDuration) {
-        // Reset timer
+        typeof maybeSpriteSource !== "string" ||
+        typeof maybeSequenceName !== "string" ||
+        maybeSpriteSource === "" ||
+        maybeSequenceName === ""
+      ) {
         Animation.timer[eid] = 0;
+        continue;
+      }
 
+      const sequence = getAnimationSequence(
+        maybeSpriteSource,
+        maybeSequenceName,
+      );
+      if (!sequence) {
+        Animation.timer[eid] = 0;
+        continue;
+      }
+
+      // Initialize timer if undefined
+      if (Animation.timer[eid] === undefined) {
+        Animation.timer[eid] = 0;
+      }
+
+      // Update timer
+      Animation.timer[eid] = (Animation.timer[eid] ?? 0) + deltaTime * 1000;
+
+      // Check if it's time for next frame
+      if ((Animation.timer[eid] ?? 0) >= sequence.frameDuration) {
         // Get current frame index
         const currentFrame = Sprite.frame[eid] ?? 0;
         const frameIndex = sequence.frames.indexOf(currentFrame);
         const nextFrameIndex = frameIndex + 1;
 
-        if (nextFrameIndex >= sequence.frames.length) {
-          // End of sequence
-          if (Animation.isLooping[eid] ?? sequence.isLooping ?? false) {
-            // Loop back to start
-            Sprite.frame[eid] = sequence.frames[0] ?? 0;
-          } else {
-            // Stop animation
-            Animation.isPlaying[eid] = 0;
+        // Update frame
+        if (nextFrameIndex < sequence.frames.length) {
+          const nextFrame = sequence.frames[nextFrameIndex];
+          if (typeof nextFrame === "number") {
+            Sprite.frame[eid] = nextFrame;
+          }
+        } else if (sequence.isLooping) {
+          // Loop back to first frame
+          const firstFrame = sequence.frames[0];
+          if (typeof firstFrame === "number") {
+            Sprite.frame[eid] = firstFrame;
           }
         } else {
-          // Advance to next frame
-          Sprite.frame[eid] = sequence.frames[nextFrameIndex] ?? 0;
+          // Stop animation if not looping
+          Animation.isPlaying[eid] = 0;
         }
+
+        // Reset timer
+        Animation.timer[eid] = 0;
       }
     }
 

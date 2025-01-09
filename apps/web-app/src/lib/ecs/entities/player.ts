@@ -170,8 +170,8 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   KeyboardState.keys[playerEid] = 0;
 
   // Initialize mouse state
-  MouseState.x[playerEid] = 0;
-  MouseState.y[playerEid] = 0;
+  MouseState.screenX[playerEid] = 0;
+  MouseState.screenY[playerEid] = 0;
   MouseState.buttonsDown[playerEid] = 0;
   MouseState.hoveredEntity[playerEid] = 0;
   MouseState.clickedEntity[playerEid] = 0;

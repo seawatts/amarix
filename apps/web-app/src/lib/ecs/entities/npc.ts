@@ -127,12 +127,17 @@ export function createNPC(world: World, options: CreateNPCOptions) {
   Velocity.y[eid] = 0;
   Acceleration.x[eid] = 0;
   Acceleration.y[eid] = 0;
+  Force.x[eid] = 0;
+  Force.y[eid] = 0;
   RigidBody.mass[eid] = NPC_MASS;
   RigidBody.friction[eid] = NPC_FRICTION;
   RigidBody.restitution[eid] = NPC_RESTITUTION;
   RigidBody.isStatic[eid] = 0;
   RigidBody.linearDamping[eid] = NPC_LINEAR_DAMPING;
   RigidBody.angularDamping[eid] = NPC_ANGULAR_DAMPING;
+  RigidBody.angularVelocity[eid] = 0;
+  RigidBody.momentOfInertia[eid] = (NPC_MASS * (NPC_SIZE * NPC_SIZE)) / 12; // For a square
+  RigidBody.rotation[eid] = 0;
   Gravity.x[eid] = 0;
   Gravity.y[eid] = GRAVITY;
 

@@ -2,7 +2,6 @@ import { createWorld } from "bitecs";
 
 import {
   createCamera,
-  createDebug,
   createGround,
   createHostileNPC,
   createNPC,
@@ -81,17 +80,6 @@ function getRandomGridPosition(
 export function createGameWorld(canvas: HTMLCanvasElement) {
   // Create the world first
   const world = createWorld();
-
-  // Create debug entity first (so it has ID 1)
-  createDebug(world, {
-    logLevel: 3, // INFO level
-    showBoundingBox: false,
-    showColliders: false,
-    showForceVectors: false,
-    showOrigin: false,
-    showTriggerZones: false,
-    showVelocityVector: false,
-  });
 
   // Register animations
   for (const [name, sequence] of Object.entries(PLAYER_ANIMATIONS)) {

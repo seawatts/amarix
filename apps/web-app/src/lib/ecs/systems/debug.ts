@@ -1,9 +1,10 @@
 import type { World } from "bitecs";
-import { addEntity } from "bitecs";
+import { query } from "bitecs";
 
 import type { DebugStore } from "~/lib/stores/debug";
 import type { GameStore } from "~/lib/stores/game-state";
-import { Debug } from "../components";
+import { Debug, KeyboardState, MouseState } from "../components";
+import { isCommandKeyDown } from "../utils/keyboard";
 
 interface DebugSystemContext {
   debugStore: DebugStore;
@@ -15,99 +16,69 @@ export function createDebugSystem(
   debugStore: DebugStore,
   gameStore: GameStore,
 ) {
-  let debugEntity: number | null = null;
-  let lastPerformanceUpdate = performance.now();
+  const lastPerformanceUpdate = { value: performance.now() };
   const PERFORMANCE_UPDATE_INTERVAL = 1000; // Update every second
 
-  return function debugSystem(world: World, deltaTime: number): World {
+  return function debugSystem(world: World, _deltaTime: number): World {
     const context: DebugSystemContext = {
       debugStore,
       gameStore,
       world,
     };
 
-    // Create debug entity if it doesn't exist
-    if (!debugEntity) {
-      debugEntity = addEntity(world);
-      // Initialize the debug component for this entity
-      for (const key of Object.keys(Debug)) {
-        if (
-          key !== "_name" &&
-          Array.isArray(Debug[key as keyof typeof Debug])
-        ) {
-          (Debug[key as keyof typeof Debug] as Float32Array | Uint8Array)[
-            debugEntity
-          ] = 0;
-        }
-      }
-      initializeDebugEntity(debugEntity, context);
-    }
-
-    // Update debug entity
-    if (debugEntity) {
-      updateDebugEntity(debugEntity, deltaTime, context);
-    }
-
     // Update performance metrics periodically
     const currentTime = performance.now();
-    if (currentTime - lastPerformanceUpdate > PERFORMANCE_UPDATE_INTERVAL) {
+    if (
+      currentTime - lastPerformanceUpdate.value >
+      PERFORMANCE_UPDATE_INTERVAL
+    ) {
       updatePerformanceMetrics(context);
-      lastPerformanceUpdate = currentTime;
+      lastPerformanceUpdate.value = currentTime;
     }
 
-    // Sync debug store state with components
-    if (debugEntity) {
-      syncDebugStoreState(debugEntity, context);
+    // Get all entities with Debug components
+    const debugEntities = query(world, [Debug, KeyboardState, MouseState]);
+
+    for (const eid of debugEntities) {
+      const isCommandPressed = isCommandKeyDown(eid);
+
+      if (isCommandPressed) {
+        // Show bounding box when hovering with command key pressed
+        if (Debug.hoveredEntity[eid] === 1) {
+          Debug.showBoundingBox[eid] = 1;
+          debugStore.visualizations.showBoundingBoxes = true;
+          debugStore.toggleVisualization("showBoundingBoxes");
+        }
+
+        // Handle entity selection on command + click
+        if (Debug.clickedEntity[eid] === 1) {
+          Debug.isSelected[eid] = 1;
+          debugStore.selectedEntityId = eid;
+          debugStore.setSelectedEntityId(eid);
+        }
+      } else {
+        // Reset debug flags when command key is not pressed
+        Debug.showBoundingBox[eid] = 0;
+        Debug.showColliders[eid] = 0;
+        Debug.showForceVectors[eid] = 0;
+        Debug.showVelocityVector[eid] = 0;
+        Debug.showTriggerZones[eid] = 0;
+
+        // Reset selection when command key is released
+        Debug.isSelected[eid] = 0;
+        debugStore.selectedEntityId = null;
+        debugStore.setSelectedEntityId(null);
+      }
+
+      // Sync debug store state with components
+      syncDebugStoreState(eid, context);
     }
+
+    // Update game store
+    // gameStore.update(world);
 
     return world;
   };
-}
-
-function initializeDebugEntity(entity: number, context: DebugSystemContext) {
-  const { debugStore } = context;
-
-  // Initialize debug component values from store
-  Debug.showBoundingBox[entity] = Number(
-    debugStore.visualizations.showBoundingBoxes,
-  );
-  Debug.showColliders[entity] = Number(
-    debugStore.visualizations.showCollisionPoints,
-  );
-  Debug.showForceVectors[entity] = Number(
-    debugStore.visualizations.showForceVectors,
-  );
-  Debug.showVelocityVector[entity] = Number(
-    debugStore.visualizations.showVelocityVectors,
-  );
-  Debug.showTriggerZones[entity] = Number(
-    debugStore.visualizations.showTriggerZones,
-  );
-  Debug.showOrigin[entity] = 0;
-  Debug.isPaused[entity] = 0;
-  Debug.stepFrame[entity] = 0;
-  Debug.logLevel[entity] = 3; // Default to INFO level
-}
-
-function updateDebugEntity(
-  entity: number,
-  deltaTime: number,
-  context: DebugSystemContext,
-) {
-  const { debugStore, gameStore } = context;
-
-  // Update timing metrics
-  Debug.frameTime[entity] = deltaTime * 1000;
-  Debug.updateTime[entity] = performance.now() - gameStore.lastFrameTime;
-  Debug.physicsTime[entity] =
-    gameStore.metrics?.performance.systems.physics ?? 0;
-  Debug.renderTime[entity] = gameStore.metrics?.performance.systems.render ?? 0;
-
-  // Update last updated timestamp
-  Debug.lastUpdated[entity] = performance.now();
-
-  // Update selected state
-  Debug.isSelected[entity] = Number(debugStore.selectedEntityId === entity);
 }
 
 function updatePerformanceMetrics(context: DebugSystemContext) {
@@ -119,28 +90,33 @@ function updatePerformanceMetrics(context: DebugSystemContext) {
   // Update memory usage
   if (performance.memory) {
     metrics.performance.memoryUsage = performance.memory.usedJSHeapSize;
+    gameStore.metrics = metrics; // Update the store's metrics
+    // gameStore.update(context.world);
   }
 }
 
 function syncDebugStoreState(entity: number, context: DebugSystemContext) {
   const { debugStore } = context;
 
-  const setVisualization = (
-    key: keyof DebugStore["visualizations"],
-    value: boolean,
-  ) => {
-    if (debugStore.visualizations[key] !== value) {
-      debugStore.toggleVisualization(key);
-    }
-  };
-
   // Sync visualizations
-  setVisualization("showBoundingBoxes", Boolean(Debug.showBoundingBox[entity]));
-  setVisualization("showCollisionPoints", Boolean(Debug.showColliders[entity]));
-  setVisualization("showForceVectors", Boolean(Debug.showForceVectors[entity]));
-  setVisualization(
-    "showVelocityVectors",
-    Boolean(Debug.showVelocityVector[entity]),
-  );
-  setVisualization("showTriggerZones", Boolean(Debug.showTriggerZones[entity]));
+  if (Debug.showBoundingBox[entity] === 1) {
+    debugStore.visualizations.showBoundingBoxes = true;
+    debugStore.toggleVisualization("showBoundingBoxes");
+  }
+  if (Debug.showColliders[entity] === 1) {
+    debugStore.visualizations.showCollisionPoints = true;
+    debugStore.toggleVisualization("showCollisionPoints");
+  }
+  if (Debug.showForceVectors[entity] === 1) {
+    debugStore.visualizations.showForceVectors = true;
+    debugStore.toggleVisualization("showForceVectors");
+  }
+  if (Debug.showVelocityVector[entity] === 1) {
+    debugStore.visualizations.showVelocityVectors = true;
+    debugStore.toggleVisualization("showVelocityVectors");
+  }
+  if (Debug.showTriggerZones[entity] === 1) {
+    debugStore.visualizations.showTriggerZones = true;
+    debugStore.toggleVisualization("showTriggerZones");
+  }
 }

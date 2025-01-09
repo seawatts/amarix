@@ -1,6 +1,7 @@
 /* eslint-disable unicorn/prefer-math-trunc */
 // Position component for storing entity position
 const baseInitializationSize = 10_000;
+
 export const Transform = {
   _name: "Transform",
   rotation: new Float32Array(baseInitializationSize),
@@ -143,9 +144,14 @@ export const MouseState = {
   // Entity being hovered over (0 if none)
   hoveredEntity: new Uint32Array(baseInitializationSize),
 
-  // Current mouse position in canvas coordinates
-  x: new Float32Array(baseInitializationSize),
-  y: new Float32Array(baseInitializationSize),
+  // Current mouse position in screen coordinates
+  screenX: new Float32Array(baseInitializationSize),
+
+  screenY: new Float32Array(baseInitializationSize),
+
+  // Current mouse position in world coordinates
+  worldX: new Float32Array(baseInitializationSize),
+  worldY: new Float32Array(baseInitializationSize),
 } as const;
 
 // BoundingBox component for collision detection and interaction areas
@@ -398,6 +404,10 @@ export const Scene = {
   isTransitioning: new Uint8Array(baseInitializationSize),
   // Next scene to transition to
   next: Array.from<string>({ length: 1 }).fill(""),
+
+  // Scene transition duration in milliseconds
+  transitionDuration: new Float32Array(baseInitializationSize),
+
   // Scene transition progress (0-1)
   transitionProgress: new Float32Array(baseInitializationSize),
 } as const;
@@ -486,11 +496,14 @@ export const Named = {
 
 export const Debug = {
   _name: "Debug",
+  clickedEntity: new Uint8Array(baseInitializationSize),
   frameTime: new Float32Array(baseInitializationSize),
+  hoveredEntity: new Uint8Array(baseInitializationSize),
   isPaused: new Uint8Array(baseInitializationSize),
   isSelected: new Uint8Array(baseInitializationSize),
   lastUpdated: new Float32Array(baseInitializationSize),
-  logLevel: new Uint8Array(baseInitializationSize), // 0=none, 1=error, 2=warn, 3=info, 4=debug
+  logLevel: new Uint8Array(baseInitializationSize),
+  // 0=none, 1=error, 2=warn, 3=info, 4=debug
   physicsTime: new Float32Array(baseInitializationSize),
   renderTime: new Float32Array(baseInitializationSize),
   showBoundingBox: new Uint8Array(baseInitializationSize),

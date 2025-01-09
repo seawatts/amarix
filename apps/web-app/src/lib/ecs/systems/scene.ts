@@ -28,7 +28,7 @@ export function changeScene(
   world: World,
   sceneName: string,
   data?: Record<string, unknown>,
-  _transitionDuration = 500,
+  transitionDuration = 500,
 ) {
   const sceneEntities = query(world, [Scene]);
   const sceneEid = sceneEntities[0] ?? addEntity(world);
@@ -37,13 +37,12 @@ export function changeScene(
     addComponent(world, sceneEid, Scene);
   }
 
-  if (typeof sceneEid === "number") {
-    // Start transition
-    Scene.next[sceneEid] = sceneName;
-    Scene.isTransitioning[sceneEid] = 1;
-    Scene.transitionProgress[sceneEid] = 0;
-    Scene.data[sceneEid] = data ?? {};
-  }
+  // Start transition - use index 0 for global state
+  Scene.next[0] = sceneName;
+  Scene.isTransitioning[sceneEid] = 1;
+  Scene.transitionProgress[sceneEid] = 0;
+  Scene.data[sceneEid] = data ?? {};
+  Scene.transitionDuration[sceneEid] = transitionDuration;
 }
 
 // Create the scene system
@@ -55,14 +54,18 @@ export function createSceneSystem() {
     const sceneEid = entities[0];
     if (typeof sceneEid !== "number") return world;
 
-    const currentScene = Scene.current[sceneEid];
-    const nextScene = Scene.next[sceneEid];
+    const currentScene = Scene.current[0] ?? "";
+    const nextScene = Scene.next[0] ?? "";
     const isTransitioning = Scene.isTransitioning[sceneEid] === 1;
 
     // Handle scene transition
     if (isTransitioning) {
       const progress = Scene.transitionProgress[sceneEid] ?? 0;
-      const nextProgress = Math.min(1, progress + 1 / 60); // Assuming 60fps
+      const transitionDuration = Scene.transitionDuration[sceneEid] ?? 500;
+      const nextProgress = Math.min(
+        1,
+        progress + 1000 / 60 / transitionDuration,
+      ); // Assuming 60fps
       Scene.transitionProgress[sceneEid] = nextProgress;
 
       // Complete transition
@@ -76,17 +79,15 @@ export function createSceneSystem() {
         }
 
         // Enter next scene
-        if (nextScene) {
-          Scene.current[sceneEid] = nextScene;
-          Scene.next[sceneEid] = "";
-          Scene.isTransitioning[sceneEid] = 0;
-          Scene.transitionProgress[sceneEid] = 0;
-
-          const nextConfig = sceneRegistry.get(nextScene);
-          if (nextConfig?.onEnter) {
-            nextConfig.onEnter(world, Scene.data[sceneEid]);
-          }
+        const nextConfig = sceneRegistry.get(nextScene);
+        if (nextConfig?.onEnter) {
+          nextConfig.onEnter(world, Scene.data[sceneEid]);
         }
+
+        Scene.current[0] = nextScene;
+        Scene.next[0] = "";
+        Scene.isTransitioning[sceneEid] = 0;
+        Scene.transitionProgress[sceneEid] = 0;
       }
     }
     // Update current scene
@@ -99,6 +100,11 @@ export function createSceneSystem() {
 
     return world;
   };
+}
+
+// Clear scene registry (for testing)
+export function clearSceneRegistry() {
+  sceneRegistry.clear();
 }
 
 // Example scenes

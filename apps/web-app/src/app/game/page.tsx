@@ -2,6 +2,12 @@
 
 import { useEffect, useRef } from "react";
 
+import {
+  FloatingToolbar,
+  FloatingToolbarButton,
+  FloatingToolbarSeparator,
+} from "@acme/ui/floating-toolbar";
+import { Icons } from "@acme/ui/icons";
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
 import { DebugSidebarLeft } from "~/components/debug-sidebar/sidebar-left";
@@ -85,7 +91,7 @@ export default function GamePage() {
     const handleMouseMove = (event: MouseEvent) => {
       const playerEid = newEngine.getPlayerEid();
       const { x, y } = getCanvasCoordinates(event, canvas);
-      updateMousePosition(playerEid, x, y);
+      updateMousePosition(playerEid, x, y, x, y);
     };
 
     const handleMouseDown = (event: MouseEvent) => {
@@ -135,10 +141,25 @@ export default function GamePage() {
             ref={canvasRef}
             className="h-full w-full bg-white"
             style={{
-              imageRendering: "pixelated",
+              imageRendering: "auto",
             }}
           />
           <NPCInteractionManager />
+          <FloatingToolbar>
+            <FloatingToolbarButton icon={<Icons.ArrowRight size="sm" />} />
+            <FloatingToolbarSeparator />
+            <FloatingToolbarButton icon={<Icons.Flame size="sm" />} />
+            <FloatingToolbarButton icon={<Icons.Text size="sm" />} />
+            <FloatingToolbarButton icon={<Icons.Circle size="sm" />} />
+            <FloatingToolbarButton icon={<Icons.UsersRound size="sm" />} />
+            <FloatingToolbarSeparator />
+            <FloatingToolbarButton
+              icon={<Icons.Command size="sm" />}
+              variant={
+                debugStore.selectedEntityId === null ? undefined : "secondary"
+              }
+            />
+          </FloatingToolbar>
         </main>
       </SidebarInset>
       <DebugSidebarRight />

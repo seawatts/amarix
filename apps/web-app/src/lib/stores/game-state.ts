@@ -14,7 +14,7 @@ interface State {
   world: ReturnType<typeof createWorld> | null;
 }
 
-interface GameMetrics {
+export interface GameMetrics {
   entities: {
     id: number;
     name?: string;
@@ -36,6 +36,14 @@ interface GameMetrics {
 
 type ComponentType = Record<string, unknown>;
 
+interface ExtendedPerformance extends Performance {
+  memory?: {
+    usedJSHeapSize: number;
+    jsHeapSizeLimit: number;
+    totalJSHeapSize: number;
+  };
+}
+
 export const defaultInitState: State = {
   engine: null,
   lastFrameTime: 0,
@@ -53,14 +61,16 @@ export type GameStore = State & {
 export const createGameStore = (initState: State = defaultInitState) => {
   return createStore<GameStore>((set, get) => ({
     ...initState,
-    reset: () => set(defaultInitState),
+    reset: () => {
+      set(defaultInitState);
+    },
     setEngine: (engine) => set({ engine }),
     setWorld: (world) => set({ world }),
     update: (world, systemPerformance: Record<string, number> = {}) => {
       const currentTime = performance.now();
       const lastFrameTime = get().lastFrameTime;
       const frameTime = currentTime - lastFrameTime;
-      const fps = 1000 / frameTime;
+      const fps = Math.round(1000 / frameTime);
 
       // Get all entities and their components
       const allEntities = getAllEntities(world);
@@ -79,27 +89,70 @@ export const createGameStore = (initState: State = defaultInitState) => {
           for (const component of components) {
             // Get the component data
             const data: Record<string, unknown> = {};
+            const componentName = component._name as string;
 
             // Handle array-based components (TypedArrays)
-
             for (const [key, value] of Object.entries(component)) {
               if (key === "_name") continue;
-              data[key] = (value as any)[eid];
+
+              // Handle string arrays
+              if (Array.isArray(value)) {
+                if (value[eid] !== undefined) {
+                  data[key] = value[eid];
+                }
+              }
+              // Handle TypedArrays
+              else if (ArrayBuffer.isView(value)) {
+                const arrayValue = value as
+                  | Float32Array
+                  | Int32Array
+                  | Uint32Array
+                  | Uint8Array;
+                if (arrayValue[eid] !== undefined) {
+                  data[key] = arrayValue[eid];
+                }
+              }
             }
 
             // Only add components that have data
             if (Object.keys(data).length > 0) {
-              componentData[component._name as string] = {
+              componentData[componentName] = {
                 component,
                 data,
               };
             }
           }
 
+          // Get entity name from Named or Debug component
+          let name = Named.name[eid];
+          if (name === undefined && Debug.toString[eid]) {
+            name = Debug.toString[eid]?.();
+          }
+
+          // Add Named component if it exists
+          if (Named.name[eid] !== undefined) {
+            componentData.Named = {
+              component: Named,
+              data: {
+                name: Named.name[eid],
+              },
+            };
+          }
+
+          // Add Debug component if it exists
+          if (Debug.toString[eid]) {
+            componentData.Debug = {
+              component: Debug,
+              data: {
+                toString: Debug.toString[eid],
+              },
+            };
+          }
+
           return {
             components: componentData,
             id: eid,
-            name: Named.name[eid] ?? Debug.toString[eid]?.(),
+            name,
           };
         });
 
@@ -108,10 +161,11 @@ export const createGameStore = (initState: State = defaultInitState) => {
         performance: {
           fps,
           frameTime,
-          memoryUsage: performance.memory?.usedJSHeapSize ?? 0,
+          memoryUsage:
+            (performance as ExtendedPerformance).memory?.usedJSHeapSize ?? 0,
           systems: {
             ...systemPerformance,
-            GameState: performance.now() - currentTime,
+            GameState: Math.round(performance.now() - currentTime),
           },
         },
       };

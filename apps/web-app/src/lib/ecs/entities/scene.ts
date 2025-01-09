@@ -13,7 +13,7 @@ export function createScene(world: World, options: CreateSceneOptions) {
   // Add scene components
   addComponent(world, eid, Scene, Named, Debug);
 
-  // Set scene values
+  // Set scene values - use index 0 for global state
   Scene.current[0] = options.initialScene;
   Scene.isTransitioning[eid] = 0;
   Scene.next[0] = "";

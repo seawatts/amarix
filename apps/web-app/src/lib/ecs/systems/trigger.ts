@@ -112,6 +112,7 @@ export function createTriggerSystem() {
           }
           default: {
             console.warn(`Unknown trigger type: ${triggerType}`);
+            return world;
           }
         }
 

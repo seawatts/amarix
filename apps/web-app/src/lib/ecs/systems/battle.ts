@@ -76,8 +76,10 @@ export function createBattleSystem() {
             // Initialize battle
             addComponent(world, playerEid, InBattle);
             addComponent(world, npcEid, InBattle);
-            BattleState.isActive[playerEid] = 1;
-            BattleState.turn[playerEid] = 0; // Player's turn first
+            addComponent(world, playerEid, Health);
+            addComponent(world, npcEid, Health);
+            addComponent(world, playerEid, BattleAction);
+            addComponent(world, playerEid, ValidActions);
 
             // Initialize health
             Health.current[playerEid] = INITIAL_HEALTH;
@@ -96,9 +98,19 @@ export function createBattleSystem() {
               (BATTLE_GRID_SIZE / 2) * CELL_SIZE;
             BattleState.enemyPosition.y[playerEid] = 0;
 
+            // Initialize battle state
+            BattleState.isActive[playerEid] = 1;
+            BattleState.turn[playerEid] = 0; // Player's turn first
+
             // Stop movement
             Movement.dx[playerEid] = 0;
             Movement.dy[playerEid] = 0;
+
+            // Initialize valid actions
+            ValidActions.cells[playerEid] = getValidMoves(
+              BattleState.playerPosition.x[playerEid],
+              BattleState.playerPosition.y[playerEid],
+            );
           }
         }
       }
@@ -120,12 +132,19 @@ export function createBattleSystem() {
           const enemyXPos = BattleState.enemyPosition.x[playerEid] ?? 0;
           const enemyYPos = BattleState.enemyPosition.y[playerEid] ?? 0;
 
-          ValidActions.cells[playerEid] = [
-            ...getValidMoves(playerXPos, playerYPos),
-            ...(isAdjacent(playerXPos, playerYPos, enemyXPos, enemyYPos)
-              ? [{ x: enemyXPos, y: enemyYPos }]
-              : []),
-          ];
+          // Get valid moves and attack positions
+          const validMoves = getValidMoves(playerXPos, playerYPos);
+          const attackPositions = isAdjacent(
+            playerXPos,
+            playerYPos,
+            enemyXPos,
+            enemyYPos,
+          )
+            ? [{ x: enemyXPos, y: enemyYPos }]
+            : [];
+
+          // Store valid actions
+          ValidActions.cells[playerEid] = [...validMoves, ...attackPositions];
 
           // Handle player action if one was chosen
           const actionType = BattleAction.type[playerEid];
@@ -134,14 +153,23 @@ export function createBattleSystem() {
             const targetY = BattleAction.targetY[playerEid] ?? 0;
 
             if (actionType === "move") {
-              BattleState.playerPosition.x[playerEid] = targetX;
-              BattleState.playerPosition.y[playerEid] = targetY;
-            } else if (
-              actionType === "attack" &&
-              isAdjacent(playerXPos, playerYPos, enemyXPos, enemyYPos) &&
-              Health.current[enemyEid] !== undefined
-            ) {
-              Health.current[enemyEid] -= ATTACK_DAMAGE;
+              // Verify move is valid
+              const isValidMove = validMoves.some(
+                (move) => move.x === targetX && move.y === targetY,
+              );
+              if (isValidMove) {
+                BattleState.playerPosition.x[playerEid] = targetX;
+                BattleState.playerPosition.y[playerEid] = targetY;
+              }
+            } else if (actionType === "attack") {
+              // Verify attack is valid
+              const isValidAttack = attackPositions.some(
+                (pos) => pos.x === targetX && pos.y === targetY,
+              );
+              if (isValidAttack) {
+                Health.current[enemyEid] =
+                  (Health.current[enemyEid] ?? INITIAL_HEALTH) - ATTACK_DAMAGE;
+              }
             }
 
             // Clear action and switch turns
@@ -157,28 +185,30 @@ export function createBattleSystem() {
 
           if (isAdjacent(playerXPos, playerYPos, enemyXPos, enemyYPos)) {
             // Attack if adjacent
-            if (Health.current[playerEid] !== undefined) {
-              Health.current[playerEid] -= ATTACK_DAMAGE;
-            }
+            Health.current[playerEid] =
+              (Health.current[playerEid] ?? INITIAL_HEALTH) - ATTACK_DAMAGE;
           } else {
             // Move towards player
             const moves = getValidMoves(enemyXPos, enemyYPos);
             if (moves.length > 0) {
               // Choose move that gets closer to player
-              let bestMove = moves[0];
-              if (!bestMove) return world;
-              let bestDistribution =
+              const firstMove = moves[0];
+              if (!firstMove) return world;
+
+              let bestMove = firstMove;
+              let bestDistance =
                 Math.abs(bestMove.x - playerXPos) +
                 Math.abs(bestMove.y - playerYPos);
 
               for (let index = 1; index < moves.length; index++) {
                 const move = moves[index];
                 if (!move) continue;
-                const distribution =
+
+                const distance =
                   Math.abs(move.x - playerXPos) + Math.abs(move.y - playerYPos);
-                if (distribution < bestDistribution) {
+                if (distance < bestDistance) {
                   bestMove = move;
-                  bestDistribution = distribution;
+                  bestDistance = distance;
                 }
               }
 
@@ -193,10 +223,8 @@ export function createBattleSystem() {
 
         // Check for battle end
         if (
-          (Health.current[playerEid] !== undefined &&
-            Health.current[playerEid] <= 0) ||
-          (Health.current[enemyEid] !== undefined &&
-            Health.current[enemyEid] <= 0)
+          (Health.current[playerEid] ?? INITIAL_HEALTH) <= 0 ||
+          (Health.current[enemyEid] ?? INITIAL_HEALTH) <= 0
         ) {
           // Remove battle components
           removeComponent(world, playerEid, InBattle);
@@ -204,10 +232,7 @@ export function createBattleSystem() {
           BattleState.isActive[playerEid] = 0;
 
           // If enemy died, remove them
-          if (
-            Health.current[enemyEid] !== undefined &&
-            Health.current[enemyEid] <= 0
-          ) {
+          if ((Health.current[enemyEid] ?? INITIAL_HEALTH) <= 0) {
             removeComponent(world, enemyEid, HostileNPC);
             removeComponent(world, enemyEid, NPC);
           }

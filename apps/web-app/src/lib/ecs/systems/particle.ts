@@ -17,8 +17,8 @@ function createParticle(
   Particle.x[eid] = x;
   Particle.y[eid] = y;
   Particle.isActive[eid] = 1;
-  Particle.life[eid] = 1;
   Particle.maxLife[eid] = ParticleEmitter.particleLife[emitterEid] ?? 1000;
+  Particle.life[eid] = 1;
   Particle.alpha[eid] = ParticleEmitter.particleAlpha[emitterEid] ?? 1;
   Particle.color[eid] = ParticleEmitter.particleColor[emitterEid] ?? "#ffffff";
   Particle.size[eid] = ParticleEmitter.particleSize[emitterEid] ?? 5;
@@ -70,8 +70,9 @@ export function createParticleSystem() {
         const radius = ParticleEmitter.spawnRadius[emitterEid] ?? 0;
 
         // Add random offset within spawn radius
+        // Use square root of random to get uniform distribution within circle
         const spawnAngle = Math.random() * Math.PI * 2;
-        const spawnRadius = Math.random() * radius;
+        const spawnRadius = Math.sqrt(Math.random()) * radius;
         const spawnX = x + Math.cos(spawnAngle) * spawnRadius;
         const spawnY = y + Math.sin(spawnAngle) * spawnRadius;
 

@@ -85,7 +85,9 @@ export const defaultInitState: DebugState = {
 export const createDebugStore = (initState: DebugState = defaultInitState) => {
   return createStore<DebugStore>((set, get) => ({
     ...initState,
-    setSelectedEntityId: (id) => set({ selectedEntityId: id }),
+    setSelectedEntityId: (id) => {
+      set({ selectedEntityId: id });
+    },
     toggleSystem: (system) =>
       set((state) => ({
         systems: {
@@ -102,14 +104,27 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
       })),
     update: (world) => {
       const clickedEntities = query(world, [Clickable]);
+      const currentState = get();
 
-      const clickedEntity = clickedEntities.find(
-        (eid) => Clickable.isClicked[eid] === 1,
-      );
+      // Find the first clicked entity
+      for (const eid of clickedEntities) {
+        if (Clickable.isClicked[eid] === 1) {
+          set({ selectedEntityId: eid });
+          break;
+        }
+      }
 
-      if (clickedEntity) {
+      // Update metrics
+      if (performance.memory) {
         set({
-          selectedEntityId: clickedEntity,
+          metrics: {
+            performance: {
+              fps: currentState.metrics?.performance.fps ?? 60,
+              frameTime: currentState.metrics?.performance.frameTime ?? 16.67,
+              memoryUsage: performance.memory.usedJSHeapSize,
+              systems: currentState.metrics?.performance.systems ?? {},
+            },
+          },
         });
       }
     },

@@ -28,7 +28,7 @@ export class GameEngine {
   private systems: GameSystem[];
   private animationFrameId: number | null = null;
   private lastTime = performance.now();
-  private frameInterval = 1 / 60;
+  private frameInterval = 1 / 60; // Convert to milliseconds
   private store: GameStore;
   private debugStore: DebugStore;
 
@@ -50,7 +50,7 @@ export class GameEngine {
     // Create systems
     this.systems = [
       createKeyboardSystem(),
-      createMouseSystem(),
+      createMouseSystem(canvas),
       createMovementSystem(canvas),
       createPhysicsSystem(),
       createTriggerSystem(),
@@ -69,7 +69,7 @@ export class GameEngine {
   public start() {
     if (this.animationFrameId !== null) return;
     this.lastTime = performance.now();
-    this.gameLoop(performance.now());
+    this.animationFrameId = requestAnimationFrame(this.gameLoop);
   }
 
   public stop() {
@@ -79,6 +79,9 @@ export class GameEngine {
   }
 
   private gameLoop = (timestamp: number) => {
+    // Don't continue if engine has been stopped
+    if (this.animationFrameId === null) return;
+
     const deltaTimeMs = timestamp - this.lastTime;
     const deltaTime = deltaTimeMs / 1000;
 
@@ -91,15 +94,8 @@ export class GameEngine {
 
       for (const system of this.systems) {
         const startTime = performance.now();
-        // Only run the system if it's enabled in debug store
         const systemName = system.name || "unknown";
-        // if (
-        //   this.debugStore.systems[
-        //     systemName as keyof typeof this.debugStore.systems
-        //   ] !== false
-        // ) {
         currentWorld = system(currentWorld, deltaTime);
-        // }
         const endTime = performance.now();
         systemPerformance[systemName] = endTime - startTime;
       }
@@ -110,6 +106,7 @@ export class GameEngine {
       this.debugStore.update(currentWorld);
     }
 
+    // Request next frame
     this.animationFrameId = requestAnimationFrame(this.gameLoop);
   };
 
@@ -123,7 +120,7 @@ export class GameEngine {
     return cameras[0] ?? 0;
   }
 
-  cleanup() {
+  public cleanup() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
     }

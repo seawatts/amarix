@@ -3,7 +3,9 @@ import { query } from "bitecs";
 
 import type { RenderContext, RenderLayer } from "../types";
 import {
+  BoundingBox,
   CollisionManifold,
+  Debug,
   Polygon,
   Transform,
   Velocity,
@@ -89,30 +91,45 @@ export class DebugLayer implements RenderLayer {
     context.font = "14px monospace";
     context.textBaseline = "top";
 
+    // Get debug entity to check visualization flags
+    const debugEntities = query(world, [Debug]);
+    const debugEid = debugEntities[0];
+    const showBoundingBoxes = debugEid
+      ? Debug.showBoundingBox[debugEid] === 1
+      : false;
+
     // Draw collision shapes
-    const entities = query(world, [Transform, Polygon]);
+    const entities = query(world, [Transform]);
     for (const eid of entities) {
       const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
       const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
-
-      // Get polygon vertices in world space
-      const polygon = getWorldVertices(eid);
 
       // Check if hovered
       const isHovered = this.hoveredEntity === eid;
       context.strokeStyle = isHovered ? "#ffff00" : "#ff0000";
       context.fillStyle = isHovered ? "#ffff0033" : "#ff000033";
 
-      // Draw polygon outline with semi-transparent fill
-      if (polygon.length > 1) {
-        context.beginPath();
-        context.moveTo(polygon[0]?.[0] ?? 0, polygon[0]?.[1] ?? 0);
-        for (let index = 1; index < polygon.length; index++) {
-          context.lineTo(polygon[index]?.[0] ?? 0, polygon[index]?.[1] ?? 0);
+      // Draw bounding box if enabled
+      if (showBoundingBoxes && BoundingBox.width[eid] !== undefined) {
+        const width = (BoundingBox.width[eid] ?? 0) * PIXELS_PER_METER;
+        const height = (BoundingBox.height[eid] ?? 0) * PIXELS_PER_METER;
+        context.strokeStyle = isHovered ? "#ffff00" : "#00ff00";
+        context.strokeRect(x - width / 2, y - height / 2, width, height);
+      }
+
+      // Draw polygon if entity has one
+      if (Polygon.vertexCount[eid] !== undefined) {
+        const polygon = getWorldVertices(eid);
+        if (polygon.length > 1) {
+          context.beginPath();
+          context.moveTo(polygon[0]?.[0] ?? 0, polygon[0]?.[1] ?? 0);
+          for (let index = 1; index < polygon.length; index++) {
+            context.lineTo(polygon[index]?.[0] ?? 0, polygon[index]?.[1] ?? 0);
+          }
+          context.closePath();
+          context.fill();
+          context.stroke();
         }
-        context.closePath();
-        context.fill();
-        context.stroke();
       }
 
       // Draw a small dot at the entity's position

@@ -18,23 +18,17 @@ export function createOscillateScript(
   amplitude: number,
   frequency: number,
 ): ScriptFunction {
-  return (eid: number, world: World, deltaTime: number) => {
+  return (eid: number, _world: World, deltaTime: number) => {
     const timer = Script.timer[eid] ?? 0;
     const newTimer = timer + deltaTime;
     Script.timer[eid] = newTimer;
 
     // Calculate new position based on sine wave
-    const offset = Math.sin(newTimer * frequency) * amplitude;
+    const offset = Math.sin(2 * Math.PI * frequency * newTimer) * amplitude;
 
-    // Store the offset in the script state
-    Script.state[eid] = offset;
-
-    // Update position if entity has Position component
-    const entities = query(world, [Transform]);
-    if (entities.includes(eid)) {
-      const baseY = Transform.y[eid] ?? 0;
-      Transform.y[eid] = baseY + offset;
-    }
+    // Update position
+    const baseY = Transform.y[eid] ?? 0;
+    Transform.y[eid] = baseY + offset;
   };
 }
 
@@ -46,7 +40,7 @@ export function createScriptSystem() {
 
     for (const eid of entities) {
       // Skip inactive scripts
-      if (!(Script.isActive[eid] ?? 0)) continue;
+      if (Script.isActive[eid] !== 1) continue;
 
       // Get script function from registry
       const scriptId = Math.floor(Script.scriptId[eid] ?? 0);
@@ -63,4 +57,9 @@ export function createScriptSystem() {
 
     return world;
   };
+}
+
+// Clear script registry (for testing)
+export function clearScriptRegistry() {
+  scriptRegistry.length = 0;
 }

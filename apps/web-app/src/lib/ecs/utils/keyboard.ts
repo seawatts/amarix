@@ -31,6 +31,10 @@ function getKeyBit(code: string): number {
     case "Space": {
       return 32;
     }
+    case "MetaLeft":
+    case "MetaRight": {
+      return 33;
+    }
     default: {
       return -1;
     }
@@ -81,4 +85,9 @@ export function getMovementInput(playerEid: number): {
   const dy = (down ? 1 : 0) - (up ? 1 : 0);
 
   return { dx, dy };
+}
+
+// Helper function to check if command key is pressed
+export function isCommandKeyDown(playerEid: number): boolean {
+  return isKeyDown(playerEid, "MetaLeft") || isKeyDown(playerEid, "MetaRight");
 }

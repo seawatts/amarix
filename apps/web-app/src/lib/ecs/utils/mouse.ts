@@ -31,22 +31,36 @@ export function isMouseButtonDown(playerEid: number, button: number): boolean {
 
 // Helper function to set mouse button state
 export function setMouseButtonDown(playerEid: number, button: number) {
-  const value = MouseState.buttonsDown[playerEid];
-  if (value === undefined) return;
+  let value = MouseState.buttonsDown[playerEid];
+  if (value === undefined) {
+    value = 0;
+    MouseState.buttonsDown[playerEid] = value;
+  }
   MouseState.buttonsDown[playerEid] = value | (1 << button);
 }
 
 // Helper function to clear mouse button state
 export function clearMouseButtonDown(playerEid: number, button: number) {
-  const value = MouseState.buttonsDown[playerEid];
-  if (value === undefined) return;
+  let value = MouseState.buttonsDown[playerEid];
+  if (value === undefined) {
+    value = 0;
+    MouseState.buttonsDown[playerEid] = value;
+  }
   MouseState.buttonsDown[playerEid] = value & ~(1 << button);
 }
 
 // Helper function to update mouse position
-export function updateMousePosition(playerEid: number, x: number, y: number) {
-  MouseState.x[playerEid] = x;
-  MouseState.y[playerEid] = y;
+export function updateMousePosition(
+  playerEid: number,
+  screenX: number,
+  screenY: number,
+  worldX: number,
+  worldY: number,
+) {
+  MouseState.screenX[playerEid] = screenX;
+  MouseState.screenY[playerEid] = screenY;
+  MouseState.worldX[playerEid] = worldX;
+  MouseState.worldY[playerEid] = worldY;
 }
 
 // Helper function to set hovered entity
@@ -61,17 +75,55 @@ export function setClickedEntity(playerEid: number, entityId: number) {
 
 // Helper function to get mouse state for display
 export function getMouseState(playerEid: number) {
+  // Initialize state if undefined
+  if (MouseState.buttonsDown[playerEid] === undefined) {
+    MouseState.buttonsDown[playerEid] = 0;
+  }
+  if (MouseState.hoveredEntity[playerEid] === undefined) {
+    MouseState.hoveredEntity[playerEid] = 0;
+  }
+  if (MouseState.clickedEntity[playerEid] === undefined) {
+    MouseState.clickedEntity[playerEid] = 0;
+  }
+  if (MouseState.screenX[playerEid] === undefined) {
+    MouseState.screenX[playerEid] = 0;
+  }
+  if (MouseState.screenY[playerEid] === undefined) {
+    MouseState.screenY[playerEid] = 0;
+  }
+  if (MouseState.worldX[playerEid] === undefined) {
+    MouseState.worldX[playerEid] = 0;
+  }
+  if (MouseState.worldY[playerEid] === undefined) {
+    MouseState.worldY[playerEid] = 0;
+  }
+
+  // Get current values with fallbacks
+  const buttonsDown = MouseState.buttonsDown[playerEid] ?? 0;
+  const hoveredEntity = MouseState.hoveredEntity[playerEid] ?? 0;
+  const clickedEntity = MouseState.clickedEntity[playerEid] ?? 0;
+  const screenX = Math.round(MouseState.screenX[playerEid] ?? 0);
+  const screenY = Math.round(MouseState.screenY[playerEid] ?? 0);
+  const worldX = Math.round(MouseState.worldX[playerEid] ?? 0);
+  const worldY = Math.round(MouseState.worldY[playerEid] ?? 0);
+
   return {
     buttons: {
-      left: isMouseButtonDown(playerEid, MOUSE_BUTTONS.LEFT),
-      middle: isMouseButtonDown(playerEid, MOUSE_BUTTONS.MIDDLE),
-      right: isMouseButtonDown(playerEid, MOUSE_BUTTONS.RIGHT),
+      left: (buttonsDown & (1 << MOUSE_BUTTONS.LEFT)) !== 0,
+      middle: (buttonsDown & (1 << MOUSE_BUTTONS.MIDDLE)) !== 0,
+      right: (buttonsDown & (1 << MOUSE_BUTTONS.RIGHT)) !== 0,
     },
-    clickedEntity: MouseState.clickedEntity[playerEid] ?? 0,
-    hoveredEntity: MouseState.hoveredEntity[playerEid] ?? 0,
+    clickedEntity,
+    hoveredEntity,
     position: {
-      x: Math.round(MouseState.x[playerEid] ?? 0),
-      y: Math.round(MouseState.y[playerEid] ?? 0),
+      screen: {
+        x: screenX,
+        y: screenY,
+      },
+      world: {
+        x: worldX,
+        y: worldY,
+      },
     },
   };
 }

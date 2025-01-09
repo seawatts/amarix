@@ -1,0 +1,181 @@
+import type { World } from "bitecs";
+import { query } from "bitecs";
+
+import { Camera, KeyboardState, MouseState, Transform } from "../components";
+
+function lerp(start: number, end: number, t: number): number {
+  return start + (end - start) * t;
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
+}
+
+export function createCameraSystem() {
+  // Track the previous camera position for smoothing
+  const previousPositions = new Map<number, { x: number; y: number }>();
+
+  return function cameraSystem(world: World, deltaTime: number): World {
+    const cameras = query(world, [Camera, Transform]);
+    console.log("Camera system update - found cameras:", cameras);
+
+    // Only process the first active camera
+    for (const eid of cameras) {
+      if (!Camera.isActive[eid]) {
+        console.log(`Camera ${eid} is not active, skipping`);
+        continue;
+      }
+
+      console.log(`Processing camera ${eid}:`, {
+        currentPosition: {
+          x: Transform.x[eid],
+          y: Transform.y[eid],
+        },
+        isPanning: Camera.isPanning[eid],
+        lastPan: {
+          x: Camera.lastPanX[eid],
+          y: Camera.lastPanY[eid],
+        },
+        smoothing: Camera.smoothing[eid],
+        target: Camera.target[eid],
+      });
+
+      // Get current camera position and handle undefined values
+      const currentX = Transform.x[eid] ?? 0;
+      const currentY = Transform.y[eid] ?? 0;
+
+      // Initialize previous position if not set
+      if (!previousPositions.has(eid)) {
+        console.log(`Initializing previous position for camera ${eid}`);
+        previousPositions.set(eid, { x: currentX, y: currentY });
+      }
+
+      let shouldFollowTarget = true;
+      let newX = currentX;
+      let newY = currentY;
+
+      // Handle panning if keyboard state exists
+      if (KeyboardState.keys[eid] !== undefined) {
+        const isSpaceDown = (KeyboardState.keys[eid] ?? 0) & (1 << 32); // Space key code
+        const mouseX = MouseState.screenX[eid] ?? 0;
+        const mouseY = MouseState.screenY[eid] ?? 0;
+
+        console.log(`Checking panning for camera ${eid}:`, {
+          isSpaceDown,
+          mousePosition: { x: mouseX, y: mouseY },
+        });
+
+        if (isSpaceDown) {
+          shouldFollowTarget = false;
+          if (Camera.isPanning[eid]) {
+            // Continue panning - calculate delta from last position
+            const deltaX = mouseX - (Camera.lastPanX[eid] ?? mouseX);
+            const deltaY = mouseY - (Camera.lastPanY[eid] ?? mouseY);
+
+            console.log(`Panning camera ${eid}:`, {
+              deltaX,
+              deltaY,
+              lastPan: {
+                x: Camera.lastPanX[eid],
+                y: Camera.lastPanY[eid],
+              },
+            });
+
+            // Update camera position based on mouse movement
+            // We divide by zoom to make the pan speed consistent at different zoom levels
+            const zoom = Camera.zoom[eid] ?? 1;
+            newX = currentX - deltaX / zoom;
+            newY = currentY - deltaY / zoom;
+          }
+
+          // Update panning state
+          Camera.isPanning[eid] = 1;
+          Camera.lastPanX[eid] = mouseX;
+          Camera.lastPanY[eid] = mouseY;
+        } else {
+          // Stop panning
+          Camera.isPanning[eid] = 0;
+        }
+      }
+
+      // Follow target if not panning
+      if (shouldFollowTarget) {
+        const targetEntity = Camera.target[eid];
+        console.log(`Checking target following for camera ${eid}:`, {
+          targetEntity,
+          targetPosition: targetEntity
+            ? {
+                x: Transform.x[targetEntity],
+                y: Transform.y[targetEntity],
+              }
+            : null,
+        });
+
+        if (
+          targetEntity &&
+          Transform.x[targetEntity] !== undefined &&
+          Transform.y[targetEntity] !== undefined
+        ) {
+          const targetX = Transform.x[targetEntity];
+          const targetY = Transform.y[targetEntity];
+          const smoothing = Camera.smoothing[eid] ?? 0;
+
+          console.log(`Following target for camera ${eid}:`, {
+            deltaTime,
+            smoothing,
+            targetPosition: { x: targetX, y: targetY },
+          });
+
+          if (smoothing <= 0 || deltaTime <= 0) {
+            // No smoothing or first frame, snap to target
+            console.log(`Snapping camera ${eid} to target`);
+            newX = targetX;
+            newY = targetY;
+          } else {
+            // Apply smoothing
+            const smoothFactor = Math.min(1, deltaTime / (smoothing * 1000));
+            const previousPos = previousPositions.get(eid);
+            console.log(`Applying smoothing for camera ${eid}:`, {
+              previousPosition: previousPos,
+              smoothFactor,
+            });
+
+            if (previousPos) {
+              newX = lerp(previousPos.x, targetX, smoothFactor);
+              newY = lerp(previousPos.y, targetY, smoothFactor);
+              console.log(`New smoothed position for camera ${eid}:`, {
+                x: newX,
+                y: newY,
+              });
+            }
+          }
+        }
+      }
+
+      // Get camera bounds
+      const minX = Camera.minX[eid] ?? Number.NEGATIVE_INFINITY;
+      const maxX = Camera.maxX[eid] ?? Number.POSITIVE_INFINITY;
+      const minY = Camera.minY[eid] ?? Number.NEGATIVE_INFINITY;
+      const maxY = Camera.maxY[eid] ?? Number.POSITIVE_INFINITY;
+
+      // Apply camera bounds
+      const boundedX = clamp(newX, minX, maxX);
+      const boundedY = clamp(newY, minY, maxY);
+
+      console.log(`Final position for camera ${eid}:`, {
+        bounded: { x: boundedX, y: boundedY },
+        bounds: { maxX, maxY, minX, minY },
+        original: { x: newX, y: newY },
+      });
+
+      // Update camera position
+      Transform.x[eid] = boundedX;
+      Transform.y[eid] = boundedY;
+      previousPositions.set(eid, { x: boundedX, y: boundedY });
+
+      break; // Only process first active camera
+    }
+
+    return world;
+  };
+}
