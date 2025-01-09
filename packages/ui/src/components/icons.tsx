@@ -4,7 +4,6 @@ import type { TwcComponentProps } from "react-twc";
 import React from "react";
 import {
   SiDiscord,
-  SiLinkedin,
   SiOpenai,
   SiOpenaiHex,
   SiX,
@@ -134,9 +133,6 @@ export const Icons = {
     "size",
     "variant",
   ])<IconProps>(({ size, variant }) => iconVariants({ size, variant })),
-  Discord: twx(SiDiscord).transientProps(["size", "variant"])<IconProps>(
-    ({ size, variant }) => iconVariants({ size, variant }),
-  ),
   AngelList: ({ size, ...props }: IconProps) => (
     <svg
       className={iconVariants({ size })}
@@ -175,6 +171,9 @@ export const Icons = {
     "size",
     "variant",
   ])<IconProps>(({ size, variant }) => iconVariants({ size, variant })),
+  Discord: twx(SiDiscord).transientProps(["size", "variant"])<IconProps>(
+    ({ size, variant }) => iconVariants({ size, variant }),
+  ),
   Calendar: twx(Calendar).transientProps(["size", "variant"])<IconProps>(
     ({ size, variant }) => iconVariants({ size, variant }),
   ),
@@ -312,12 +311,6 @@ export const Icons = {
   Info: twx(Info).transientProps(["size", "variant"])<IconProps>(
     ({ size, variant }) => iconVariants({ size, variant }),
   ),
-  User: twx(User).transientProps(["size", "variant"])<IconProps>(
-    ({ size, variant }) => iconVariants({ size, variant }),
-  ),
-  LinkedIn: twx(SiLinkedin).transientProps(["size", "variant"])<IconProps>(
-    ({ size, variant }) => iconVariants({ size, variant }),
-  ),
   ListFilter: twx(ListFilter).transientProps(["size", "variant"])<IconProps>(
     ({ size, variant }) => iconVariants({ size, variant }),
   ),
@@ -348,6 +341,9 @@ export const Icons = {
     "variant",
   ])<IconProps>(({ size, variant }) => iconVariants({ size, variant })),
   Moon: twx(Moon).transientProps(["size", "variant"])<IconProps>(
+    ({ size, variant }) => iconVariants({ size, variant }),
+  ),
+  User: twx(User).transientProps(["size", "variant"])<IconProps>(
     ({ size, variant }) => iconVariants({ size, variant }),
   ),
   MoreVertical: twx(MoreVertical).transientProps([

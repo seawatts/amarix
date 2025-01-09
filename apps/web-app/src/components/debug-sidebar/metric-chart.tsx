@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   YAxis,
 } from "recharts";
+import { quantile } from "simple-statistics";
 
 import type { DataPoint } from "../../lib/ecs/types";
 
@@ -19,13 +20,6 @@ interface MetricChartProps {
   maxDomain: number | "auto";
 }
 
-function calculatePercentile(values: number[], percentile: number): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.ceil((percentile / 100) * sorted.length) - 1;
-  return sorted[Math.max(0, Math.min(sorted.length - 1, index))] ?? 0;
-}
-
 function MetricChartComponent({
   data,
   label,
@@ -33,11 +27,11 @@ function MetricChartComponent({
   maxDomain,
 }: MetricChartProps) {
   const values = data.map((d) => d.value);
-  const p0 = calculatePercentile(values, 0); // min
-  const p50 = calculatePercentile(values, 50); // median
-  const p95 = calculatePercentile(values, 95);
-  const p99 = calculatePercentile(values, 99);
-  const p100 = calculatePercentile(values, 100); // max
+  const p0 = values.length > 0 ? Math.min(...values) : 0; // min
+  const p50 = quantile(values, 0.5); // median
+  const p95 = quantile(values, 0.95);
+  const p99 = quantile(values, 0.99);
+  const p100 = values.length > 0 ? Math.max(...values) : 0; // max
 
   const padding = (p100 - p0) * 0.1; // 10% padding
   const yMin = Math.max(minDomain, p0 - padding);

@@ -379,6 +379,9 @@ importers:
       sharp:
         specifier: 0.33.5
         version: 0.33.5
+      simple-statistics:
+        specifier: 7.8.7
+        version: 7.8.7
       superjson:
         specifier: 2.2.2
         version: 2.2.2
@@ -9916,6 +9919,9 @@ packages:
 
   simple-plist@1.3.1:
     resolution: {integrity: sha512-iMSw5i0XseMnrhtIzRb7XpQEXepa9xhWxGUojHBL43SIpQuDQkh3Wpy67ZbDzZVr6EKxvwVChnVpdl8hEVLDiw==}
+
+  simple-statistics@7.8.7:
+    resolution: {integrity: sha512-ed5FwTNYvkMTfbCai1U+r3symP+lIPKWCqKdudpN4NFNMn9RtDlFtSyAQhCp4oPH0YBjWu/qnW+5q5ZkPB3uHQ==}
 
   simple-swizzle@0.2.2:
     resolution: {integrity: sha512-JA//kQgZtbuY83m+xT+tXJkmJncGMTFT+C+g2h2R9uxkYIrE2yy9sgmcLhCnw57/WSD+Eh3J97FPEDFnbXnDUg==}
@@ -21205,6 +21211,8 @@ snapshots:
       bplist-creator: 0.1.0
       bplist-parser: 0.3.1
       plist: 3.1.0
+
+  simple-statistics@7.8.7: {}
 
   simple-swizzle@0.2.2:
     dependencies:
