@@ -36,7 +36,7 @@ export function createSoundSystem() {
 
       // Load sound if not cached
       if (!audioCache.has(source)) {
-        void loadSound(source).catch(console.error);
+        // void loadSound(source).catch(console.error);
         continue;
       }
 

@@ -32,90 +32,98 @@ type SystemHistory = Record<string, DataPoint[]>;
 
 export function PerformanceMetrics() {
   const engine = useGameStore((state) => state.engine);
-  const metrics = useGameStore((state) => state.metrics);
+  const fps = useGameStore((state) => state.metrics?.performance.fps);
+  const frameTime = useGameStore(
+    (state) => state.metrics?.performance.frameTime,
+  );
+  const memoryUsage = useGameStore(
+    (state) => state.metrics?.performance.memoryUsage,
+  );
+  const systems = useGameStore((state) => state.metrics?.performance.systems);
   const [fpsHistory, setFpsHistory] = useState<DataPoint[]>([]);
   const [frameTimeHistory, setFrameTimeHistory] = useState<DataPoint[]>([]);
   const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
   const [systemHistory, setSystemHistory] = useState<SystemHistory>({});
-  const MAX_HISTORY = 50; // Keep 50 data points for all metrics
+  const MAX_HISTORY = 1000; // Keep 50 data points for all metrics
 
   useEffect(() => {
-    if (!engine || !metrics) return;
+    const timestamp = Date.now();
 
-    const interval = setInterval(() => {
-      const timestamp = Date.now();
+    // Update FPS history
+    setFpsHistory((previous) => {
+      const newHistory = [
+        ...previous,
+        {
+          timestamp,
+          value: fps ?? 0,
+        },
+      ].slice(-MAX_HISTORY);
+      return newHistory;
+    });
 
-      // Update FPS history
-      setFpsHistory((previous) => {
-        const newHistory = [
-          ...previous,
+    // Update frame time history
+    setFrameTimeHistory((previous) => {
+      const newHistory = [
+        ...previous,
+        {
+          timestamp,
+          value: frameTime ?? 0,
+        },
+      ].slice(-MAX_HISTORY);
+      return newHistory;
+    });
+
+    // Update memory history
+    setMemoryHistory((previous) => {
+      const newHistory = [
+        ...previous,
+        {
+          timestamp,
+          value: memoryUsage ?? 0,
+        },
+      ].slice(-MAX_HISTORY);
+      return newHistory;
+    });
+
+    // Update system performance history
+    setSystemHistory((previous) => {
+      const newHistory = { ...previous };
+      for (const [name, time] of Object.entries(systems ?? {})) {
+        newHistory[name] = [
+          ...(previous[name] ?? []),
           {
             timestamp,
-            value: metrics.performance.fps,
+            value: time,
           },
         ].slice(-MAX_HISTORY);
-        return newHistory;
-      });
+      }
+      return newHistory;
+    });
+  }, [fps, frameTime, memoryUsage, systems]);
 
-      // Update frame time history
-      setFrameTimeHistory((previous) => {
-        const newHistory = [
-          ...previous,
-          {
-            timestamp,
-            value: metrics.performance.frameTime,
-          },
-        ].slice(-MAX_HISTORY);
-        return newHistory;
-      });
+  if (!engine) return null;
 
-      // Update memory history
-      setMemoryHistory((previous) => {
-        const newHistory = [
-          ...previous,
-          {
-            timestamp,
-            value: metrics.performance.memoryUsage,
-          },
-        ].slice(-MAX_HISTORY);
-        return newHistory;
-      });
-
-      // Update system performance history
-      setSystemHistory((previous) => {
-        const newHistory = { ...previous };
-        for (const [name, time] of Object.entries(
-          metrics.performance.systems,
-        )) {
-          newHistory[name] = [
-            ...(previous[name] ?? []),
-            {
-              timestamp,
-              value: time,
-            },
-          ].slice(-MAX_HISTORY);
-        }
-        return newHistory;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [engine, metrics]);
-
-  if (!engine || !metrics) return null;
-
-  const fps = metrics.performance.fps;
-  const frameTime = metrics.performance.frameTime;
-  const memoryUsage = metrics.performance.memoryUsage;
-  const memoryMB = memoryUsage / 1024 / 1024;
+  const memoryMB = memoryUsage ? memoryUsage / 1024 / 1024 : 0;
 
   return (
     <SidebarGroup>
-      <Collapsible className="group/performance">
-        <CollapsibleTrigger className="w-full">
+      <Collapsible
+        className="group/performance"
+        data-testid="performance-metrics"
+      >
+        <CollapsibleTrigger
+          className="w-full"
+          data-testid="performance-metrics-trigger"
+        >
           <SidebarGroupLabel>
-            <div className="flex w-full items-center justify-between">
-              <div className="flex items-center gap-2">
+            <div
+              className="flex w-full items-center justify-between"
+              data-testid="performance-metrics-header"
+            >
+              <div
+                className="flex items-center gap-2"
+                data-testid="performance-metrics-title"
+              >
                 <Gauge className="size-4" />
                 <span>Performance</span>
               </div>
@@ -125,25 +133,27 @@ export function PerformanceMetrics() {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu data-testid="performance-metrics-menu">
               <PerformanceMetric
                 label="FPS"
-                value={fps}
+                value={fps ?? 0}
                 data={fpsHistory}
                 icon={Gauge}
                 unit=""
                 minDomain={0}
                 maxDomain={100}
                 formatValue={(v) => Math.round(v).toString()}
+                data-testid="performance-metrics-fps"
               />
               <PerformanceMetric
                 label="Frame Time"
-                value={frameTime}
+                value={frameTime ?? 0}
                 data={frameTimeHistory}
                 icon={Activity}
                 unit="ms"
                 minDomain={0}
                 maxDomain={100}
+                data-testid="performance-metrics-frame-time"
               />
               <PerformanceMetric
                 label="Memory"
@@ -153,14 +163,23 @@ export function PerformanceMetrics() {
                 unit="MB"
                 minDomain={0}
                 maxDomain="auto"
+                data-testid="performance-metrics-memory"
               />
-              <Collapsible className="group/collapsible">
+              <Collapsible
+                className="group/collapsible"
+                data-testid="performance-metrics-systems"
+              >
                 <CollapsibleTrigger asChild>
-                  <SidebarMenuButton tooltip="Systems">
+                  <SidebarMenuButton
+                    tooltip="Systems"
+                    data-testid="performance-metrics-systems-button"
+                  >
                     <Timer className="size-4" />
-                    <span>Systems</span>
-                    <span>
-                      {Object.values(metrics.performance.systems)
+                    <span data-testid="performance-metrics-systems-label">
+                      Systems
+                    </span>
+                    <span data-testid="performance-metrics-systems-total">
+                      {Object.values(systems ?? {})
                         .reduce((sum, time) => sum + time, 0)
                         .toFixed(2)}{" "}
                       ms
@@ -169,21 +188,20 @@ export function PerformanceMetrics() {
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <SidebarMenuSub>
-                  <CollapsibleContent>
-                    {Object.entries(metrics.performance.systems).map(
-                      ([name, time]) => (
-                        <PerformanceMetric
-                          key={name}
-                          label={startCase(name.replaceAll("System", ""))}
-                          value={time}
-                          data={systemHistory[name] ?? []}
-                          unit="ms"
-                          minDomain={0}
-                          maxDomain="auto"
-                          formatValue={(v) => v.toFixed(2)}
-                        />
-                      ),
-                    )}
+                  <CollapsibleContent data-testid="performance-metrics-systems-content">
+                    {Object.entries(systems ?? {}).map(([name, time]) => (
+                      <PerformanceMetric
+                        key={name}
+                        label={startCase(name.replaceAll("System", ""))}
+                        value={time}
+                        data={systemHistory[name] ?? []}
+                        unit="ms"
+                        minDomain={0}
+                        maxDomain="auto"
+                        formatValue={(v) => v.toFixed(2)}
+                        data-testid={`performance-metrics-system-${name}`}
+                      />
+                    ))}
                   </CollapsibleContent>
                 </SidebarMenuSub>
               </Collapsible>

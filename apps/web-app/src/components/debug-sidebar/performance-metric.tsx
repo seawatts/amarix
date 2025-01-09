@@ -1,6 +1,7 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
+import { memo } from "react";
 import { ChevronRight } from "lucide-react";
 
 import {
@@ -24,7 +25,7 @@ interface PerformanceMetricProps {
   formatValue?: (value: number) => string;
 }
 
-export function PerformanceMetric({
+function PerformanceMetricComponent({
   label,
   value,
   data,
@@ -36,18 +37,24 @@ export function PerformanceMetric({
 }: PerformanceMetricProps) {
   return (
     <SidebarMenuItem>
-      <Collapsible className="group/collapsible">
+      <Collapsible
+        className="group/collapsible"
+        data-testid={`performance-metric-${label}`}
+      >
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton>
+          <SidebarMenuButton data-testid={`performance-metric-button-${label}`}>
             {Icon && <Icon className="size-4" />}
-            <span>
+            <span data-testid={`performance-metric-value-${label}`}>
               {label}: {formatValue(value)} {unit}
             </span>
             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="px-2 py-1">
+          <div
+            className="px-2 py-1"
+            data-testid={`performance-metric-chart-${label}`}
+          >
             <MetricChart
               data={data}
               label={unit}
@@ -60,3 +67,5 @@ export function PerformanceMetric({
     </SidebarMenuItem>
   );
 }
+
+export const PerformanceMetric = memo(PerformanceMetricComponent);

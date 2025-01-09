@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   Area,
   AreaChart,
@@ -25,7 +26,7 @@ function calculatePercentile(values: number[], percentile: number): number {
   return sorted[Math.max(0, Math.min(sorted.length - 1, index))] ?? 0;
 }
 
-export function MetricChart({
+function MetricChartComponent({
   data,
   label,
   minDomain,
@@ -43,30 +44,39 @@ export function MetricChart({
   const yMax = maxDomain === "auto" ? p100 + padding : maxDomain;
 
   return (
-    <div className="space-y-1 group-data-[collapsible=icon]:hidden">
-      <div className="flex justify-between px-1 text-[10px] text-muted-foreground">
-        <span>
+    <div
+      className="space-y-1 group-data-[collapsible=icon]:hidden"
+      data-testid={`metric-chart-${label}`}
+    >
+      <div
+        className="flex justify-between px-1 text-[10px] text-muted-foreground"
+        data-testid={`metric-chart-percentiles-${label}`}
+      >
+        <span data-testid={`metric-chart-p0-${label}`}>
           P0: {p0.toFixed(1)}
           {label}
         </span>
-        <span>
+        <span data-testid={`metric-chart-p50-${label}`}>
           P50: {p50.toFixed(1)}
           {label}
         </span>
-        <span>
+        <span data-testid={`metric-chart-p95-${label}`}>
           P95: {p95.toFixed(1)}
           {label}
         </span>
-        <span>
+        <span data-testid={`metric-chart-p99-${label}`}>
           P99: {p99.toFixed(1)}
           {label}
         </span>
-        <span>
+        <span data-testid={`metric-chart-p100-${label}`}>
           P100: {p100.toFixed(1)}
           {label}
         </span>
       </div>
-      <div className="h-32 w-full rounded-md border bg-background p-2">
+      <div
+        className="h-32 w-full rounded-md border bg-background p-2"
+        data-testid={`metric-chart-container-${label}`}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>
@@ -150,3 +160,5 @@ export function MetricChart({
     </div>
   );
 }
+
+export const MetricChart = memo(MetricChartComponent);

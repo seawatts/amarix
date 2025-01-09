@@ -2,6 +2,15 @@ import { afterEach, beforeEach, vi } from "vitest";
 
 import "@testing-library/jest-dom/vitest";
 
+// Mock ResizeObserver
+class ResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+}
+
+globalThis.ResizeObserver = ResizeObserver;
+
 // Mock canvas context
 const mockContext = {
   // Drawing methods
