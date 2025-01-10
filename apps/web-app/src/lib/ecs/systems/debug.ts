@@ -67,7 +67,7 @@ export function createDebugSystem(
         // Reset selection when command key is released
         Debug.isSelected[eid] = 0;
         debugStore.selectedEntityId = null;
-        debugStore.setSelectedEntityId(null);
+        // debugStore.setSelectedEntityId(null);
       }
 
       // Sync debug store state with components

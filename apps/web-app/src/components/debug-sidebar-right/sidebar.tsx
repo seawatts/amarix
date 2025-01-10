@@ -1,27 +1,39 @@
 "use client";
 
+import { useEffect } from "react";
 import { ViewVerticalIcon } from "@radix-ui/react-icons";
 
 import { Button } from "@acme/ui/button";
-import { Sidebar, SidebarContent, SidebarHeader } from "@acme/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  useSidebar,
+} from "@acme/ui/sidebar";
 
+import { useHotkeys } from "~/hooks/use-hotkeys";
 import { useDebugStore } from "~/providers/debug-provider";
 import { EntityDetailsSidebar } from "./entity-details-sidebar";
 
 export function DebugSidebarRight() {
+  const sidebar = useSidebar();
   const selectedEntityId = useDebugStore((state) => state.selectedEntityId);
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
   );
 
-  // if (!selectedEntityId) return null;
+  useEffect(() => {
+    sidebar.setOpen(!!selectedEntityId);
+  }, [selectedEntityId, sidebar]);
+
+  useHotkeys({
+    Escape: () => {
+      setSelectedEntityId(null);
+    },
+  });
+
   return (
-    <Sidebar
-      collapsible="offcanvas"
-      // state={selectedEntityId ? "extended" : "collapsed"}
-      // className="sticky top-0 hidden h-svh border-l lg:flex"
-      side="right"
-    >
+    <Sidebar collapsible="offcanvas" side="right">
       <SidebarHeader className="flex-row items-center justify-between gap-2">
         <Button
           data-sidebar="trigger"
