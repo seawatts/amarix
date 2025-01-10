@@ -36,6 +36,13 @@ function MetricChartComponent({
   const padding = (p100 - p0) * 0.1; // 10% padding
   const yMin = Math.max(minDomain, p0 - padding);
   const yMax = maxDomain === "auto" ? p100 + padding : maxDomain;
+  const numberFormatter = new Intl.NumberFormat("en-US", {
+    compactDisplay: "short",
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 0,
+    notation: "compact",
+    unitDisplay: "short",
+  });
 
   return (
     <div
@@ -43,29 +50,41 @@ function MetricChartComponent({
       data-testid={`metric-chart-${label}`}
     >
       <div
-        className="flex justify-between px-1 text-[10px] text-muted-foreground"
+        className="grid grid-cols-5 gap-1 px-1 text-center text-[10px] text-muted-foreground"
         data-testid={`metric-chart-percentiles-${label}`}
       >
-        <span data-testid={`metric-chart-p0-${label}`}>
-          P0: {p0.toFixed(1)}
-          {label}
-        </span>
-        <span data-testid={`metric-chart-p50-${label}`}>
-          P50: {p50.toFixed(1)}
-          {label}
-        </span>
-        <span data-testid={`metric-chart-p95-${label}`}>
-          P95: {p95.toFixed(1)}
-          {label}
-        </span>
-        <span data-testid={`metric-chart-p99-${label}`}>
-          P99: {p99.toFixed(1)}
-          {label}
-        </span>
-        <span data-testid={`metric-chart-p100-${label}`}>
-          P100: {p100.toFixed(1)}
-          {label}
-        </span>
+        <div className="flex flex-col" data-testid={`metric-chart-p0-${label}`}>
+          <span>P0</span>
+          <span className="break-words">{numberFormatter.format(p0)}</span>
+        </div>
+        <div
+          className="flex flex-col"
+          data-testid={`metric-chart-p50-${label}`}
+        >
+          <span>P50</span>
+          <span className="break-words">{numberFormatter.format(p50)}</span>
+        </div>
+        <div
+          className="flex flex-col"
+          data-testid={`metric-chart-p95-${label}`}
+        >
+          <span>P95</span>
+          <span className="break-words">{numberFormatter.format(p95)}</span>
+        </div>
+        <div
+          className="flex flex-col"
+          data-testid={`metric-chart-p99-${label}`}
+        >
+          <span>P99</span>
+          <span className="break-words">{numberFormatter.format(p99)}</span>
+        </div>
+        <div
+          className="flex flex-col"
+          data-testid={`metric-chart-p100-${label}`}
+        >
+          <span>P100</span>
+          <span className="break-words">{numberFormatter.format(p100)}</span>
+        </div>
       </div>
       <div
         className="h-32 w-full rounded-md border bg-background p-2"

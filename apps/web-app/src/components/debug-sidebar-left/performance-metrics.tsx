@@ -25,10 +25,11 @@ import {
 } from "@acme/ui/sidebar";
 
 import type { DataPoint } from "~/lib/ecs/types";
+import { RingBuffer } from "~/lib/ecs/types";
 import { useGameStore } from "~/providers/game-store-provider";
 import { PerformanceMetric } from "./performance-metric";
 
-type SystemHistory = Record<string, DataPoint[]>;
+type SystemHistory = Record<string, RingBuffer<DataPoint>>;
 
 export function PerformanceMetrics() {
   const engine = useGameStore((state) => state.engine);
@@ -40,67 +41,56 @@ export function PerformanceMetrics() {
     (state) => state.metrics?.performance.memoryUsage,
   );
   const systems = useGameStore((state) => state.metrics?.performance.systems);
-  const [fpsHistory, setFpsHistory] = useState<DataPoint[]>([]);
-  const [frameTimeHistory, setFrameTimeHistory] = useState<DataPoint[]>([]);
-  const [memoryHistory, setMemoryHistory] = useState<DataPoint[]>([]);
-  const [systemHistory, setSystemHistory] = useState<SystemHistory>({});
-  const MAX_HISTORY = 1000; // Keep 50 data points for all metrics
+  const [fpsBuffer] = useState(() => new RingBuffer<DataPoint>(100));
+  const [frameTimeBuffer] = useState(() => new RingBuffer<DataPoint>(100));
+  const [memoryBuffer] = useState(() => new RingBuffer<DataPoint>(100));
+  const [systemBuffers] = useState<SystemHistory>({});
 
   useEffect(() => {
     const timestamp = Date.now();
 
-    // Update FPS history
-    setFpsHistory((previous) => {
-      const newHistory = [
-        ...previous,
-        {
-          timestamp,
-          value: fps ?? 0,
-        },
-      ].slice(-MAX_HISTORY);
-      return newHistory;
-    });
+    if (fps !== undefined) {
+      fpsBuffer.push({
+        timestamp,
+        value: fps,
+      });
+    }
 
-    // Update frame time history
-    setFrameTimeHistory((previous) => {
-      const newHistory = [
-        ...previous,
-        {
-          timestamp,
-          value: frameTime ?? 0,
-        },
-      ].slice(-MAX_HISTORY);
-      return newHistory;
-    });
+    if (frameTime !== undefined) {
+      frameTimeBuffer.push({
+        timestamp,
+        value: frameTime,
+      });
+    }
 
-    // Update memory history
-    setMemoryHistory((previous) => {
-      const newHistory = [
-        ...previous,
-        {
-          timestamp,
-          value: memoryUsage ?? 0,
-        },
-      ].slice(-MAX_HISTORY);
-      return newHistory;
-    });
+    if (memoryUsage !== undefined) {
+      memoryBuffer.push({
+        timestamp,
+        value: memoryUsage,
+      });
+    }
 
-    // Update system performance history
-    setSystemHistory((previous) => {
-      const newHistory = { ...previous };
-      for (const [name, time] of Object.entries(systems ?? {})) {
-        newHistory[name] = [
-          ...(previous[name] ?? []),
-          {
-            timestamp,
-            value: time,
-          },
-        ].slice(-MAX_HISTORY);
+    if (systems) {
+      for (const [name, time] of Object.entries(systems)) {
+        if (!systemBuffers[name]) {
+          systemBuffers[name] = new RingBuffer<DataPoint>(100);
+        }
+        systemBuffers[name].push({
+          timestamp,
+          value: time,
+        });
       }
-      return newHistory;
-    });
-  }, [fps, frameTime, memoryUsage, systems]);
-
+    }
+  }, [
+    fps,
+    frameTime,
+    memoryUsage,
+    systems,
+    fpsBuffer,
+    frameTimeBuffer,
+    memoryBuffer,
+    systemBuffers,
+  ]);
   if (!engine) return null;
 
   const memoryMB = memoryUsage ? memoryUsage / 1024 / 1024 : 0;
@@ -137,7 +127,7 @@ export function PerformanceMetrics() {
               <PerformanceMetric
                 label="FPS"
                 value={fps ?? 0}
-                data={fpsHistory}
+                data={fpsBuffer.toArray()}
                 icon={Gauge}
                 unit=""
                 minDomain={0}
@@ -148,7 +138,7 @@ export function PerformanceMetrics() {
               <PerformanceMetric
                 label="Frame Time"
                 value={frameTime ?? 0}
-                data={frameTimeHistory}
+                data={frameTimeBuffer.toArray()}
                 icon={Activity}
                 unit="ms"
                 minDomain={0}
@@ -158,7 +148,7 @@ export function PerformanceMetrics() {
               <PerformanceMetric
                 label="Memory"
                 value={memoryMB}
-                data={memoryHistory}
+                data={memoryBuffer.toArray()}
                 icon={LayoutDashboard}
                 unit="MB"
                 minDomain={0}
@@ -194,7 +184,7 @@ export function PerformanceMetrics() {
                         key={name}
                         label={startCase(name.replaceAll("System", ""))}
                         value={time}
-                        data={systemHistory[name] ?? []}
+                        data={systemBuffers[name]?.toArray() ?? []}
                         unit="ms"
                         minDomain={0}
                         maxDomain="auto"
