@@ -18,19 +18,13 @@ import {
   Transform,
   Velocity,
 } from "../../components";
+import { initialGameWorldState } from "../../world";
 import { createPlayer } from "../player";
 
 describe("Player Entity", () => {
   it("should create a player with all required components", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
+    world.prefabs.shape = addPrefab(world);
     world.prefabs.shape = addPrefab(world);
     const playerEid = createPlayer(world, { x: 100, y: 150 });
 
@@ -122,15 +116,8 @@ describe("Player Entity", () => {
   });
 
   it("should create a player at default position when no coordinates provided", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
+    world.prefabs.shape = addPrefab(world);
     world.prefabs.shape = addPrefab(world);
     const playerEid = createPlayer(world, { x: 0, y: 0 });
 
@@ -139,15 +126,8 @@ describe("Player Entity", () => {
   });
 
   it("should be queryable as a shape using IsA relationship", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
+    world.prefabs.shape = addPrefab(world);
     world.prefabs.shape = addPrefab(world);
     const playerEid = createPlayer(world, { x: 0, y: 0 });
 

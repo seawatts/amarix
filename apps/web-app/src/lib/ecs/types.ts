@@ -11,6 +11,7 @@ export interface WorldProps {
     shape: Entity;
     [key: string]: Entity;
   };
+  isPaused: boolean;
 }
 export type World = BitecsWorld<WorldProps>;
 

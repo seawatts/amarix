@@ -21,6 +21,7 @@ import {
   Polygon,
   Transform,
 } from "../../components";
+import { initialGameWorldState } from "../../world";
 import { createMouseSystem } from "../mouse";
 
 describe("Mouse System", () => {
@@ -35,15 +36,7 @@ describe("Mouse System", () => {
     entityIndex = createEntityIndex();
 
     // Create world with the shared entity index
-    world = createWorld<WorldProps>(entityIndex, {
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    world = createWorld<WorldProps>(entityIndex, initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     mouseEid = addEntity(world);
     cameraEid = addEntity(world);
@@ -185,15 +178,8 @@ describe("Mouse System", () => {
   });
 
   it("should detect hovering over box shapes", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
+    world.prefabs.shape = addPrefab(world);
     world.prefabs.shape = addPrefab(world);
     const mouseEid = addEntity(world);
     const cameraEid = addEntity(world);
@@ -235,15 +221,7 @@ describe("Mouse System", () => {
   });
 
   it("should detect hovering over circle shapes", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     const mouseEid = addEntity(world);
     const cameraEid = addEntity(world);
@@ -284,15 +262,7 @@ describe("Mouse System", () => {
   });
 
   it("should handle mouse clicks on clickable entities", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     const mouseEid = addEntity(world);
     const cameraEid = addEntity(world);
@@ -335,15 +305,7 @@ describe("Mouse System", () => {
   });
 
   it("should handle debug entities", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     const mouseEid = addEntity(world);
     const cameraEid = addEntity(world);
@@ -389,15 +351,7 @@ describe("Mouse System", () => {
   });
 
   it("should detect hovering and clicking over polygon shapes", () => {
-    const world = createWorld<WorldProps>({
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    const world = createWorld<WorldProps>(initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     const mouseEid = addEntity(world);
     const cameraEid = addEntity(world);

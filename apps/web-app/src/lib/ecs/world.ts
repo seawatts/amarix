@@ -79,17 +79,20 @@ function getRandomGridPosition(
   }
 }
 
+export const initialGameWorldState: WorldProps = {
+  isPaused: false,
+  prefabs: {
+    shape: 0,
+  },
+  timing: {
+    delta: 0,
+    lastFrame: 0,
+  },
+};
+
 export function createGameWorld(canvas: HTMLCanvasElement) {
   // Create the world first
-  const world = createWorld<WorldProps>({
-    prefabs: {
-      shape: 0, // Will be replaced with actual prefab ID
-    },
-    timing: {
-      delta: 0,
-      lastFrame: 0,
-    },
-  });
+  const world = createWorld<WorldProps>(initialGameWorldState);
 
   // Create the shape prefab
   const shapePrefab = addPrefab(world);

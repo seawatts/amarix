@@ -33,7 +33,6 @@ export class GameEngine {
     this.canvas = canvas;
     this.store = store;
     this.world = createGameWorld(canvas);
-    // this.store.
     this.world.timing = {
       delta: 0,
       lastFrame: performance.now(),
@@ -59,7 +58,6 @@ export class GameEngine {
       { name: "scene", system: createSceneSystem() },
       { name: "camera", system: createCameraSystem() },
       { name: "render", system: createRenderSystem(canvas, context) },
-      // { name: "debug", system: createDebugSystem(this.debugStore, this.store) },
     ];
 
     const initialSystems: Record<
@@ -94,6 +92,7 @@ export class GameEngine {
 
   public togglePause() {
     this.isPaused = !this.isPaused;
+    this.world.isPaused = this.isPaused;
     // this.debugStore.setIsPaused(this.isPaused);
   }
 

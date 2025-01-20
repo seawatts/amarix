@@ -12,20 +12,14 @@ import {
   Style,
   Transform,
 } from "../../components";
+import { initialGameWorldState } from "../../world";
 import { createBox } from "../shapes";
 
 describe("Shapes Entities", () => {
   describe("Box Entity", () => {
     it("should create a box with all required components", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
+      world.prefabs.shape = addPrefab(world);
       world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
@@ -88,15 +82,7 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a static box", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
       world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
@@ -111,15 +97,7 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a trigger box", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
       world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
@@ -133,15 +111,7 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a wireframe box", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
       world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,

@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { WorldProps } from "../../types";
 import { Camera, CurrentPlayer, MouseState, Transform } from "../../components";
 import { createMouseSystem } from "../../systems/mouse";
+import { initialGameWorldState } from "../../world";
 import {
   clearMouseButtonDown,
   getCanvasCoordinates,
@@ -32,15 +33,7 @@ describe("Mouse Utils", () => {
     entityIndex = createEntityIndex();
 
     // Create world with the shared entity index
-    world = createWorld<WorldProps>(entityIndex, {
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    world = createWorld<WorldProps>(entityIndex, initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     playerEid = addEntity(world);
 
@@ -116,15 +109,8 @@ describe("Mouse Utils", () => {
 
   describe("Mouse Button State", () => {
     it("should manage mouse button states correctly", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
+      world.prefabs.shape = addPrefab(world);
       world.prefabs.shape = addPrefab(world);
       const playerEid = addEntity(world);
       MouseState.buttonsDown[playerEid] = 0;
@@ -152,15 +138,7 @@ describe("Mouse Utils", () => {
 
   describe("Mouse Position", () => {
     it("should update mouse position correctly", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
       world.prefabs.shape = addPrefab(world);
       const playerEid = addEntity(world);
 
@@ -175,15 +153,7 @@ describe("Mouse Utils", () => {
 
   describe("Entity Interaction", () => {
     it("should manage entity hover and click states", () => {
-      const world = createWorld<WorldProps>({
-        prefabs: {
-          shape: 0,
-        },
-        timing: {
-          delta: 16.67,
-          lastFrame: 0,
-        },
-      });
+      const world = createWorld<WorldProps>(initialGameWorldState);
       world.prefabs.shape = addPrefab(world);
       const playerEid = addEntity(world);
       const entityId = 42;
@@ -272,15 +242,7 @@ describe("Mouse Coordinate Transformations", () => {
     entityIndex = createEntityIndex();
 
     // Create world with the shared entity index
-    world = createWorld<WorldProps>(entityIndex, {
-      prefabs: {
-        shape: 0,
-      },
-      timing: {
-        delta: 16.67,
-        lastFrame: 0,
-      },
-    });
+    world = createWorld<WorldProps>(entityIndex, initialGameWorldState);
     world.prefabs.shape = addPrefab(world);
     mouseEid = addEntity(world);
     cameraEid = addEntity(world);

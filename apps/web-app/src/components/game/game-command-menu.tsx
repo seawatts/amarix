@@ -529,9 +529,8 @@ export function GameCommandMenu() {
           {search && filteredEntities && filteredEntities.length > 0 && (
             <CommandGroup heading="Entities">
               {filteredEntities.map((entity) => (
-                <>
+                <div key={entity.id}>
                   <CommandItem
-                    key={`${entity.id}-select-entity`}
                     onSelect={() => {
                       setSelectedEntityId(entity.id);
                       setOpen(false);
@@ -545,7 +544,6 @@ export function GameCommandMenu() {
                     </span>
                   </CommandItem>
                   <CommandItem
-                    key={`${entity.id}-camera-to-entity`}
                     onSelect={() => {
                       if (!engine?.world) return;
                       const cameraEntities = query(engine.world, [Camera]);
@@ -563,7 +561,7 @@ export function GameCommandMenu() {
                       ID: {entity.id}
                     </span>
                   </CommandItem>
-                </>
+                </div>
               ))}
             </CommandGroup>
           )}
