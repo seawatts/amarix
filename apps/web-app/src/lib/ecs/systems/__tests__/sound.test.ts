@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Sound, Transform } from "../../components";
 import { createSoundSystem } from "../sound";
 
@@ -48,7 +49,7 @@ describe.skip("Sound System", () => {
   });
 
   it("should load new sounds", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up sound entity
@@ -65,7 +66,7 @@ describe.skip("Sound System", () => {
   });
 
   it("should play and stop sounds", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up sound entity
@@ -101,7 +102,7 @@ describe.skip("Sound System", () => {
   });
 
   it("should handle looping sounds", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up looping sound entity
@@ -124,7 +125,7 @@ describe.skip("Sound System", () => {
   });
 
   it("should update sound parameters while playing", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up sound entity
@@ -155,7 +156,7 @@ describe.skip("Sound System", () => {
   });
 
   it("should handle spatial audio", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up sound entity with position

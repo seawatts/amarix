@@ -1,6 +1,6 @@
-import type { createWorld } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../types";
 import { Animation, Sprite } from "../components";
 
 interface AnimationSequence {
@@ -49,7 +49,7 @@ function getAnimationSequence(
 }
 
 export function createAnimationSystem() {
-  return (world: ReturnType<typeof createWorld>, deltaTime: number) => {
+  return (world: World) => {
     const entities = query(world, [Animation, Sprite]);
 
     for (const eid of entities) {
@@ -88,7 +88,8 @@ export function createAnimationSystem() {
       }
 
       // Update timer
-      Animation.timer[eid] = (Animation.timer[eid] ?? 0) + deltaTime * 1000;
+      Animation.timer[eid] =
+        (Animation.timer[eid] ?? 0) + world.timing.delta * 1000;
 
       // Check if it's time for next frame
       if ((Animation.timer[eid] ?? 0) >= sequence.frameDuration) {

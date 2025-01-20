@@ -1,6 +1,6 @@
-import type { createWorld } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../types";
 import {
   Force,
   KeyboardState,
@@ -18,7 +18,7 @@ const MAX_SPEED = 10 * PIXELS_PER_METER; // 10 meters per second
 const DAMPING = 0.95; // Smoother damping for more natural movement
 
 export const createMovementSystem = (_canvas: HTMLCanvasElement) => {
-  return function movementSystem(world: ReturnType<typeof createWorld>) {
+  return function movementSystem(world: World) {
     const entities = query(world, [
       Transform,
       Force,

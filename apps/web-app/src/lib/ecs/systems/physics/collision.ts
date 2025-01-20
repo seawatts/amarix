@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { hasComponent, query, removeComponent, removeEntity } from "bitecs";
 
+import type { World } from "../../types";
 import {
   CollisionManifold,
   Polygon,

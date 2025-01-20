@@ -1,6 +1,6 @@
-import type { createWorld } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../types";
 import {
   BattleAction,
   BattleState,
@@ -18,10 +18,7 @@ interface ValidMove {
   y: number;
 }
 
-function handleBattleInput(
-  world: ReturnType<typeof createWorld>,
-  playerEid: number,
-) {
+function handleBattleInput(world: World, playerEid: number) {
   // Only handle input on player's turn
   if (BattleState.turn[playerEid] !== 0) return;
 
@@ -94,10 +91,7 @@ function handleBattleInput(
   }
 }
 
-function handleExplorationInput(
-  world: ReturnType<typeof createWorld>,
-  playerEid: number,
-) {
+function handleExplorationInput(world: World, playerEid: number) {
   // Reset movement
   Movement.dx[playerEid] = 0;
   Movement.dy[playerEid] = 0;
@@ -127,7 +121,7 @@ function handleExplorationInput(
 }
 
 export function createKeyboardSystem() {
-  return function keyboardSystem(world: ReturnType<typeof createWorld>) {
+  return function keyboardSystem(world: World) {
     // Query for entities with both CurrentPlayer and InputState components
     const players = query(world, [CurrentPlayer, KeyboardState]);
     for (const playerEid of players) {

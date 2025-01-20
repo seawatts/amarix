@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { useInView } from "framer-motion";
+import { useInView } from "motion/react";
 
 import { NumberTicker } from "@acme/ui/magicui/number-ticker";
 import { Text } from "@acme/ui/typography";

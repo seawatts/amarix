@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   Force,
   KeyboardState,
@@ -13,7 +14,7 @@ import { createMovementSystem } from "../movement";
 
 describe("Movement System", () => {
   it("should apply force based on keyboard input", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     const canvas = document.createElement("canvas");
 
@@ -38,7 +39,7 @@ describe("Movement System", () => {
   });
 
   it("should apply damping when no input", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     const canvas = document.createElement("canvas");
 
@@ -63,7 +64,7 @@ describe("Movement System", () => {
   });
 
   it("should normalize diagonal movement", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     const canvas = document.createElement("canvas");
 
@@ -96,7 +97,7 @@ describe("Movement System", () => {
   });
 
   it("should respect max speed limit", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     const canvas = document.createElement("canvas");
 

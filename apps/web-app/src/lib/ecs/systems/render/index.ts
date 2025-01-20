@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../../types";
 import { Camera, Transform } from "../../components";
 import { BackgroundLayer } from "./layers/background";
 import { DebugLayer } from "./layers/debug";
@@ -24,7 +24,7 @@ export function createRenderSystem(
   canvas: HTMLCanvasElement,
   context: CanvasRenderingContext2D,
 ) {
-  return function renderSystem(world: World, deltaTime: number): World {
+  return function renderSystem(world: World): World {
     // Get camera information
     const cameras = query(world, [Camera]);
     const cameraInfo = {
@@ -49,7 +49,7 @@ export function createRenderSystem(
         cameraInfo.y = Transform.y[eid] ?? 0;
       }
 
-      cameraInfo.zoom = Transform.scaleX[eid] ?? 1;
+      cameraInfo.zoom = Camera.zoom[eid] ?? 1;
       cameraInfo.rotation = Transform.rotation[eid] ?? 0;
       break;
     }
@@ -59,7 +59,6 @@ export function createRenderSystem(
       camera: cameraInfo,
       canvas,
       ctx: context,
-      deltaTime,
       world,
     });
 

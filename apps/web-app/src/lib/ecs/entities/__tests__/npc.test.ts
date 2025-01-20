@@ -1,6 +1,7 @@
 import { createWorld, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   Acceleration,
   Animation,
@@ -29,7 +30,7 @@ import { createHostileNPC, createNPC } from "../npc";
 
 describe("NPC Entity", () => {
   it("should create a regular NPC with all required components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const npcEid = createNPC(world, { x: 100, y: 200 });
 
     // Check if NPC entity has all required components
@@ -105,7 +106,7 @@ describe("NPC Entity", () => {
   });
 
   it("should create a hostile NPC with additional components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const npcEid = createHostileNPC(world, { x: 100, y: 200 });
 
     // Check if hostile NPC has additional components
@@ -128,7 +129,7 @@ describe("NPC Entity", () => {
   });
 
   it("should create an NPC with correct polygon vertices", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const npcEid = createNPC(world, { x: 0, y: 0 });
 
     // Check polygon values

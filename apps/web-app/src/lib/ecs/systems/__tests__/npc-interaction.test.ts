@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   CollisionManifold,
   InteractionCooldown,
@@ -14,7 +15,7 @@ import { createNPCInteractionSystem } from "../npc-interaction";
 
 describe.skip("NPC Interaction System", () => {
   it("should not process interactions during initial delay", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
     const collisionEid = addEntity(world);
@@ -41,7 +42,7 @@ describe.skip("NPC Interaction System", () => {
   });
 
   it("should create interaction when player collides with NPC", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
     const collisionEid = addEntity(world);
@@ -87,7 +88,7 @@ describe.skip("NPC Interaction System", () => {
   });
 
   it("should remove interaction after cooldown", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
     const collisionEid = addEntity(world);
@@ -134,7 +135,7 @@ describe.skip("NPC Interaction System", () => {
   });
 
   it("should not create interaction if NPC is already interacting", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
     const collisionEid = addEntity(world);

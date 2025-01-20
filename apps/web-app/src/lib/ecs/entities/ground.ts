@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
+import type { World } from "../types";
 import {
   Collidable,
   CollisionMask,
@@ -8,6 +8,7 @@ import {
   Named,
   Polygon,
   RigidBody,
+  Style,
   Transform,
 } from "../components";
 
@@ -61,6 +62,7 @@ export function createGround(world: World, options: CreateGroundOptions) {
     Collidable,
     Named,
     Debug,
+    Style,
   );
 
   // Set transform values
@@ -69,6 +71,12 @@ export function createGround(world: World, options: CreateGroundOptions) {
   Transform.rotation[eid] = 0;
   Transform.scaleX[eid] = 1;
   Transform.scaleY[eid] = 1;
+
+  // Set style values
+  Style.fillColor[eid] = "#666666";
+  Style.strokeColor[eid] = "#333333";
+  Style.strokeWidth[eid] = 2;
+  Style.fillOpacity[eid] = 1;
 
   // Set ground polygon
   const groundBox = createBoxPolygon(options.width, options.height);

@@ -13,7 +13,7 @@
     "lint-staged": "15.3.0"
   },
   "devDependencies": {
-    "eslint": "9.17.0",
+    "eslint": "9.18.0",
     "prettier": "3.4.2",
     "tsc-files": "1.1.4"
   }

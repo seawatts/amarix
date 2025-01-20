@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   BattleAction,
   BattleState,
@@ -19,7 +20,7 @@ const CELL_SIZE = 50;
 
 describe.skip("Battle System", () => {
   it("should initiate battle when player meets hostile NPC", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 
@@ -60,7 +61,7 @@ describe.skip("Battle System", () => {
   });
 
   it("should handle player movement action", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 
@@ -102,7 +103,7 @@ describe.skip("Battle System", () => {
   });
 
   it("should handle player attack action", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 
@@ -150,7 +151,7 @@ describe.skip("Battle System", () => {
   });
 
   it("should handle enemy turn", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 
@@ -182,7 +183,7 @@ describe.skip("Battle System", () => {
   });
 
   it("should end battle when player or enemy dies", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 
@@ -213,7 +214,7 @@ describe.skip("Battle System", () => {
   });
 
   it("should calculate valid moves for player", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const npcEid = addEntity(world);
 

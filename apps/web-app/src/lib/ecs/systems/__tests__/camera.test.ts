@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Camera, KeyboardState, MouseState, Transform } from "../../components";
 import { createCameraSystem } from "../camera";
 
@@ -44,7 +45,7 @@ describe("Camera System", () => {
   describe("Basic Initialization", () => {
     it("should maintain initial position when no target is set", () => {
       console.log("test");
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
 
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
@@ -54,14 +55,14 @@ describe("Camera System", () => {
       Camera.isActive[cameraEid] = 1;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(50);
       expect(Transform.y[cameraEid]).toBe(50);
     });
 
     it("should initialize Transform to 0 if not set", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
@@ -69,14 +70,14 @@ describe("Camera System", () => {
       Camera.isActive[cameraEid] = 1;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(0);
       expect(Transform.y[cameraEid]).toBe(0);
     });
 
     it("should not process inactive cameras", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
@@ -85,14 +86,14 @@ describe("Camera System", () => {
       Camera.isActive[cameraEid] = 0;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(50);
       expect(Transform.y[cameraEid]).toBe(50);
     });
 
     it("should properly initialize and maintain component values", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const cameraEid = addEntity(world);
 
       console.log("Before adding components");
@@ -117,7 +118,7 @@ describe("Camera System", () => {
       // Run system multiple times to ensure values persist
       for (let index = 0; index < 3; index++) {
         console.log(`Running camera system iteration ${index + 1}`);
-        cameraSystem(world, 16);
+        cameraSystem(world);
         logEntityState(cameraEid, `Post-update ${index + 1}`);
 
         expect(Transform.x[cameraEid]).toBe(25);
@@ -126,7 +127,7 @@ describe("Camera System", () => {
     });
 
     it("should handle component removal and re-addition", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const cameraEid = addEntity(world);
 
       // Initial setup
@@ -140,7 +141,7 @@ describe("Camera System", () => {
       logEntityState(cameraEid, "Initial");
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       console.log("After first update");
       logEntityState(cameraEid, "Post-update 1");
@@ -157,7 +158,7 @@ describe("Camera System", () => {
       console.log("After removing Transform values");
       logEntityState(cameraEid, "Post-removal");
 
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       console.log("After update with removed Transform");
       logEntityState(cameraEid, "Post-update 2");
@@ -173,7 +174,7 @@ describe("Camera System", () => {
       console.log("After setting new Transform values");
       logEntityState(cameraEid, "Pre-final-update");
 
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       console.log("After final update");
       logEntityState(cameraEid, "Final");
@@ -186,7 +187,7 @@ describe("Camera System", () => {
 
   describe("Target Following", () => {
     it("should immediately snap to target when smoothing is 0", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -201,14 +202,14 @@ describe("Camera System", () => {
       Camera.smoothing[cameraEid] = 0;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(100);
       expect(Transform.y[cameraEid]).toBe(100);
     });
 
     it("should not move if target has no Transform", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
 
       const cameraEid = addEntity(world);
@@ -220,14 +221,14 @@ describe("Camera System", () => {
       Camera.isActive[cameraEid] = 1;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(50);
       expect(Transform.y[cameraEid]).toBe(50);
     });
 
     it("should handle target position updates in a single frame", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -242,19 +243,19 @@ describe("Camera System", () => {
       Camera.smoothing[cameraEid] = 0;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Update target position in the same frame
       Transform.x[targetEid] = 200;
       Transform.y[targetEid] = 200;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Transform.x[cameraEid]).toBe(200);
       expect(Transform.y[cameraEid]).toBe(200);
     });
 
     it("should log detailed target following behavior", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
 
       // Setup target
       const targetEid = addEntity(world);
@@ -284,7 +285,7 @@ describe("Camera System", () => {
 
       for (let index = 0; index < 10; index++) {
         console.log(`Update iteration ${index + 1}`);
-        cameraSystem(world, 16);
+        cameraSystem(world);
 
         const currentX = Transform.x[cameraEid] ?? 0;
         const currentY = Transform.y[cameraEid] ?? 0;
@@ -326,7 +327,7 @@ describe("Camera System", () => {
 
   describe("Smoothing", () => {
     it("should move towards target with smoothing", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -342,7 +343,7 @@ describe("Camera System", () => {
       Camera.smoothing[cameraEid] = 0.5;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // With 16ms frame time and 0.5s smoothing, we expect about 3.2% movement
       const expectedMin = 2;
@@ -357,7 +358,7 @@ describe("Camera System", () => {
     });
 
     it("should accumulate movement over multiple frames", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -376,7 +377,7 @@ describe("Camera System", () => {
 
       // Track movement over multiple frames
       for (let frameIndex = 0; frameIndex < 5; frameIndex++) {
-        cameraSystem(world, 16);
+        cameraSystem(world);
       }
 
       // After 5 frames (80ms), we should have moved about 15% of the way there
@@ -389,7 +390,7 @@ describe("Camera System", () => {
     });
 
     it("should handle target changes during smoothing", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -407,7 +408,7 @@ describe("Camera System", () => {
       const cameraSystem = createCameraSystem();
 
       // Start moving towards first target
-      cameraSystem(world, 16);
+      cameraSystem(world);
       const firstPos = {
         x: Transform.x[cameraEid] ?? 0,
         y: Transform.y[cameraEid] ?? 0,
@@ -416,7 +417,7 @@ describe("Camera System", () => {
       // Change target position
       Transform.x[targetEid] = 200;
       Transform.y[targetEid] = 200;
-      cameraSystem(world, 16);
+      cameraSystem(world);
       const secondPos = {
         x: Transform.x[cameraEid] ?? 0,
         y: Transform.y[cameraEid] ?? 0,
@@ -430,7 +431,7 @@ describe("Camera System", () => {
 
   describe("Panning", () => {
     it("should start panning when space is pressed", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
@@ -444,7 +445,7 @@ describe("Camera System", () => {
       MouseState.screenY[cameraEid] = 100;
 
       const cameraSystem = createCameraSystem();
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       expect(Camera.isPanning[cameraEid]).toBe(1);
       expect(Camera.lastPanX[cameraEid]).toBe(100);
@@ -452,7 +453,7 @@ describe("Camera System", () => {
     });
 
     it("should stop following target while panning", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -475,12 +476,12 @@ describe("Camera System", () => {
       KeyboardState.keys[cameraEid] = 1 << 32;
       MouseState.screenX[cameraEid] = 0;
       MouseState.screenY[cameraEid] = 0;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Move mouse
       MouseState.screenX[cameraEid] = 50;
       MouseState.screenY[cameraEid] = 50;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Should move with pan, not towards target
       expect(Transform.x[cameraEid]).toBe(-50);
@@ -488,7 +489,7 @@ describe("Camera System", () => {
     });
 
     it("should resume following target after panning stops", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const targetEid = addEntity(world);
       addComponent(world, targetEid, Transform);
       Transform.x[targetEid] = 100;
@@ -512,16 +513,16 @@ describe("Camera System", () => {
       KeyboardState.keys[cameraEid] = 1 << 32;
       MouseState.screenX[cameraEid] = 0;
       MouseState.screenY[cameraEid] = 0;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Pan away from target
       MouseState.screenX[cameraEid] = 50;
       MouseState.screenY[cameraEid] = 50;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Stop panning
       KeyboardState.keys[cameraEid] = 0;
-      cameraSystem(world, 16);
+      cameraSystem(world);
 
       // Should snap back to target
       expect(Transform.x[cameraEid]).toBe(100);

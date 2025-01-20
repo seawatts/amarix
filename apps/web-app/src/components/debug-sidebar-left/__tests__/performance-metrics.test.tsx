@@ -5,8 +5,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SidebarProvider } from "@acme/ui/sidebar";
 
+import type { GameEngine } from "~/lib/ecs/engine";
+import type { World } from "~/lib/ecs/types";
+import type { DebugStore } from "~/lib/stores/debug";
 import type { GameStore } from "~/lib/stores/game-state";
-import { useGameStore } from "~/providers/game-store-provider";
+import { useDebugStore } from "~/providers/debug-provider";
+import { useGame } from "~/providers/game-provider";
 import { PerformanceMetrics } from "../performance-metrics";
 
 // Mock the sidebar hooks
@@ -27,23 +31,26 @@ const mockGameStore: GameStore = {
   engine: {
     animationFrameId: 0,
     canvas: mockCanvas,
-    isRunning: false,
-    pause: vi.fn(),
-    resume: vi.fn(),
     start: vi.fn(),
     stop: vi.fn(),
     systems: [],
-    update: vi.fn(),
-    world: {} as any,
-  },
-  lastFrameTime: 0,
+    world: {} as World,
+  } as unknown as GameEngine,
+  initializeEngine: vi.fn(),
+  reset: vi.fn(),
+  setWorld: vi.fn(),
+  update: vi.fn(),
+  world: {} as World,
+};
+
+// Mock the debug store
+const mockDebugStore: DebugStore = {
+  getSystems: vi.fn(),
+  handleDebugEvent: vi.fn(),
+  isDebugging: false,
+  isPaused: false,
   metrics: {
-    entities: [
-      {
-        components: {},
-        id: 1,
-      },
-    ],
+    entities: [],
     performance: {
       fps: 60,
       frameTime: 17,
@@ -54,16 +61,42 @@ const mockGameStore: GameStore = {
       },
     },
   },
-  reset: vi.fn(),
-  setEngine: vi.fn(),
-  setWorld: vi.fn(),
-  update: vi.fn(),
-  world: {} as any,
+  selectedEntityId: null,
+  setIsDebugging: vi.fn(),
+  setIsPaused: vi.fn(),
+  setSelectedEntityId: vi.fn(),
+  setSystems: vi.fn(),
+  sidebarSections: {
+    ecs: true,
+    performance: true,
+    systems: true,
+    visualizations: true,
+  },
+  systems: {},
+  toggleSidebarSection: vi.fn(),
+  toggleSystem: vi.fn(),
+  toggleSystemPause: vi.fn(),
+  toggleVisualization: vi.fn(),
+  visualizations: {
+    showBoundingBoxes: false,
+    showCollisionPoints: false,
+    showForceVectors: false,
+    showParticleEmitters: false,
+    showPolygons: false,
+    showTriggerZones: false,
+    showVelocityVectors: false,
+  },
 };
 
-vi.mock("~/providers/game-store-provider", () => ({
-  useGameStore: vi.fn((selector: (state: GameStore) => unknown) =>
+vi.mock("~/providers/game-provider", () => ({
+  useGame: vi.fn((selector: (state: GameStore) => unknown) =>
     selector(mockGameStore),
+  ),
+}));
+
+vi.mock("~/providers/debug-provider", () => ({
+  useDebugStore: vi.fn((selector: (state: DebugStore) => unknown) =>
+    selector(mockDebugStore),
   ),
 }));
 
@@ -133,20 +166,22 @@ describe("PerformanceMetrics", () => {
     });
 
     // Update mock metrics
-    const updatedStore: GameStore = {
-      ...mockGameStore,
-      metrics: mockGameStore.metrics && {
-        entities: mockGameStore.metrics.entities,
-        performance: {
-          ...mockGameStore.metrics.performance,
-          fps: 30,
-        },
-      },
+    const updatedStore: DebugStore = {
+      ...mockDebugStore,
+      metrics: mockDebugStore.metrics
+        ? {
+            ...mockDebugStore.metrics,
+            performance: {
+              ...mockDebugStore.metrics.performance,
+              fps: 30,
+            },
+          }
+        : null,
     };
 
-    await act(async () => {
-      vi.mocked(useGameStore).mockImplementation(
-        (selector: (state: GameStore) => unknown) => selector(updatedStore),
+    act(() => {
+      vi.mocked(useDebugStore).mockImplementation(
+        (selector: (state: DebugStore) => unknown) => selector(updatedStore),
       );
 
       vi.advanceTimersByTime(100);
@@ -179,26 +214,30 @@ describe("PerformanceMetrics", () => {
   });
 
   it("handles missing engine or metrics", async () => {
-    const emptyStore: GameStore = {
+    const emptyGameStore: GameStore = {
+      ...mockGameStore,
       engine: null,
-      lastFrameTime: 0,
-      metrics: null,
-      reset: vi.fn(),
-      setEngine: vi.fn(),
-      setWorld: vi.fn(),
-      update: vi.fn(),
-      world: {} as any,
     };
 
-    await act(async () => {
-      vi.mocked(useGameStore).mockImplementation(
-        (selector: (state: GameStore) => unknown) => selector(emptyStore),
+    const emptyDebugStore: DebugStore = {
+      ...mockDebugStore,
+      metrics: null,
+    };
+
+    act(() => {
+      vi.mocked(useGame).mockImplementation(
+        (selector: (state: GameStore) => unknown) => selector(emptyGameStore),
+      );
+      vi.mocked(useDebugStore).mockImplementation(
+        (selector: (state: DebugStore) => unknown) => selector(emptyDebugStore),
       );
     });
 
     const { container } = render(<PerformanceMetrics />);
 
     // The component should not render anything when engine or metrics are missing
-    expect(container.firstChild).toBeNull();
+    await waitFor(() => {
+      expect(container.firstChild).toBeNull();
+    });
   });
 });

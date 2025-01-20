@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity, query, removeEntity } from "bitecs";
 
+import type { World } from "../types";
 import { Particle, ParticleEmitter, Transform } from "../components";
 
 // Create a new particle

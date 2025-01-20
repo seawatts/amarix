@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../../../types";
 import type { RenderContext, RenderLayer } from "../types";
 import {
   BoundingBox,

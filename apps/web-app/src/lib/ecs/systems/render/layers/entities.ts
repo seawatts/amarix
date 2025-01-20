@@ -1,4 +1,4 @@
-import { query } from "bitecs";
+import { IsA, query } from "bitecs";
 
 import type { RenderContext, RenderLayer } from "../types";
 import {
@@ -7,19 +7,15 @@ import {
   Clickable,
   CurrentPlayer,
   Health,
-  HostileNPC,
   Hoverable,
   NPC,
   Player,
   Polygon,
-  Shape,
   Style,
   Transform,
 } from "../../../components";
-// import { PIXELS_PER_METER } from "../../physics";
 import { RENDER_LAYERS } from "../types";
 
-const PIXELS_PER_METER = 1;
 const HEALTH_BAR_HEIGHT = 8;
 const HEALTH_BAR_OFFSET = 10;
 
@@ -31,8 +27,8 @@ function getPolygonBounds(eid: number): { width: number; height: number } {
   let maxY = Number.NEGATIVE_INFINITY;
 
   for (let index = 0; index < vertCount; index++) {
-    const x = (Polygon.verticesX[eid]?.[index] ?? 0) * PIXELS_PER_METER;
-    const y = (Polygon.verticesY[eid]?.[index] ?? 0) * PIXELS_PER_METER;
+    const x = Polygon.verticesX[eid]?.[index] ?? 0;
+    const y = Polygon.verticesY[eid]?.[index] ?? 0;
     minX = Math.min(minX, x);
     maxX = Math.max(maxX, x);
     minY = Math.min(minY, y);
@@ -83,17 +79,9 @@ function renderHealthBar(
   );
 }
 
-function renderPolygon(
-  context: CanvasRenderingContext2D,
-  eid: number,
-  fillStyle: string,
-  strokeStyle: string,
-  lineWidth: number,
-  shadowColor?: string,
-  shadowBlur?: number,
-): void {
-  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+function renderPolygon(context: CanvasRenderingContext2D, eid: number): void {
+  const x = Transform.x[eid] ?? 0;
+  const y = Transform.y[eid] ?? 0;
   const rotation = Polygon.rotation[eid] ?? 0;
   const vertCount = Polygon.vertexCount[eid] ?? 0;
 
@@ -103,18 +91,17 @@ function renderPolygon(
   context.translate(x, y);
   context.rotate(rotation);
 
-  // Apply styles
-  context.fillStyle = fillStyle;
-  if (shadowColor) context.shadowColor = shadowColor;
-  if (shadowBlur) context.shadowBlur = shadowBlur;
-  context.strokeStyle = strokeStyle;
-  context.lineWidth = lineWidth;
+  // Apply styles from Style component
+  context.fillStyle = Style.fillColor[eid] ?? "#666666";
+  context.strokeStyle = Style.strokeColor[eid] ?? "#333333";
+  context.lineWidth = Style.strokeWidth[eid] ?? 2;
+  context.globalAlpha = Style.fillOpacity[eid] ?? 1;
 
   // Draw polygon vertices in local space
   context.beginPath();
   for (let index = 0; index < vertCount; index++) {
-    const vx = (Polygon.verticesX[eid]?.[index] ?? 0) * PIXELS_PER_METER;
-    const vy = (Polygon.verticesY[eid]?.[index] ?? 0) * PIXELS_PER_METER;
+    const vx = Polygon.verticesX[eid]?.[index] ?? 0;
+    const vy = Polygon.verticesY[eid]?.[index] ?? 0;
     if (index === 0) {
       context.moveTo(vx, vy);
     } else {
@@ -129,19 +116,19 @@ function renderPolygon(
 }
 
 function renderBox(context: CanvasRenderingContext2D, eid: number): void {
-  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
-  const width = (Box.width[eid] ?? 0) * PIXELS_PER_METER;
-  const height = (Box.height[eid] ?? 0) * PIXELS_PER_METER;
+  const x = Transform.x[eid] ?? 0;
+  const y = Transform.y[eid] ?? 0;
+  const width = Box.width[eid] ?? 0;
+  const height = Box.height[eid] ?? 0;
   const rotation = Box.rotation[eid] ?? 0;
   const isWireframe = Box.isWireframe[eid] === 1;
-  const originX = (Box.originX[eid] ?? 0) * PIXELS_PER_METER;
-  const originY = (Box.originY[eid] ?? 0) * PIXELS_PER_METER;
+  const originX = Box.originX[eid] ?? 0;
+  const originY = Box.originY[eid] ?? 0;
 
-  // Apply styles
-  context.fillStyle = Style.fillColor[eid] ?? "#ffffff";
-  context.strokeStyle = Style.strokeColor[eid] ?? "#000000";
-  context.lineWidth = Style.strokeWidth[eid] ?? 1;
+  // Apply styles with better defaults
+  context.fillStyle = Style.fillColor[eid] ?? "#666666";
+  context.strokeStyle = Style.strokeColor[eid] ?? "#333333";
+  context.lineWidth = Style.strokeWidth[eid] ?? 2;
   context.globalAlpha = Style.fillOpacity[eid] ?? 1;
 
   context.save();
@@ -159,19 +146,19 @@ function renderBox(context: CanvasRenderingContext2D, eid: number): void {
 }
 
 function renderCircle(context: CanvasRenderingContext2D, eid: number): void {
-  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
-  const radius = (Circle.radius[eid] ?? 0) * PIXELS_PER_METER;
+  const x = Transform.x[eid] ?? 0;
+  const y = Transform.y[eid] ?? 0;
+  const radius = Circle.radius[eid] ?? 0;
   const startAngle = Circle.startAngle[eid] ?? 0;
   const endAngle = Circle.endAngle[eid] ?? Math.PI * 2;
   const isWireframe = Circle.isWireframe[eid] === 1;
-  const originX = (Circle.originX[eid] ?? 0) * PIXELS_PER_METER;
-  const originY = (Circle.originY[eid] ?? 0) * PIXELS_PER_METER;
+  const originX = Circle.originX[eid] ?? 0;
+  const originY = Circle.originY[eid] ?? 0;
 
-  // Apply styles
-  context.fillStyle = Style.fillColor[eid] ?? "#ffffff";
-  context.strokeStyle = Style.strokeColor[eid] ?? "#000000";
-  context.lineWidth = Style.strokeWidth[eid] ?? 1;
+  // Apply styles with better defaults
+  context.fillStyle = Style.fillColor[eid] ?? "#666666";
+  context.strokeStyle = Style.strokeColor[eid] ?? "#333333";
+  context.lineWidth = Style.strokeWidth[eid] ?? 2;
   context.globalAlpha = Style.fillOpacity[eid] ?? 1;
 
   context.save();
@@ -195,17 +182,32 @@ export class EntityLayer implements RenderLayer {
   order = RENDER_LAYERS.ENTITIES;
 
   render({ ctx, world }: RenderContext): void {
-    const npcs = query(world, [Transform, NPC, Polygon]);
-    const hostileNpcs = query(world, [Transform, HostileNPC]);
-    const players = query(world, [Transform, Player, CurrentPlayer, Polygon]);
-    const boxes = query(world, [Transform, Box, Shape, Style]);
-    const circles = query(world, [Transform, Circle, Shape, Style]);
+    const npcs = query(world, [Transform, NPC, Polygon, Style]);
+    const players = query(world, [
+      Transform,
+      Player,
+      CurrentPlayer,
+      Polygon,
+      Style,
+    ]);
+    const boxes = query(world, [
+      Transform,
+      Box,
+      Style,
+      IsA(world.prefabs.shape),
+    ]);
+    const circles = query(world, [
+      Transform,
+      Circle,
+      Style,
+      IsA(world.prefabs.shape),
+    ]);
 
     // Sort all entities by y position for proper layering
     const renderOrder = [...npcs, ...players, ...boxes, ...circles].sort(
       (a, b) => {
-        const yA = (Transform.y[a] ?? 0) * PIXELS_PER_METER;
-        const yB = (Transform.y[b] ?? 0) * PIXELS_PER_METER;
+        const yA = Transform.y[a] ?? 0;
+        const yB = Transform.y[b] ?? 0;
         return yA - yB;
       },
     );
@@ -222,25 +224,21 @@ export class EntityLayer implements RenderLayer {
         continue;
       }
 
-      const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-      const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+      const x = Transform.x[eid] ?? 0;
+      const y = Transform.y[eid] ?? 0;
       const { width, height } = getPolygonBounds(eid);
 
       if (npcs.includes(eid)) {
-        const isHostile = hostileNpcs.includes(eid);
         const isHovered = Hoverable.isHovered[eid] === 1;
         const isClicked = Clickable.isClicked[eid] === 1;
 
-        // Render NPC polygon
-        renderPolygon(
-          ctx,
-          eid,
-          isHostile ? "#ff4d4d" : "#4d94ff",
-          isHovered || isClicked ? "#ffffff" : "#ffffff66",
-          isHovered || isClicked ? 3 : 2,
-          isHostile ? "#ff000066" : "#0066ff66",
-          isHovered ? 25 : 15,
-        );
+        // Update style for hover/click state
+        if (isHovered || isClicked) {
+          Style.strokeColor[eid] = "#ffffff";
+          Style.strokeWidth[eid] = 3;
+        }
+
+        renderPolygon(ctx, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;
@@ -261,8 +259,7 @@ export class EntityLayer implements RenderLayer {
       }
 
       if (players.includes(eid)) {
-        // Render player polygon
-        renderPolygon(ctx, eid, "#00ff88", "#ffffff66", 2, "#00ff8866", 20);
+        renderPolygon(ctx, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;

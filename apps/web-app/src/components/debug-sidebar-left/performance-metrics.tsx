@@ -26,21 +26,28 @@ import {
 
 import type { DataPoint } from "~/lib/ecs/types";
 import { RingBuffer } from "~/lib/ecs/types";
-import { useGameStore } from "~/providers/game-store-provider";
+import { useDebugStore } from "~/providers/debug-provider";
+import { useGame } from "~/providers/game-provider";
 import { PerformanceMetric } from "./performance-metric";
 
 type SystemHistory = Record<string, RingBuffer<DataPoint>>;
 
 export function PerformanceMetrics() {
-  const engine = useGameStore((state) => state.engine);
-  const fps = useGameStore((state) => state.metrics?.performance.fps);
-  const frameTime = useGameStore(
+  const engine = useGame((state) => state.engine);
+  const isPerformanceOpen = useDebugStore(
+    (state) => state.sidebarSections.performance,
+  );
+  const toggleSidebarSection = useDebugStore(
+    (state) => state.toggleSidebarSection,
+  );
+  const fps = useDebugStore((state) => state.metrics?.performance.fps);
+  const frameTime = useDebugStore(
     (state) => state.metrics?.performance.frameTime,
   );
-  const memoryUsage = useGameStore(
+  const memoryUsage = useDebugStore(
     (state) => state.metrics?.performance.memoryUsage,
   );
-  const systems = useGameStore((state) => state.metrics?.performance.systems);
+  const systems = useDebugStore((state) => state.metrics?.performance.systems);
   const [fpsBuffer] = useState(() => new RingBuffer<DataPoint>(100));
   const [frameTimeBuffer] = useState(() => new RingBuffer<DataPoint>(100));
   const [memoryBuffer] = useState(() => new RingBuffer<DataPoint>(100));
@@ -91,6 +98,7 @@ export function PerformanceMetrics() {
     memoryBuffer,
     systemBuffers,
   ]);
+
   if (!engine) return null;
 
   const memoryMB = memoryUsage ? memoryUsage / 1024 / 1024 : 0;
@@ -100,6 +108,8 @@ export function PerformanceMetrics() {
       <Collapsible
         className="group/performance"
         data-testid="performance-metrics"
+        open={isPerformanceOpen}
+        onOpenChange={() => toggleSidebarSection("performance")}
       >
         <CollapsibleTrigger
           className="w-full"

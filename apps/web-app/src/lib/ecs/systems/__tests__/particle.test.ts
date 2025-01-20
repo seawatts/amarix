@@ -1,12 +1,13 @@
 import { createWorld, hasComponent } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Particle, ParticleEmitter, Transform } from "../../components";
 import { createParticleEmitter, createParticleSystem } from "../particle";
 
 describe.skip("Particle System", () => {
   it("should create particle emitter with default config", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const emitterEid = createParticleEmitter(world, { x: 100, y: 200 });
 
     // Verify emitter components
@@ -29,7 +30,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should create particle emitter with custom config", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const config = {
       emissionRate: 20,
       maxParticles: 100,
@@ -59,7 +60,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should emit particles at specified rate", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     createParticleEmitter(world, {
       emissionRate: 60,
       x: 100,
@@ -89,7 +90,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should respect max particles limit", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const emitterEid = createParticleEmitter(world, {
       emissionRate: 60,
       maxParticles: 2,
@@ -115,7 +116,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should update particle positions based on velocity", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     createParticleEmitter(world, {
       emissionRate: 60,
       particleSpeedMax: 1,
@@ -149,7 +150,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should remove particles when life reaches zero", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     createParticleEmitter(world, {
       emissionRate: 60,
       particleLife: 16,
@@ -178,7 +179,7 @@ describe.skip("Particle System", () => {
   });
 
   it("should spawn particles within radius", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const spawnRadius = 50;
     createParticleEmitter(world, {
       emissionRate: 60,

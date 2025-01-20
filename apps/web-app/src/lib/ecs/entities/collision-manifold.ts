@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
+import type { World } from "../types";
 import { CollisionManifold, Named, Transform } from "../components";
 
 export function createCollisionManifold(world: World) {

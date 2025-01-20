@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
-import { addComponent, addEntity } from "bitecs";
+import { addComponent, addEntity, IsA } from "bitecs";
 
+import type { World } from "../types";
 import {
   Box,
   Circle,
@@ -9,7 +9,6 @@ import {
   Debug,
   Named,
   RigidBody,
-  Shape,
   Style,
   Transform,
 } from "../components";
@@ -56,12 +55,12 @@ export function createBox(world: World, options: CreateBoxOptions) {
     eid,
     Transform,
     Box,
-    Shape,
     Style,
     RigidBody,
     Collidable,
     Named,
     Debug,
+    IsA(world.prefabs.shape),
   );
 
   // Set transform values
@@ -78,9 +77,6 @@ export function createBox(world: World, options: CreateBoxOptions) {
   Box.isWireframe[eid] = Number(options.isWireframe ?? false);
   Box.originX[eid] = 0;
   Box.originY[eid] = 0;
-
-  // Set shape type
-  Shape.type[eid] = "box";
 
   // Set default style
   Style.fillColor[eid] = "#ffffff";
@@ -117,12 +113,12 @@ export function createCircle(world: World, options: CreateCircleOptions) {
     eid,
     Transform,
     Circle,
-    Shape,
     Style,
     RigidBody,
     Collidable,
     Named,
     Debug,
+    IsA(world.prefabs.shape),
   );
 
   // Set transform values
@@ -134,15 +130,12 @@ export function createCircle(world: World, options: CreateCircleOptions) {
 
   // Set circle values
   Circle.radius[eid] = options.radius;
-  Circle.segments[eid] = options.segments ?? 32;
   Circle.startAngle[eid] = options.startAngle ?? 0;
   Circle.endAngle[eid] = options.endAngle ?? Math.PI * 2;
+  Circle.segments[eid] = options.segments ?? 32;
   Circle.isWireframe[eid] = Number(options.isWireframe ?? false);
   Circle.originX[eid] = 0;
   Circle.originY[eid] = 0;
-
-  // Set shape type
-  Shape.type[eid] = "circle";
 
   // Set default style
   Style.fillColor[eid] = "#ffffff";

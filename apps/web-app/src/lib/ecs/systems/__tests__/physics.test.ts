@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   CollisionManifold,
   Force,
@@ -14,7 +15,7 @@ import { createPhysicsSystem } from "../physics";
 
 describe("Physics System", () => {
   it("should apply gravity to non-static bodies", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with gravity
@@ -30,7 +31,7 @@ describe("Physics System", () => {
     RigidBody.isStatic[eid] = 0;
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60); // One frame at 60 FPS
+    physicsSystem(world);
 
     // Verify gravity force was applied
     // F = ma, so with m=1, F should equal g
@@ -38,7 +39,7 @@ describe("Physics System", () => {
   });
 
   it("should not apply gravity to static bodies", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up static entity with gravity
@@ -54,7 +55,7 @@ describe("Physics System", () => {
     RigidBody.isStatic[eid] = 1; // Static body
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // Verify no forces were applied
     expect(Force.x[eid]).toBe(0);
@@ -63,7 +64,7 @@ describe("Physics System", () => {
   });
 
   it("should apply forces and update velocity", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with force
@@ -77,7 +78,7 @@ describe("Physics System", () => {
     RigidBody.isStatic[eid] = 0;
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // F = ma, so a = F/m = 10/2 = 5 m/s²
     // v = at, so v = 5 * (1/60) ≈ 0.0833 m/s
@@ -85,7 +86,7 @@ describe("Physics System", () => {
   });
 
   it("should integrate velocity to update position", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with velocity
@@ -98,14 +99,14 @@ describe("Physics System", () => {
     RigidBody.isStatic[eid] = 0;
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // x = vt, so x = 1 * (1/60) ≈ 0.0167 m
     expect(Transform.x[eid]).toBeCloseTo(1 / 60, 4);
   });
 
   it("should handle polygon collision detection", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid1 = addEntity(world);
     const eid2 = addEntity(world);
 
@@ -129,7 +130,7 @@ describe("Physics System", () => {
     Polygon.verticesY[eid2] = new Float32Array([-1, -1, 1, 1]);
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // Check if collision manifold was created
     const manifolds = Object.keys(CollisionManifold.entity1).filter(
@@ -143,7 +144,7 @@ describe("Physics System", () => {
   });
 
   it("should resolve collisions with correct restitution", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid1 = addEntity(world);
     const eid2 = addEntity(world);
 
@@ -173,7 +174,7 @@ describe("Physics System", () => {
     Polygon.verticesY[eid2] = new Float32Array([-1, -1, 1, 1]);
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // Velocities should be reversed and scaled by average restitution
     expect(Velocity.x[eid1]).toBeLessThan(0);
@@ -181,7 +182,7 @@ describe("Physics System", () => {
   });
 
   it("should handle angular velocity and torque", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up rotating body
@@ -193,7 +194,7 @@ describe("Physics System", () => {
     RigidBody.isStatic[eid] = 0;
 
     const physicsSystem = createPhysicsSystem();
-    physicsSystem(world, 1 / 60);
+    physicsSystem(world);
 
     // τ = Iα, so α = τ/I = π rad/s²
     // ω = αt, so ω = π * (1/60) rad/s

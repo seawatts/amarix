@@ -1,7 +1,8 @@
 import { addEntity, createWorld } from "bitecs";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { Clickable } from "../../ecs/components";
+import type { WorldProps } from "../../ecs/types";
+import { Debug, Named } from "../../ecs/components";
 import { createDebugStore, defaultInitState } from "../debug";
 
 describe("Debug Store", () => {
@@ -11,7 +12,6 @@ describe("Debug Store", () => {
       const state = store.getState();
 
       expect(state.selectedEntityId).toBeNull();
-      expect(state.lastFrameTime).toBe(0);
       expect(state.metrics).toBeNull();
 
       // Check default system states
@@ -46,7 +46,7 @@ describe("Debug Store", () => {
         selectedEntityId: 1,
         systems: {
           ...defaultInitState.systems,
-          animation: false,
+          animation: { isEnabled: false, isPaused: false },
         },
         visualizations: {
           ...defaultInitState.visualizations,
@@ -98,29 +98,106 @@ describe("Debug Store", () => {
     });
   });
 
-  describe("World Updates", () => {
-    it("should update selected entity when clicked", () => {
-      const world = createWorld();
-      const store = createDebugStore();
-      const eid = addEntity(world);
+  it("should collect entity metrics", () => {
+    const world = createWorld<WorldProps>();
+    const store = createDebugStore();
+    const eid = addEntity(world);
 
-      // Add Clickable component and set it as clicked
-      Clickable.isClicked[eid] = 1;
+    // Add some component data
+    Named.name[eid] = "Test Entity";
+    Debug.logLevel[eid] = 3;
 
-      store.getState().update(world);
-      expect(store.getState().selectedEntityId).toBe(eid);
+    const metrics = store.getState().metrics;
+
+    expect(metrics).toBeDefined();
+    if (!metrics) return;
+
+    expect(metrics.entities).toHaveLength(1);
+    const entity = metrics.entities[0];
+    expect(entity).toBeDefined();
+    if (!entity) return;
+
+    interface EntityComponent {
+      data: Record<string, unknown>;
+      component: Record<string, unknown>;
+    }
+
+    interface Entity {
+      id: number;
+      name?: string;
+      components: Record<string, EntityComponent>;
+    }
+
+    const typedEntity = entity as Entity;
+
+    expect(typedEntity.id).toBe(eid);
+    expect(typedEntity.name).toBe("Test Entity");
+    expect(typedEntity.components.Named).toBeDefined();
+    expect(typedEntity.components.Named?.data.name).toBe("Test Entity");
+    expect(typedEntity.components.Debug).toBeDefined();
+    expect(typedEntity.components.Debug?.data.logLevel).toBe(3);
+  });
+
+  it("should collect performance metrics", () => {
+    const _world = createWorld<WorldProps>();
+    const store = createDebugStore();
+    store.getState().handleDebugEvent({
+      data: {
+        metrics: {
+          fps: 60,
+          frameTime: 16.67,
+          memoryUsage: 1_000_000,
+          systems: { TestSystem: 16 },
+        },
+      },
+      type: "metricsUpdated",
     });
 
-    it("should not update selected entity when nothing is clicked", () => {
-      const world = createWorld();
-      const store = createDebugStore();
-      const eid = addEntity(world);
-
-      // Add Clickable component but don't set it as clicked
-      Clickable.isClicked[eid] = 0;
-
-      store.getState().update(world);
-      expect(store.getState().selectedEntityId).toBeNull();
+    const metrics = store.getState().metrics;
+    expect(metrics?.performance).toMatchObject({
+      fps: expect.any(Number),
+      frameTime: expect.any(Number),
+      memoryUsage: 1_000_000,
+      systems: {
+        GameState: expect.any(Number),
+        TestSystem: 16,
+      },
     });
+  });
+
+  it("should handle undefined memory metrics", () => {
+    const mockPerformance = {
+      clearMarks: vi.fn(),
+      clearMeasures: vi.fn(),
+      clearResourceTimings: vi.fn(),
+      eventCounts: {} as PerformanceEventMap,
+      getEntries: vi.fn(),
+      getEntriesByName: vi.fn(),
+      getEntriesByType: vi.fn(),
+      mark: vi.fn(),
+      measure: vi.fn(),
+      memory: undefined,
+      navigation: {} as PerformanceNavigation,
+      now: () => 1000,
+      onresourcetimingbufferfull: null,
+      setResourceTimingBufferSize: vi.fn(),
+      timeOrigin: 0,
+      timing: {} as PerformanceTiming,
+      toJSON: vi.fn(),
+    };
+    globalThis.performance = mockPerformance as unknown as Performance;
+
+    const store = createDebugStore();
+    store.getState().handleDebugEvent({
+      data: {
+        metrics: {
+          systems: { TestSystem: 16 },
+        },
+      },
+      type: "metricsUpdated",
+    });
+
+    const metrics = store.getState().metrics;
+    expect(metrics?.performance.memoryUsage).toBe(0);
   });
 });

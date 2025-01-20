@@ -32,7 +32,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@acme/ui/sidebar";
 import { Switch } from "@acme/ui/switch";
@@ -42,13 +41,16 @@ import { useDebugStore } from "~/providers/debug-provider";
 const systemIcons = {
   animation: Play,
   battle: Swords,
+  camera: Eye,
   collision: Box,
+  debug: Cog,
   keyboard: Keyboard,
   mouse: MousePointer,
   movement: Move,
   npcInteraction: Users,
   particle: PartyPopper,
   physics: ArrowRight,
+  render: Layers,
   scene: Layers,
   script: Cog,
   sound: Volume2,
@@ -69,14 +71,27 @@ const visualizationIcons = {
 export function DebugToggles() {
   const systems = useDebugStore((state) => state.systems);
   const toggleSystem = useDebugStore((state) => state.toggleSystem);
+  const toggleSystemPause = useDebugStore((state) => state.toggleSystemPause);
   const visualizations = useDebugStore((state) => state.visualizations);
   const toggleVisualization = useDebugStore(
     (state) => state.toggleVisualization,
   );
 
+  const isSystemsOpen = useDebugStore((state) => state.sidebarSections.systems);
+  const isVisualizationsOpen = useDebugStore(
+    (state) => state.sidebarSections.visualizations,
+  );
+  const toggleSidebarSection = useDebugStore(
+    (state) => state.toggleSidebarSection,
+  );
+
   return (
     <>
-      <Collapsible className="group/collapsible">
+      <Collapsible
+        className="group/collapsible"
+        open={isSystemsOpen}
+        onOpenChange={() => toggleSidebarSection("systems")}
+      >
         <SidebarGroup>
           <CollapsibleTrigger className="w-full">
             <SidebarGroupLabel>
@@ -92,34 +107,49 @@ export function DebugToggles() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {(Object.keys(systems) as (keyof typeof systems)[]).map(
-                  (system) => {
-                    const Icon = systemIcons[system];
-                    return (
-                      <SidebarMenuItem key={system}>
-                        <SidebarMenuButton
-                          onClick={() => toggleSystem(system)}
-                          className="justify-between"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Icon className="size-4" />
-                            <span className="capitalize">
-                              {system.replaceAll(/([A-Z])/g, " $1").trim()}
-                            </span>
-                          </div>
-                          <Switch checked={systems[system]} />
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  },
-                )}
+                {Object.entries(systems).map(([name, state]) => {
+                  const Icon =
+                    systemIcons[name.toLowerCase() as keyof typeof systemIcons];
+                  return (
+                    <SidebarMenuItem
+                      key={name}
+                      className="flex-col items-start gap-2"
+                    >
+                      <div className="flex w-full items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="size-4" />
+                          <span className="capitalize">{name}</span>
+                        </div>
+                        <Switch
+                          checked={state.isEnabled}
+                          onCheckedChange={() => toggleSystem(name)}
+                        />
+                      </div>
+                      {state.isEnabled && (
+                        <div className="flex w-full items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            Paused
+                          </span>
+                          <Switch
+                            checked={state.isPaused}
+                            onCheckedChange={() => toggleSystemPause(name)}
+                          />
+                        </div>
+                      )}
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </CollapsibleContent>
         </SidebarGroup>
       </Collapsible>
 
-      <Collapsible className="group/collapsible">
+      <Collapsible
+        className="group/collapsible"
+        open={isVisualizationsOpen}
+        onOpenChange={() => toggleSidebarSection("visualizations")}
+      >
         <SidebarGroup>
           <CollapsibleTrigger className="w-full">
             <SidebarGroupLabel>
@@ -135,27 +165,23 @@ export function DebugToggles() {
           <CollapsibleContent>
             <SidebarGroupContent>
               <SidebarMenu>
-                {(
-                  Object.keys(visualizations) as (keyof typeof visualizations)[]
-                ).map((viz) => {
-                  const Icon = visualizationIcons[viz];
+                {Object.entries(visualizations).map(([name, isEnabled]) => {
+                  const Icon =
+                    visualizationIcons[name as keyof typeof visualizationIcons];
                   return (
-                    <SidebarMenuItem key={viz}>
-                      <SidebarMenuButton
-                        onClick={() => toggleVisualization(viz)}
-                        className="justify-between"
-                      >
+                    <SidebarMenuItem key={name}>
+                      <div className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="size-4" />
                           <span className="capitalize">
-                            {viz
-                              .replaceAll(/([A-Z])/g, " $1")
-                              .trim()
-                              .slice(4)}
+                            {name.replaceAll(/([A-Z])/g, " $1").trim()}
                           </span>
                         </div>
-                        <Switch checked={visualizations[viz]} />
-                      </SidebarMenuButton>
+                        <Switch
+                          checked={isEnabled}
+                          onCheckedChange={() => toggleVisualization(name)}
+                        />
+                      </div>
                     </SidebarMenuItem>
                   );
                 })}

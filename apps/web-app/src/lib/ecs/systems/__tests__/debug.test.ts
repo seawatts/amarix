@@ -1,9 +1,8 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { World, WorldProps } from "../../types";
 import type { DebugStore } from "~/lib/stores/debug";
-import type { GameStore } from "~/lib/stores/game-state";
 import { Debug, KeyboardState, MouseState } from "../../components";
 import { createDebugSystem } from "../debug";
 
@@ -11,10 +10,9 @@ describe("Debug System", () => {
   let world: World;
   let eid: number;
   let mockDebugStore: DebugStore;
-  let mockGameStore: GameStore;
 
   beforeEach(() => {
-    world = createWorld();
+    world = createWorld<WorldProps>();
     eid = addEntity(world);
 
     // Set up debug entity
@@ -24,51 +22,10 @@ describe("Debug System", () => {
 
     // Mock debug store
     mockDebugStore = {
-      lastFrameTime: 0,
-      metrics: {
-        performance: {
-          fps: 60,
-          frameTime: 16.67,
-          memoryUsage: 0,
-          systems: {},
-        },
-      },
-      selectedEntityId: null,
-      setSelectedEntityId: vi.fn(),
-      systems: {
-        animation: false,
-        battle: false,
-        collision: false,
-        keyboard: false,
-        mouse: false,
-        movement: false,
-        npcInteraction: false,
-        particle: false,
-        physics: false,
-        scene: false,
-        script: false,
-        sound: false,
-        sprite: false,
-        trigger: false,
-      },
-      toggleSystem: vi.fn(),
-      toggleVisualization: vi.fn(),
-      update: vi.fn(),
-      visualizations: {
-        showBoundingBoxes: false,
-        showCollisionPoints: false,
-        showForceVectors: false,
-        showParticleEmitters: false,
-        showPolygons: false,
-        showTriggerZones: false,
-        showVelocityVectors: false,
-      },
-    };
-
-    // Mock game store
-    mockGameStore = {
-      engine: null,
-      lastFrameTime: 0,
+      getSystems: vi.fn(),
+      handleDebugEvent: vi.fn(),
+      isDebugging: false,
+      isPaused: false,
       metrics: {
         entities: [],
         performance: {
@@ -78,11 +35,46 @@ describe("Debug System", () => {
           systems: {},
         },
       },
-      reset: vi.fn(),
-      setEngine: vi.fn(),
-      setWorld: vi.fn(),
-      update: vi.fn(),
-      world: null,
+      selectedEntityId: null,
+      setIsDebugging: vi.fn(),
+      setIsPaused: vi.fn(),
+      setSelectedEntityId: vi.fn(),
+      setSystems: vi.fn(),
+      sidebarSections: {
+        ecs: true,
+        performance: true,
+        systems: true,
+        visualizations: true,
+      },
+      systems: {
+        animation: { isEnabled: false, isPaused: false },
+        battle: { isEnabled: false, isPaused: false },
+        collision: { isEnabled: false, isPaused: false },
+        keyboard: { isEnabled: false, isPaused: false },
+        mouse: { isEnabled: false, isPaused: false },
+        movement: { isEnabled: false, isPaused: false },
+        npcInteraction: { isEnabled: false, isPaused: false },
+        particle: { isEnabled: false, isPaused: false },
+        physics: { isEnabled: false, isPaused: false },
+        scene: { isEnabled: false, isPaused: false },
+        script: { isEnabled: false, isPaused: false },
+        sound: { isEnabled: false, isPaused: false },
+        sprite: { isEnabled: false, isPaused: false },
+        trigger: { isEnabled: false, isPaused: false },
+      },
+      toggleSidebarSection: vi.fn(),
+      toggleSystem: vi.fn(),
+      toggleSystemPause: vi.fn(),
+      toggleVisualization: vi.fn(),
+      visualizations: {
+        showBoundingBoxes: false,
+        showCollisionPoints: false,
+        showForceVectors: false,
+        showParticleEmitters: false,
+        showPolygons: false,
+        showTriggerZones: false,
+        showVelocityVectors: false,
+      },
     };
 
     // Mock performance.memory
@@ -99,8 +91,8 @@ describe("Debug System", () => {
     KeyboardState.keys[eid] = 1 << 4; // Command key
     Debug.hoveredEntity[eid] = 1;
 
-    const debugSystem = createDebugSystem(mockDebugStore, mockGameStore);
-    debugSystem(world, 1 / 60);
+    const debugSystem = createDebugSystem(mockDebugStore);
+    debugSystem(world);
 
     // Verify bounding box is shown
     expect(Debug.showBoundingBox[eid]).toBe(1);
@@ -114,8 +106,8 @@ describe("Debug System", () => {
     KeyboardState.keys[eid] = 1 << 4; // Command key
     Debug.clickedEntity[eid] = 1;
 
-    const debugSystem = createDebugSystem(mockDebugStore, mockGameStore);
-    debugSystem(world, 1 / 60);
+    const debugSystem = createDebugSystem(mockDebugStore);
+    debugSystem(world);
 
     // Verify entity was selected
     expect(Debug.isSelected[eid]).toBe(1);
@@ -123,11 +115,11 @@ describe("Debug System", () => {
   });
 
   it("should update performance metrics periodically", () => {
-    const debugSystem = createDebugSystem(mockDebugStore, mockGameStore);
-    debugSystem(world, 1 / 60);
+    const debugSystem = createDebugSystem(mockDebugStore);
+    debugSystem(world);
 
     // Verify metrics were updated
-    expect(mockGameStore.metrics?.performance.memoryUsage).toBe(1_000_000);
+    expect(mockDebugStore.metrics?.performance.memoryUsage).toBe(1_000_000);
   });
 
   it("should sync debug store state with components", () => {
@@ -138,8 +130,8 @@ describe("Debug System", () => {
     Debug.showVelocityVector[eid] = 1;
     Debug.showTriggerZones[eid] = 1;
 
-    const debugSystem = createDebugSystem(mockDebugStore, mockGameStore);
-    debugSystem(world, 1 / 60);
+    const debugSystem = createDebugSystem(mockDebugStore);
+    debugSystem(world);
 
     // Verify all visualizations were synced
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
@@ -168,8 +160,8 @@ describe("Debug System", () => {
     Debug.showTriggerZones[eid] = 1;
 
     // Run system without command key pressed
-    const debugSystem = createDebugSystem(mockDebugStore, mockGameStore);
-    debugSystem(world, 1 / 60);
+    const debugSystem = createDebugSystem(mockDebugStore);
+    debugSystem(world);
 
     // Verify debug flags were reset
     expect(Debug.showBoundingBox[eid]).toBe(0);

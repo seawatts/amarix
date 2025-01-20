@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useAnimation, useInView } from "framer-motion";
 import {
   BarChart,
   ChevronRight,
@@ -12,6 +11,7 @@ import {
   Rss,
   Shield,
 } from "lucide-react";
+import { motion, useAnimation, useInView } from "motion/react";
 
 import { buttonVariants } from "@acme/ui/button";
 import { cn } from "@acme/ui/lib/utils";
@@ -38,7 +38,7 @@ const tiles = [
   },
   {
     bg: (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r from-yellow-400 via-orange-500 to-yellow-600 opacity-70 blur-[20px] filter"></div>
+      <div className="from-yellow-400 to-yellow-600 pointer-events-none absolute left-1/2 top-1/2 h-1/2 w-1/2 -translate-x-1/2 -translate-y-1/2 overflow-visible rounded-full bg-gradient-to-r via-orange-500 opacity-70 blur-[20px] filter"></div>
     ),
     icon: <Shield className="size-full" />,
   },

@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { query } from "bitecs";
 
 import { NPCInteraction } from "~/lib/ecs/components";
-import { useGameStore } from "~/providers/game-store-provider";
+import { useGame } from "~/providers/game-provider";
 import { NPCDialog } from "./npc-dialog";
 
 export function NPCInteractionManager() {
-  const world = useGameStore((state) => state.world);
+  const world = useGame((state) => state.world);
   const [activeInteraction, setActiveInteraction] = useState<{
     message: string;
     entityId: number;

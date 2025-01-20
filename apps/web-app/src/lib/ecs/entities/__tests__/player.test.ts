@@ -1,6 +1,7 @@
-import { createWorld, query } from "bitecs";
+import { addPrefab, createWorld, IsA, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   Animation,
   Collidable,
@@ -21,7 +22,16 @@ import { createPlayer } from "../player";
 
 describe("Player Entity", () => {
   it("should create a player with all required components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>({
+      prefabs: {
+        shape: 0,
+      },
+      timing: {
+        delta: 16.67,
+        lastFrame: 0,
+      },
+    });
+    world.prefabs.shape = addPrefab(world);
     const playerEid = createPlayer(world, { x: 100, y: 150 });
 
     // Check if player entity has all required components
@@ -112,10 +122,37 @@ describe("Player Entity", () => {
   });
 
   it("should create a player at default position when no coordinates provided", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>({
+      prefabs: {
+        shape: 0,
+      },
+      timing: {
+        delta: 16.67,
+        lastFrame: 0,
+      },
+    });
+    world.prefabs.shape = addPrefab(world);
     const playerEid = createPlayer(world, { x: 0, y: 0 });
 
     expect(Transform.x[playerEid]).toBe(0);
     expect(Transform.y[playerEid]).toBe(0);
+  });
+
+  it("should be queryable as a shape using IsA relationship", () => {
+    const world = createWorld<WorldProps>({
+      prefabs: {
+        shape: 0,
+      },
+      timing: {
+        delta: 16.67,
+        lastFrame: 0,
+      },
+    });
+    world.prefabs.shape = addPrefab(world);
+    const playerEid = createPlayer(world, { x: 0, y: 0 });
+
+    // Query for entities that are shapes
+    const shapes = query(world, [IsA(world.prefabs.shape)]);
+    expect(shapes).toContain(playerEid);
   });
 });

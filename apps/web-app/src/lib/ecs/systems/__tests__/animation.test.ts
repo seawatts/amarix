@@ -1,12 +1,13 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Animation, Sprite } from "../../components";
 import { createAnimationSystem, registerAnimation } from "../animation";
 
 describe.skip("Animation System", () => {
   it("should register and play an animation sequence", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     addComponent(world, eid, Animation, Sprite);
 
@@ -52,7 +53,7 @@ describe.skip("Animation System", () => {
   });
 
   it("should respect non-looping animations", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     addComponent(world, eid, Animation, Sprite);
 
@@ -91,7 +92,7 @@ describe.skip("Animation System", () => {
   });
 
   it("should skip entities with invalid animation states", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     addComponent(world, eid, Animation, Sprite);
 
@@ -108,7 +109,7 @@ describe.skip("Animation System", () => {
   });
 
   it("should respect custom frame duration", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     addComponent(world, eid, Animation, Sprite);
 

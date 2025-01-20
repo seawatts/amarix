@@ -1,6 +1,7 @@
-import { createWorld, query } from "bitecs";
+import { addPrefab, createWorld, IsA, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   Box,
   Collidable,
@@ -8,7 +9,6 @@ import {
   Debug,
   Named,
   RigidBody,
-  Shape,
   Style,
   Transform,
 } from "../../components";
@@ -17,7 +17,16 @@ import { createBox } from "../shapes";
 describe("Shapes Entities", () => {
   describe("Box Entity", () => {
     it("should create a box with all required components", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>({
+        prefabs: {
+          shape: 0,
+        },
+        timing: {
+          delta: 16.67,
+          lastFrame: 0,
+        },
+      });
+      world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
         width: 200,
@@ -29,7 +38,7 @@ describe("Shapes Entities", () => {
       const boxes = query(world, [
         Transform,
         Box,
-        Shape,
+        IsA(world.prefabs.shape),
         Style,
         RigidBody,
         Collidable,
@@ -52,9 +61,6 @@ describe("Shapes Entities", () => {
       expect(Box.isWireframe[boxEid]).toBe(0);
       expect(Box.originX[boxEid]).toBe(0);
       expect(Box.originY[boxEid]).toBe(0);
-
-      // Check shape type
-      expect(Shape.type[boxEid]).toBe("box");
 
       // Check style values
       expect(Style.fillColor[boxEid]).toBe("#ffffff");
@@ -82,7 +88,16 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a static box", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>({
+        prefabs: {
+          shape: 0,
+        },
+        timing: {
+          delta: 16.67,
+          lastFrame: 0,
+        },
+      });
+      world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
         isStatic: true,
@@ -96,7 +111,16 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a trigger box", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>({
+        prefabs: {
+          shape: 0,
+        },
+        timing: {
+          delta: 16.67,
+          lastFrame: 0,
+        },
+      });
+      world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
         isTrigger: true,
@@ -109,7 +133,16 @@ describe("Shapes Entities", () => {
     });
 
     it("should create a wireframe box", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>({
+        prefabs: {
+          shape: 0,
+        },
+        timing: {
+          delta: 16.67,
+          lastFrame: 0,
+        },
+      });
+      world.prefabs.shape = addPrefab(world);
       const boxEid = createBox(world, {
         height: 100,
         isWireframe: true,

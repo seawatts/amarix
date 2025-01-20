@@ -16,14 +16,14 @@ import {
 import { Icons } from "@acme/ui/icons";
 
 import { useDebugStore } from "~/providers/debug-provider";
-import { useGameStore } from "~/providers/game-store-provider";
+import { useGame } from "~/providers/game-provider";
 
 interface GameContextMenuProps {
   children: React.ReactNode;
 }
 
 export function GameContextMenu({ children }: GameContextMenuProps) {
-  const engine = useGameStore((state) => state.engine);
+  const engine = useGame((state) => state.engine);
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
   );
@@ -41,8 +41,7 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
           inset
           onSelect={() => {
             if (!engine) return;
-            // TODO: Implement togglePause in GameEngine
-            // engine.togglePause();
+            engine.togglePause();
           }}
         >
           Toggle Pause
@@ -53,8 +52,7 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
           inset
           onSelect={() => {
             if (!engine) return;
-            // TODO: Implement reset in GameEngine
-            // engine.reset();
+            engine.reset();
           }}
         >
           Reset Game

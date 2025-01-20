@@ -3,7 +3,7 @@
 import type { PropsWithChildren } from "react";
 import { useRef } from "react";
 import Image from "next/image";
-import { useInView } from "framer-motion";
+import { useInView } from "motion/react";
 
 import { Button } from "@acme/ui/button";
 import { cn } from "@acme/ui/lib/utils";

@@ -1,4 +1,4 @@
-import type { World } from "bitecs";
+import type { World } from "../../types";
 import { query } from "bitecs";
 
 import { Camera, KeyboardState, MouseState, Transform } from "../components";

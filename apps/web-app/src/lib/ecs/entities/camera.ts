@@ -1,13 +1,33 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
+import type { World } from "../types";
 import { Camera, Debug, Named, Transform } from "../components";
 
-interface CreateCameraOptions {
-  target?: number;
+interface CreateCameraOptionsWithTarget {
+  x?: never;
+  y?: never;
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+  zoom?: number;
+  target: number;
 }
 
-export function createCamera(world: World, options: CreateCameraOptions = {}) {
+interface CreateCameraOptionsWithTransform {
+  x?: number;
+  y?: number;
+  rotation?: number;
+  scaleX?: number;
+  scaleY?: number;
+  zoom?: number;
+  target?: never;
+}
+
+type CreateCameraOptions =
+  | CreateCameraOptionsWithTarget
+  | CreateCameraOptionsWithTransform;
+
+export function createCamera(world: World, options?: CreateCameraOptions) {
   const eid = addEntity(world);
 
   // Add camera components
@@ -22,16 +42,16 @@ export function createCamera(world: World, options: CreateCameraOptions = {}) {
   Camera.maxY[eid] = Number.POSITIVE_INFINITY;
   Camera.minX[eid] = Number.NEGATIVE_INFINITY;
   Camera.minY[eid] = Number.NEGATIVE_INFINITY;
-  Camera.smoothing[eid] = 0.1;
-  Camera.target[eid] = options.target ?? 0;
-  Camera.zoom[eid] = 1;
+  Camera.smoothing[eid] = 0;
+  Camera.target[eid] = options?.target ?? 0;
+  Camera.zoom[eid] = options?.zoom ?? 1;
 
   // Set transform values
-  Transform.x[eid] = 0;
-  Transform.y[eid] = 0;
-  Transform.rotation[eid] = 0;
-  Transform.scaleX[eid] = 1;
-  Transform.scaleY[eid] = 1;
+  Transform.x[eid] = options?.x ?? 0;
+  Transform.y[eid] = options?.y ?? 0;
+  Transform.rotation[eid] = options?.rotation ?? 0;
+  Transform.scaleX[eid] = options?.scaleX ?? 1;
+  Transform.scaleY[eid] = options?.scaleY ?? 1;
 
   // Set name
   Named.name[eid] = "Camera";

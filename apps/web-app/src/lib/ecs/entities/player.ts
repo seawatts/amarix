@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
-import { addComponent, addEntity } from "bitecs";
+import { addComponent, addEntity, IsA } from "bitecs";
 
+import type { World } from "../types";
 import {
   Acceleration,
   Animation,
@@ -20,19 +20,18 @@ import {
   RigidBody,
   Sound,
   Sprite,
+  Style,
   Transform,
   Velocity,
 } from "../components";
+import { PIXELS_PER_METER } from "../systems/physics";
 import { createDebug } from "./debug";
-
-// Physics scale
-const PIXELS_PER_METER = 100; // 1 meter = 100 pixels
 
 // Player dimensions (1 meter x 1 meter)
 const PLAYER_SIZE = PIXELS_PER_METER;
 
 // Physics constants
-const GRAVITY = 9.81 * PIXELS_PER_METER; // m/s² scaled to pixels
+const GRAVITY = 9.81; // m/s²
 const PLAYER_MASS = 70; // kg
 const PLAYER_FRICTION = 0.2; // Increased friction for better control
 const PLAYER_RESTITUTION = 0.1; // Reduced bounciness
@@ -105,6 +104,7 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
     KeyboardState,
     MouseState,
     Polygon,
+    IsA(world.prefabs.shape),
     RigidBody,
     Collidable,
     Clickable,
@@ -117,6 +117,7 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
     Force,
     Named,
     Debug,
+    Style,
   );
 
   // Set player values
@@ -196,6 +197,12 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   // Set name
   Named.name[playerEid] = "Player";
   createDebug(playerEid);
+
+  // Set style values
+  Style.fillColor[playerEid] = "#00ff88";
+  Style.strokeColor[playerEid] = "#ffffff";
+  Style.strokeWidth[playerEid] = 2;
+  Style.fillOpacity[playerEid] = 1;
 
   return playerEid;
 }

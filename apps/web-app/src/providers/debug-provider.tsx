@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useMemo } from "react";
 import { useStore } from "zustand";
 
 import type { DebugStore } from "~/lib/stores/debug";
@@ -18,13 +18,10 @@ export interface DebugStoreProviderProps {
 }
 
 export const DebugStoreProvider = ({ children }: DebugStoreProviderProps) => {
-  const storeRef = useRef<DebugStoreApi>(null);
-  if (!storeRef.current) {
-    storeRef.current = createDebugStore();
-  }
+  const storeRef = useMemo<DebugStoreApi>(() => createDebugStore(), []);
 
   return (
-    <DebugStoreContext.Provider value={storeRef.current}>
+    <DebugStoreContext.Provider value={storeRef}>
       {children}
     </DebugStoreContext.Provider>
   );

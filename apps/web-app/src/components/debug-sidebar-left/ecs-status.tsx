@@ -18,7 +18,6 @@ import {
 } from "@acme/ui/sidebar";
 
 import { useDebugStore } from "~/providers/debug-provider";
-import { useGameStore } from "~/providers/game-store-provider";
 
 function formatValue(value: unknown): string {
   if (typeof value === "boolean") {
@@ -80,19 +79,23 @@ function ComponentTree({ item }: { item: ComponentTreeItem }) {
 }
 
 export function ECSStatus() {
-  const metrics = useGameStore((state) => state.metrics);
+  const entities = useDebugStore((state) => state.metrics?.entities);
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
   );
+  const isECSOpen = useDebugStore((state) => state.sidebarSections.ecs);
+  const toggleSidebarSection = useDebugStore(
+    (state) => state.toggleSidebarSection,
+  );
 
-  if (!metrics) return null;
+  if (!entities) return null;
 
   // Count total entities
-  const totalEntities = metrics.entities.length;
+  const totalEntities = entities.length;
 
   // Count component types
   const componentCounts = new Map<string, number>();
-  for (const entity of metrics.entities) {
+  for (const entity of entities) {
     for (const componentName of Object.keys(entity.components)) {
       componentCounts.set(
         componentName,
@@ -103,7 +106,11 @@ export function ECSStatus() {
 
   return (
     <SidebarGroup>
-      <Collapsible className="group/collapsible">
+      <Collapsible
+        className="group/collapsible"
+        open={isECSOpen}
+        onOpenChange={() => toggleSidebarSection("ecs")}
+      >
         <CollapsibleTrigger className="w-full">
           <SidebarGroupLabel>
             <div className="flex w-full items-center justify-between">
@@ -161,7 +168,7 @@ export function ECSStatus() {
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {metrics.entities.map((entity) => (
+                      {entities.map((entity) => (
                         <SidebarMenuItem key={entity.id}>
                           <SidebarMenuButton
                             onClick={() => setSelectedEntityId(entity.id)}

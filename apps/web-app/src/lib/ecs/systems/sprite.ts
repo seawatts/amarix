@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../types";
 import { Sprite, Transform } from "../components";
 
 // Cache for loaded sprite images

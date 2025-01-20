@@ -1,4 +1,5 @@
 import type { RenderContext, RenderLayer, RenderSystem } from "./types";
+import { PIXELS_PER_METER } from "../physics";
 
 export class Renderer implements RenderSystem {
   private layers: Map<string, RenderLayer>;
@@ -22,14 +23,15 @@ export class Renderer implements RenderSystem {
     // 1. Move to the center of the viewport
     ctx.translate(canvas.width / 2, canvas.height / 2);
 
-    // 2. Apply zoom
-    ctx.scale(camera.zoom, camera.zoom);
+    // 2. Apply zoom and PIXELS_PER_METER scaling
+    const scale = camera.zoom / PIXELS_PER_METER;
+    ctx.scale(scale, scale);
 
     // 3. Apply rotation
     ctx.rotate(camera.rotation);
 
     // 4. Move world opposite to camera position
-    ctx.translate(-camera.x, -camera.y);
+    ctx.translate(-camera.x * PIXELS_PER_METER, -camera.y * PIXELS_PER_METER);
   }
 
   render(context: RenderContext): void {

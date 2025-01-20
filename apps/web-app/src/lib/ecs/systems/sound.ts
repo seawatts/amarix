@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { query } from "bitecs";
 
+import type { World } from "../types";
 import { Sound } from "../components";
 
 // Cache for loaded audio

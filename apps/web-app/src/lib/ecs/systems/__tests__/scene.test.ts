@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Scene } from "../../components";
 import { changeScene, createSceneSystem, registerScene } from "../scene";
 
@@ -11,7 +12,7 @@ describe.skip("Scene System", () => {
   });
 
   it("should transition to new scene", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scene entity
@@ -51,7 +52,7 @@ describe.skip("Scene System", () => {
   });
 
   it("should pass data between scenes", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scene entity
@@ -82,7 +83,7 @@ describe.skip("Scene System", () => {
   });
 
   it("should update current scene", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scene entity
@@ -107,7 +108,7 @@ describe.skip("Scene System", () => {
   });
 
   it("should handle smooth transitions", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scene entity
@@ -135,7 +136,7 @@ describe.skip("Scene System", () => {
   });
 
   it("should handle missing scene configurations", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scene entity

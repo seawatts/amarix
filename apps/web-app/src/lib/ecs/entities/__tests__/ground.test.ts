@@ -1,6 +1,7 @@
 import { createWorld, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   Collidable,
   CollisionMask,
@@ -14,7 +15,7 @@ import { createGround } from "../ground";
 
 describe("Ground Entity", () => {
   it("should create a ground with all required components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const groundEid = createGround(world, {
       height: 20,
       width: 800,
@@ -59,7 +60,7 @@ describe("Ground Entity", () => {
   });
 
   it("should create a ground with correct polygon vertices", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const groundEid = createGround(world, {
       height: 100,
       width: 200,

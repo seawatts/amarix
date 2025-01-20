@@ -1,11 +1,11 @@
 "use client";
 
 import type { PropsWithChildren } from "react";
-import * as React from "react";
 
 import { Button } from "@acme/ui/button";
 import { cn } from "@acme/ui/lib/utils";
 import { Separator } from "@acme/ui/separator";
+import { Switch } from "@acme/ui/switch";
 
 interface FloatingToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
@@ -28,6 +28,33 @@ export function FloatingToolbarButton({
 
 export function FloatingToolbarSeparator() {
   return <Separator orientation="vertical" className="h-6" />;
+}
+
+export function FloatingToolbarSwitch({
+  icon,
+  checked,
+  onCheckedChange,
+  thumbComponent,
+  size = "sm",
+  variant,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof Switch> & {
+  icon?: React.ReactNode;
+  thumbComponent?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      {icon}
+      <Switch
+        checked={checked}
+        onCheckedChange={onCheckedChange}
+        thumbComponent={thumbComponent}
+        size={size}
+        variant={variant}
+        {...props}
+      />
+    </div>
+  );
 }
 
 export function FloatingToolbar({

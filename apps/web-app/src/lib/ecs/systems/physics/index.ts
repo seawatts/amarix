@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { query, removeEntity } from "bitecs";
 
+import type { World } from "../../types";
 import {
   CollisionManifold,
   Force,
@@ -19,6 +19,9 @@ import { createCollisionManifold } from "../../entities/collision-manifold";
 const FIXED_TIMESTEP = 1 / 60; // 60 Hz physics update
 const MAX_TIMESTEP = 0.1; // clamp large dt
 export const PIXELS_PER_METER = 247;
+const PENETRATION_CORRECTION_FACTOR = 0.8; // Correction factor for penetration (0.2-1.0)
+const PENETRATION_ALLOWANCE = 0.01 * PIXELS_PER_METER; // Small penetration allowed before correction
+const BAUMGARTE_FACTOR = 0.2; // Baumgarte stabilization factor
 
 /* ----------------------------------------------------------------------------
  * 2) 2D VECTOR & COLLISION UTILS
@@ -156,7 +159,7 @@ function applyGravitySystem(world: World) {
       continue;
     }
 
-    const gy = Gravity.y[eid] ?? 0; // e.g. 9.81
+    const gy = (Gravity.y[eid] ?? 0) * PIXELS_PER_METER; // Scale gravity to pixels/s²
     const mass = RigidBody.mass[eid] ?? 1;
     // F = m * g
     Force.y[eid] = (Force.y[eid] ?? 0) + mass * gy;
@@ -317,34 +320,62 @@ export function collisionSystem(world: World) {
         // Calculate restitution (coefficient of restitution)
         const restitution1 = RigidBody.restitution[eid1] ?? 0.5;
         const restitution2 = RigidBody.restitution[eid2] ?? 0.5;
-        const restitution = (restitution1 + restitution2) / 2;
+        const restitution = Math.min(restitution1, restitution2);
 
         // Calculate impulse magnitude
         const relativeVelocityAlongNormal =
           relativeVx * overlapAxis[0] + relativeVy * overlapAxis[1];
 
-        // Only resolve if objects are moving towards each other
-        if (relativeVelocityAlongNormal < 0) {
-          const mass1 = RigidBody.mass[eid1] ?? 1;
-          const mass2 = RigidBody.mass[eid2] ?? 1;
-          const inverseMassSum = 1 / mass1 + 1 / mass2;
+        const mass1 = RigidBody.mass[eid1] ?? 1;
+        const mass2 = RigidBody.mass[eid2] ?? 1;
+        const inverseMassSum =
+          (isStatic1 ? 0 : 1 / mass1) + (isStatic2 ? 0 : 1 / mass2);
 
-          const impulse =
-            (-(1 + restitution) * relativeVelocityAlongNormal) / inverseMassSum;
+        if (inverseMassSum > 0) {
+          // Add Baumgarte stabilization impulse
+          const penetrationError = Math.max(0, overlap - PENETRATION_ALLOWANCE);
+          const baumgarteImpulse =
+            (BAUMGARTE_FACTOR * penetrationError) / FIXED_TIMESTEP;
+          const velocityImpulse = relativeVelocityAlongNormal;
+          const totalImpulse =
+            (-(1 + restitution) * (velocityImpulse + baumgarteImpulse)) /
+            inverseMassSum;
 
-          // Apply impulse
+          // Apply impulses
           if (isStatic1 === 0) {
-            const newVx1 = v1x + (impulse / mass1) * overlapAxis[0];
-            const newVy1 = v1y + (impulse / mass1) * overlapAxis[1];
+            const newVx1 = v1x + (totalImpulse / mass1) * overlapAxis[0];
+            const newVy1 = v1y + (totalImpulse / mass1) * overlapAxis[1];
             Velocity.x[eid1] = newVx1;
             Velocity.y[eid1] = newVy1;
+
+            // Position correction with stronger factor for static collisions
+            const correctionFactor = isStatic2
+              ? 1
+              : PENETRATION_CORRECTION_FACTOR;
+            Transform.x[eid1] =
+              (Transform.x[eid1] ?? 0) +
+              overlapAxis[0] * overlap * correctionFactor;
+            Transform.y[eid1] =
+              (Transform.y[eid1] ?? 0) +
+              overlapAxis[1] * overlap * correctionFactor;
           }
 
           if (isStatic2 === 0) {
-            const newVx2 = v2x - (impulse / mass2) * overlapAxis[0];
-            const newVy2 = v2y - (impulse / mass2) * overlapAxis[1];
+            const newVx2 = v2x - (totalImpulse / mass2) * overlapAxis[0];
+            const newVy2 = v2y - (totalImpulse / mass2) * overlapAxis[1];
             Velocity.x[eid2] = newVx2;
             Velocity.y[eid2] = newVy2;
+
+            // Position correction with stronger factor for static collisions
+            const correctionFactor = isStatic1
+              ? 1
+              : PENETRATION_CORRECTION_FACTOR;
+            Transform.x[eid2] =
+              (Transform.x[eid2] ?? 0) -
+              overlapAxis[0] * overlap * correctionFactor;
+            Transform.y[eid2] =
+              (Transform.y[eid2] ?? 0) -
+              overlapAxis[1] * overlap * correctionFactor;
           }
         }
       }
@@ -355,9 +386,9 @@ export function collisionSystem(world: World) {
 }
 
 export function createPhysicsSystem() {
-  return function physicsSystem(world: World, deltaTime: number) {
+  return function physicsSystem(world: World) {
     // clamp dt
-    const clampedDt = Math.min(deltaTime, MAX_TIMESTEP);
+    const clampedDt = Math.min(world.timing.delta, MAX_TIMESTEP);
 
     // subdivide
     const steps = Math.ceil(clampedDt / FIXED_TIMESTEP);
@@ -366,13 +397,10 @@ export function createPhysicsSystem() {
     for (let index = 0; index < steps; index++) {
       // 1) Gravity
       applyGravitySystem(world);
-
       // 2) Forces => velocity
       applyForcesSystem(world, subDt);
-
       // 3) Integrate
       integrationSystem(world, subDt);
-
       // 4) Collisions (torque-based)
       collisionSystem(world);
     }

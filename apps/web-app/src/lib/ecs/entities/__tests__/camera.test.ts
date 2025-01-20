@@ -1,12 +1,13 @@
 import { createWorld, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Camera, Debug, Named, Transform } from "../../components";
 import { createCamera } from "../camera";
 
 describe("Camera Entity", () => {
   it("should create a camera with default values", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const cameraEid = createCamera(world);
 
     // Check if camera entity has all required components
@@ -38,7 +39,7 @@ describe("Camera Entity", () => {
   });
 
   it("should create a camera with target", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const targetEid = 42;
     const cameraEid = createCamera(world, { target: targetEid });
 

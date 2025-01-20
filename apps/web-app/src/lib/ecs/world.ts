@@ -1,5 +1,7 @@
-import { createWorld } from "bitecs";
+import { addComponent, addPrefab, createWorld } from "bitecs";
 
+import type { WorldProps } from "./types";
+import { Debug, Named } from "./components";
 import {
   createCamera,
   createGround,
@@ -79,7 +81,20 @@ function getRandomGridPosition(
 
 export function createGameWorld(canvas: HTMLCanvasElement) {
   // Create the world first
-  const world = createWorld();
+  const world = createWorld<WorldProps>({
+    prefabs: {
+      shape: 0, // Will be replaced with actual prefab ID
+    },
+    timing: {
+      delta: 0,
+      lastFrame: 0,
+    },
+  });
+
+  // Create the shape prefab
+  const shapePrefab = addPrefab(world);
+  addComponent(world, shapePrefab, Named, Debug);
+  world.prefabs.shape = shapePrefab;
 
   // Register animations
   for (const [name, sequence] of Object.entries(PLAYER_ANIMATIONS)) {
@@ -139,7 +154,8 @@ export function createGameWorld(canvas: HTMLCanvasElement) {
   });
 
   // Create camera targeting the player
-  createCamera(world, { target: playerEntity });
+  createCamera(world, { x: 1500, y: 1000 });
+  // createCamera(world);
 
   return world;
 }

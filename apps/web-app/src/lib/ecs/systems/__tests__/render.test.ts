@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { WorldProps } from "../../types";
 import type { RenderContext, RenderLayer } from "../render/types";
 import { Camera, Transform } from "../../components";
 import { createRenderSystem } from "../render";
@@ -86,7 +87,7 @@ describe("Render System", () => {
   });
 
   it("should handle camera transformations correctly", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const cameraEid = addEntity(world);
 
     // Set up camera entity
@@ -99,7 +100,7 @@ describe("Render System", () => {
     Transform.rotation[cameraEid] = Math.PI / 4;
 
     const renderSystem = createRenderSystem(canvas, context);
-    renderSystem(world, 1 / 60);
+    renderSystem(world);
 
     // Verify camera transformations were applied in correct order
     // 1. Move to center of viewport
@@ -116,7 +117,7 @@ describe("Render System", () => {
   });
 
   it("should follow target entity when specified", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const cameraEid = addEntity(world);
     const targetEid = addEntity(world);
 
@@ -132,14 +133,14 @@ describe("Render System", () => {
     Transform.y[targetEid] = 400;
 
     const renderSystem = createRenderSystem(canvas, context);
-    renderSystem(world, 1 / 60);
+    renderSystem(world);
 
     // Verify camera follows target position
     expect(mockContext.translate).toHaveBeenCalledWith(-300, -400);
   });
 
   it("should render layers in correct order", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const renderOrder: string[] = [];
 
     // Create mock layers
@@ -176,7 +177,6 @@ describe("Render System", () => {
       camera: { rotation: 0, x: 0, y: 0, zoom: 1 },
       canvas,
       ctx: context,
-      deltaTime: 1 / 60,
       world,
     };
 
@@ -193,7 +193,7 @@ describe("Render System", () => {
   });
 
   it("should respect ignoreCamera flag for UI layers", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const cameraEid = addEntity(world);
 
     // Set up camera
@@ -220,7 +220,6 @@ describe("Render System", () => {
       camera: { rotation: 0, x: 100, y: 200, zoom: 1 },
       canvas,
       ctx: context,
-      deltaTime: 1 / 60,
       world,
     };
 
@@ -236,14 +235,13 @@ describe("Render System", () => {
   });
 
   it("should clear canvas before rendering", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
 
     // Create render context
     const renderContext: RenderContext = {
       camera: { rotation: 0, x: 0, y: 0, zoom: 1 },
       canvas,
       ctx: context,
-      deltaTime: 1 / 60,
       world,
     };
 
@@ -254,7 +252,7 @@ describe("Render System", () => {
   });
 
   it("should use first active camera only", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const camera1Eid = addEntity(world);
     const camera2Eid = addEntity(world);
 
@@ -273,7 +271,7 @@ describe("Render System", () => {
     Transform.y[camera2Eid] = 400;
 
     const renderSystem = createRenderSystem(canvas, context);
-    renderSystem(world, 1 / 60);
+    renderSystem(world);
 
     // Verify only first camera's transform was applied
     // First translate to center

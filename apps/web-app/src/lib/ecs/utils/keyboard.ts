@@ -42,44 +42,41 @@ function getKeyBit(code: string): number {
 }
 
 // Helper function to check if a key is pressed
-export function isKeyDown(playerEid: number, code: string): boolean {
+export function isKeyDown(eid: number, code: string): boolean {
   const bit = getKeyBit(code);
   if (bit === -1) return false;
-  const value = KeyboardState.keys[playerEid];
+  const value = KeyboardState.keys[eid];
   if (value === undefined) return false;
   return (value & (1 << bit)) !== 0;
 }
 
 // Helper function to set key state
-export function setKeyDown(playerEid: number, code: string) {
+export function setKeyDown(eid: number, code: string) {
   const bit = getKeyBit(code);
   if (bit === -1) return;
-  const value = KeyboardState.keys[playerEid];
+  const value = KeyboardState.keys[eid];
   if (value === undefined) return;
-  KeyboardState.keys[playerEid] = value | (1 << bit);
+  KeyboardState.keys[eid] = value | (1 << bit);
 }
 
 // Helper function to clear key state
-export function clearKeyDown(playerEid: number, code: string) {
+export function clearKeyDown(eid: number, code: string) {
   const bit = getKeyBit(code);
   if (bit === -1) return;
-  const value = KeyboardState.keys[playerEid];
+  const value = KeyboardState.keys[eid];
   if (value === undefined) return;
-  KeyboardState.keys[playerEid] = value & ~(1 << bit);
+  KeyboardState.keys[eid] = value & ~(1 << bit);
 }
 
 // Helper function to get movement input
-export function getMovementInput(playerEid: number): {
+export function getMovementInput(eid: number): {
   dx: number;
   dy: number;
 } {
-  const up = isKeyDown(playerEid, "ArrowUp") || isKeyDown(playerEid, "KeyW");
-  const down =
-    isKeyDown(playerEid, "ArrowDown") || isKeyDown(playerEid, "KeyS");
-  const left =
-    isKeyDown(playerEid, "ArrowLeft") || isKeyDown(playerEid, "KeyA");
-  const right =
-    isKeyDown(playerEid, "ArrowRight") || isKeyDown(playerEid, "KeyD");
+  const up = isKeyDown(eid, "ArrowUp") || isKeyDown(eid, "KeyW");
+  const down = isKeyDown(eid, "ArrowDown") || isKeyDown(eid, "KeyS");
+  const left = isKeyDown(eid, "ArrowLeft") || isKeyDown(eid, "KeyA");
+  const right = isKeyDown(eid, "ArrowRight") || isKeyDown(eid, "KeyD");
 
   const dx = (right ? 1 : 0) - (left ? 1 : 0);
   const dy = (down ? 1 : 0) - (up ? 1 : 0);
@@ -88,6 +85,6 @@ export function getMovementInput(playerEid: number): {
 }
 
 // Helper function to check if command key is pressed
-export function isCommandKeyDown(playerEid: number): boolean {
-  return isKeyDown(playerEid, "MetaLeft") || isKeyDown(playerEid, "MetaRight");
+export function isCommandKeyDown(eid: number): boolean {
+  return isKeyDown(eid, "MetaLeft") || isKeyDown(eid, "MetaRight");
 }

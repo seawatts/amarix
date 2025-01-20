@@ -1,6 +1,18 @@
 import type { World as BitecsWorld } from "bitecs";
 
-export type World = BitecsWorld;
+export type Entity = number;
+
+export interface WorldProps {
+  timing: {
+    lastFrame: number;
+    delta: number;
+  };
+  prefabs: {
+    shape: Entity;
+    [key: string]: Entity;
+  };
+}
+export type World = BitecsWorld<WorldProps>;
 
 export type Component<T> = Record<number, T>;
 

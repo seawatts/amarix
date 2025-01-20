@@ -1,12 +1,13 @@
 import { addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Debug } from "../../components";
 import { createDebug } from "../debug";
 
 describe("Debug Entity", () => {
   it("should create debug component with default values", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     createDebug(eid);
 
@@ -28,7 +29,7 @@ describe("Debug Entity", () => {
   });
 
   it("should create debug component with custom values", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     createDebug(eid, {
       logLevel: 1,
@@ -50,7 +51,7 @@ describe("Debug Entity", () => {
   });
 
   it("should have a toString function that formats debug info", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     createDebug(eid);
 

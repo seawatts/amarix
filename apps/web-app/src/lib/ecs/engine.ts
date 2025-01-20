@@ -1,12 +1,10 @@
-import type { World } from "bitecs";
 import { query } from "bitecs";
 
-import type { DebugStore } from "~/lib/stores/debug";
+import type { World } from "./types";
 import type { GameStore } from "~/lib/stores/game-state";
 import { Camera, CurrentPlayer } from "./components";
 import { createAnimationSystem } from "./systems/animation";
 import { createCameraSystem } from "./systems/camera";
-import { createDebugSystem } from "./systems/debug";
 import { createKeyboardSystem } from "./systems/keyboard";
 import { createMouseSystem } from "./systems/mouse";
 import { createMovementSystem } from "./systems/movement";
@@ -20,27 +18,26 @@ import { createSpriteSystem } from "./systems/sprite";
 import { createTriggerSystem } from "./systems/trigger";
 import { createGameWorld } from "./world";
 
-type GameSystem = (world: World, deltaTime: number) => World;
+type GameSystem = (world: World) => World;
 
 export class GameEngine {
   private canvas: HTMLCanvasElement;
-  world: World;
-  private systems: GameSystem[];
+  public world: World;
+  private _systems: { name: string; system: GameSystem }[];
   private animationFrameId: number | null = null;
-  private lastTime = performance.now();
   private frameInterval = 1 / 60; // Convert to milliseconds
   private store: GameStore;
-  private debugStore: DebugStore;
+  private isPaused = false;
 
-  constructor(
-    canvas: HTMLCanvasElement,
-    store: GameStore,
-    debugStore: DebugStore,
-  ) {
+  constructor(canvas: HTMLCanvasElement, store: GameStore) {
     this.canvas = canvas;
     this.store = store;
-    this.debugStore = debugStore;
     this.world = createGameWorld(canvas);
+    // this.store.
+    this.world.timing = {
+      delta: 0,
+      lastFrame: performance.now(),
+    };
 
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -48,27 +45,44 @@ export class GameEngine {
     }
 
     // Create systems
-    this.systems = [
-      createKeyboardSystem(),
-      createMouseSystem(canvas),
-      createMovementSystem(canvas),
-      createPhysicsSystem(),
-      createTriggerSystem(),
-      createScriptSystem(),
-      createSpriteSystem(),
-      createAnimationSystem(),
-      createSoundSystem(),
-      createParticleSystem(),
-      createSceneSystem(),
-      createCameraSystem(),
-      createRenderSystem(canvas, context),
-      createDebugSystem(this.debugStore, this.store),
+    this._systems = [
+      { name: "keyboard", system: createKeyboardSystem() },
+      { name: "mouse", system: createMouseSystem(canvas) },
+      { name: "movement", system: createMovementSystem(canvas) },
+      { name: "physics", system: createPhysicsSystem() },
+      { name: "trigger", system: createTriggerSystem() },
+      { name: "script", system: createScriptSystem() },
+      { name: "sprite", system: createSpriteSystem() },
+      { name: "animation", system: createAnimationSystem() },
+      { name: "sound", system: createSoundSystem() },
+      { name: "particle", system: createParticleSystem() },
+      { name: "scene", system: createSceneSystem() },
+      { name: "camera", system: createCameraSystem() },
+      { name: "render", system: createRenderSystem(canvas, context) },
+      // { name: "debug", system: createDebugSystem(this.debugStore, this.store) },
     ];
+
+    const initialSystems: Record<
+      string,
+      { isEnabled: boolean; isPaused: boolean }
+    > = {};
+    for (const { name } of this._systems) {
+      initialSystems[name] = { isEnabled: true, isPaused: false };
+    }
+    // this.debugStore.setSystems(initialSystems);
+  }
+
+  public addSystem(system: GameSystem) {
+    this._systems.push({ name: system.name, system });
+  }
+
+  public get systems() {
+    return [...this._systems];
   }
 
   public start() {
     if (this.animationFrameId !== null) return;
-    this.lastTime = performance.now();
+    this.world.timing.lastFrame = performance.now();
     this.animationFrameId = requestAnimationFrame(this.gameLoop);
   }
 
@@ -78,32 +92,42 @@ export class GameEngine {
     this.animationFrameId = null;
   }
 
+  public togglePause() {
+    this.isPaused = !this.isPaused;
+    // this.debugStore.setIsPaused(this.isPaused);
+  }
+
   private gameLoop = (timestamp: number) => {
     // Don't continue if engine has been stopped
     if (this.animationFrameId === null) return;
 
-    const deltaTimeMs = timestamp - this.lastTime;
+    const deltaTimeMs = timestamp - this.world.timing.lastFrame;
     const deltaTime = deltaTimeMs / 1000;
 
     if (deltaTimeMs >= this.frameInterval * 1000) {
-      this.lastTime = timestamp - (deltaTimeMs % (this.frameInterval * 1000));
+      this.world.timing.lastFrame =
+        timestamp - (deltaTimeMs % (this.frameInterval * 1000));
+      this.world.timing.delta = deltaTime;
 
-      // Run each system in sequence
-      let currentWorld = this.world;
-      const systemPerformance: Record<string, number> = {};
+      // Skip system updates if paused, but still update debug state
+      if (!this.isPaused) {
+        // Run each system in sequence
+        let currentWorld = this.world;
+        const systemPerformance: Record<string, number> = {};
 
-      for (const system of this.systems) {
-        const startTime = performance.now();
-        const systemName = system.name || "unknown";
-        currentWorld = system(currentWorld, deltaTime);
-        const endTime = performance.now();
-        systemPerformance[systemName] = endTime - startTime;
+        for (const { name, system } of this._systems) {
+          const startTime = performance.now();
+          currentWorld = system(currentWorld);
+          const endTime = performance.now();
+          systemPerformance[name] = endTime - startTime;
+        }
+
+        // Update game state
+        this.store.update(currentWorld);
       }
 
-      // Update game state with system performance metrics
-      this.store.update(currentWorld, systemPerformance);
-      // Update debug state with system performance metrics
-      this.debugStore.update(currentWorld);
+      // Always update debug state
+      // this.debugStore.update(this.world);
     }
 
     // Request next frame
@@ -125,5 +149,19 @@ export class GameEngine {
       cancelAnimationFrame(this.animationFrameId);
     }
     this.store.reset();
+  }
+
+  public reset() {
+    // Stop the current game loop
+    this.stop();
+
+    // Reset the world to initial state
+    this.world = createGameWorld(this.canvas);
+    // Reset the stores
+    this.store.setWorld(this.world);
+    // this.debugStore.setSelectedEntityId(null);
+
+    // Restart the game loop
+    this.start();
   }
 }

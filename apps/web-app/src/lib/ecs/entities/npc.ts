@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity } from "bitecs";
 
+import type { World } from "../types";
 import {
   Acceleration,
   Animation,
@@ -22,15 +22,21 @@ import {
   Script,
   Sound,
   Sprite,
+  Style,
   Transform,
   Velocity,
 } from "../components";
+import { PIXELS_PER_METER } from "../systems/physics";
+import { createDebug } from "./debug";
 
-// Physics scale
-const PIXELS_PER_METER = 100; // 1 meter = 100 pixels
-const NPC_SIZE = PIXELS_PER_METER; // 1 meter x 1 meter
+// NPC dimensions (1 meter x 1 meter)
+const NPC_SIZE = PIXELS_PER_METER / 2;
+
+// Game constants
 const INITIAL_HEALTH = 100;
-const GRAVITY = 9.81 * PIXELS_PER_METER; // m/s² scaled to pixels
+
+// Physics constants
+const GRAVITY = 9.81; // m/s²
 const NPC_MASS = 70; // kg
 const NPC_FRICTION = 0.2;
 const NPC_RESTITUTION = 0.1;
@@ -98,6 +104,7 @@ export function createNPC(world: World, options: CreateNPCOptions) {
     Force,
     Named,
     Debug,
+    Style,
   );
 
   // Set NPC values
@@ -176,6 +183,12 @@ export function createNPC(world: World, options: CreateNPCOptions) {
 
   // Set name
   Named.name[eid] = "NPC";
+  createDebug(eid);
+  // Set style values
+  Style.fillColor[eid] = "#4d94ff"; // Blue for friendly NPCs
+  Style.strokeColor[eid] = "#ffffff66";
+  Style.strokeWidth[eid] = 2;
+  Style.fillOpacity[eid] = 1;
 
   return eid;
 }
@@ -197,7 +210,14 @@ export function createHostileNPC(world: World, options: CreateNPCOptions) {
   BattleState.playerPosition.y[eid] = 0;
   InBattle.eid[eid] = 0;
 
+  // Override style values for hostile NPCs
+  Style.fillColor[eid] = "#ff0000"; // Red for hostile NPCs
+  Style.strokeColor[eid] = "#ffffff66";
+  Style.strokeWidth[eid] = 2;
+  Style.fillOpacity[eid] = 1;
+
   // Set name
+  createDebug(eid);
   Named.name[eid] = "Hostile NPC";
 
   return eid;

@@ -2,6 +2,7 @@ import { addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
 import { KeyboardState } from "../../components";
+import { WorldProps } from "../../types";
 import {
   clearKeyDown,
   getMovementInput,
@@ -13,7 +14,7 @@ import {
 describe("Keyboard Utils", () => {
   describe("Key State Management", () => {
     it("should manage key states correctly", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const playerEid = addEntity(world);
       KeyboardState.keys[playerEid] = 0;
 
@@ -38,7 +39,7 @@ describe("Keyboard Utils", () => {
     });
 
     it("should handle invalid key codes", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const playerEid = addEntity(world);
       KeyboardState.keys[playerEid] = 0;
 
@@ -48,7 +49,7 @@ describe("Keyboard Utils", () => {
     });
 
     it("should handle undefined keyboard state", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const playerEid = addEntity(world);
       // Don't initialize KeyboardState.keys[playerEid]
 
@@ -60,7 +61,7 @@ describe("Keyboard Utils", () => {
 
   describe("Movement Input", () => {
     it("should calculate movement input correctly", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const playerEid = addEntity(world);
       KeyboardState.keys[playerEid] = 0;
 
@@ -89,7 +90,7 @@ describe("Keyboard Utils", () => {
 
   describe("Command Key", () => {
     it("should detect command key state", () => {
-      const world = createWorld();
+      const world = createWorld<WorldProps>();
       const playerEid = addEntity(world);
       KeyboardState.keys[playerEid] = 0;
 

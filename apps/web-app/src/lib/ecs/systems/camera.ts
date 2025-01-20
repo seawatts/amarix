@@ -1,37 +1,60 @@
-import type { World } from "bitecs";
 import { hasComponent, query } from "bitecs";
 
+import type { World } from "../types";
 import { Camera, KeyboardState, MouseState, Transform } from "../components";
 
 function lerp(start: number, end: number, t: number): number {
   return start + (end - start) * t;
 }
 
+// Track gesture state
+const gestureState = new Map<
+  number,
+  {
+    isGesturing: boolean;
+    lastScale: number;
+    lastTranslationX: number;
+    lastTranslationY: number;
+  }
+>();
+
 export function createCameraSystem() {
   // Track the previous camera position for smoothing
   const previousPositions = new Map<number, { x: number; y: number }>();
 
-  return function cameraSystem(world: World, deltaTime: number): World {
+  return function cameraSystem(world: World): World {
     const cameras = query(world, [Camera, Transform]);
 
     // Only process the first active camera
     for (const eid of cameras) {
       if (!Camera.isActive[eid]) continue;
 
-      // Get current camera position, defaulting to 0 if not set
+      // Get current camera position and zoom, defaulting if not set
       const currentX = Transform.x[eid] ?? 0;
       const currentY = Transform.y[eid] ?? 0;
+      const currentZoom = Camera.zoom[eid] ?? 1;
 
       // Initialize previous position if not set
       if (!previousPositions.has(eid)) {
         previousPositions.set(eid, { x: currentX, y: currentY });
       }
 
+      // Initialize gesture state if not set
+      if (!gestureState.has(eid)) {
+        gestureState.set(eid, {
+          isGesturing: false,
+          lastScale: 1,
+          lastTranslationX: 0,
+          lastTranslationY: 0,
+        });
+      }
+
       let shouldFollowTarget = true;
       let newX = currentX;
       let newY = currentY;
+      let newZoom = currentZoom;
 
-      // Handle panning if keyboard state exists
+      // Handle keyboard-based panning if keyboard state exists
       if (KeyboardState.keys[eid] !== undefined) {
         const isSpaceDown = (KeyboardState.keys[eid] ?? 0) & (1 << 32); // Space key code
         const mouseX = MouseState.screenX[eid] ?? 0;
@@ -46,9 +69,8 @@ export function createCameraSystem() {
 
             // Update camera position based on mouse movement
             // We divide by zoom to make the pan speed consistent at different zoom levels
-            const zoom = Camera.zoom[eid] ?? 1;
-            newX = currentX - deltaX / zoom;
-            newY = currentY - deltaY / zoom;
+            newX = currentX - deltaX / currentZoom;
+            newY = currentY - deltaY / currentZoom;
           }
 
           // Update panning state
@@ -61,7 +83,30 @@ export function createCameraSystem() {
         }
       }
 
-      // Follow target if not panning
+      // Handle touchpad gestures
+      const state = gestureState.get(eid);
+      if (state?.isGesturing) {
+        shouldFollowTarget = false;
+
+        // Apply zoom changes
+        if (state.lastScale !== 1) {
+          // Clamp zoom between 0.1 and 10
+          newZoom = Math.max(0.1, Math.min(10, currentZoom * state.lastScale));
+        }
+
+        // Apply pan changes
+        if (state.lastTranslationX !== 0 || state.lastTranslationY !== 0) {
+          newX = currentX - state.lastTranslationX / currentZoom;
+          newY = currentY - state.lastTranslationY / currentZoom;
+        }
+
+        // Reset gesture state
+        state.lastScale = 1;
+        state.lastTranslationX = 0;
+        state.lastTranslationY = 0;
+      }
+
+      // Follow target if not panning or gesturing
       if (shouldFollowTarget) {
         const targetEntity = Camera.target[eid];
         if (
@@ -73,13 +118,16 @@ export function createCameraSystem() {
           const targetY = Transform.y[targetEntity] ?? 0;
           const smoothing = Camera.smoothing[eid] ?? 0;
 
-          if (smoothing <= 0 || deltaTime <= 0) {
+          if (smoothing <= 0 || world.timing.delta <= 0) {
             // No smoothing or first frame, snap to target
             newX = targetX;
             newY = targetY;
           } else {
             // Apply smoothing
-            const smoothFactor = Math.min(1, deltaTime / (smoothing * 1000));
+            const smoothFactor = Math.min(
+              1,
+              world.timing.delta / (smoothing * 1000),
+            );
             const previousPos = previousPositions.get(eid);
             if (previousPos) {
               newX = lerp(previousPos.x, targetX, smoothFactor);
@@ -89,9 +137,10 @@ export function createCameraSystem() {
         }
       }
 
-      // Update camera position
+      // Update camera position and zoom
       Transform.x[eid] = newX;
       Transform.y[eid] = newY;
+      Camera.zoom[eid] = newZoom;
       previousPositions.set(eid, { x: newX, y: newY });
 
       break; // Only process first active camera
@@ -99,4 +148,38 @@ export function createCameraSystem() {
 
     return world;
   };
+}
+
+// Helper function to handle gesture start
+export function handleGestureStart(eid: number) {
+  const state = gestureState.get(eid);
+  if (state) {
+    state.isGesturing = true;
+  }
+}
+
+// Helper function to handle gesture end
+export function handleGestureEnd(eid: number) {
+  const state = gestureState.get(eid);
+  if (state) {
+    state.isGesturing = false;
+    state.lastScale = 1;
+    state.lastTranslationX = 0;
+    state.lastTranslationY = 0;
+  }
+}
+
+// Helper function to handle gesture update
+export function handleGestureUpdate(
+  eid: number,
+  scale: number,
+  translationX: number,
+  translationY: number,
+) {
+  const state = gestureState.get(eid);
+  if (state) {
+    state.lastScale = scale;
+    state.lastTranslationX = translationX;
+    state.lastTranslationY = translationY;
+  }
 }

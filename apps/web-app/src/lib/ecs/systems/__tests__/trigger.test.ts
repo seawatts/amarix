@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   BoundingBox,
   Collidable,
@@ -20,7 +21,7 @@ describe.skip("Trigger System", () => {
   });
 
   it("should activate trigger when player overlaps", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const triggerEid = addEntity(world);
 
@@ -56,7 +57,7 @@ describe.skip("Trigger System", () => {
   });
 
   it("should not activate non-trigger colliders", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const triggerEid = addEntity(world);
 
@@ -91,7 +92,7 @@ describe.skip("Trigger System", () => {
   });
 
   it("should respect repeatable triggers with cooldown", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const triggerEid = addEntity(world);
 
@@ -139,7 +140,7 @@ describe.skip("Trigger System", () => {
   });
 
   it("should handle different trigger types", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const questTriggerEid = addEntity(world);
     const battleTriggerEid = addEntity(world);
@@ -187,7 +188,7 @@ describe.skip("Trigger System", () => {
   });
 
   it("should warn on unknown trigger type", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const playerEid = addEntity(world);
     const triggerEid = addEntity(world);
 

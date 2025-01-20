@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
 import { AlignJustify, XIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { Badge } from "@acme/ui/badge";
 import { Button } from "@acme/ui/button";

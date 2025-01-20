@@ -1,8 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import { useInView } from "framer-motion";
 import { TrendingUp } from "lucide-react";
+import { useInView } from "motion/react";
 import {
   Area,
   AreaChart,

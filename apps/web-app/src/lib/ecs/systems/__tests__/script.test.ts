@@ -2,6 +2,7 @@ import type { World } from "bitecs";
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Script, Transform } from "../../components";
 import {
   createOscillateScript,
@@ -11,7 +12,7 @@ import {
 
 describe.skip("Script System", () => {
   it("should not execute inactive scripts", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scripted entity
@@ -38,7 +39,7 @@ describe.skip("Script System", () => {
   });
 
   it("should handle invalid script IDs", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up scripted entity
@@ -57,7 +58,7 @@ describe.skip("Script System", () => {
   });
 
   it("should execute oscillate script correctly", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with transform and script
@@ -108,7 +109,7 @@ describe.skip("Script System", () => {
   });
 
   it("should update script timer", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with script
@@ -144,7 +145,7 @@ describe.skip("Script System", () => {
   });
 
   it("should maintain script state between executions", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Set up entity with script

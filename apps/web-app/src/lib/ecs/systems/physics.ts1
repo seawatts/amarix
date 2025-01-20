@@ -1,4 +1,4 @@
-import type { World } from "bitecs";
+import type { World } from "../types";
 import { query, removeEntity } from "bitecs";
 
 import { CollisionManifold, Force, Position, RigidBody } from "../components";

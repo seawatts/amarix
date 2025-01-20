@@ -1,6 +1,7 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
 import { describe, expect, it, vi } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { Sprite, Transform } from "../../components";
 import { createSpriteSystem } from "../sprite";
 
@@ -14,7 +15,7 @@ interface MockImage {
 
 describe.skip("Sprite System", () => {
   it("should load new sprites", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Mock Image constructor
@@ -42,7 +43,7 @@ describe.skip("Sprite System", () => {
   });
 
   it("should cache loaded sprites", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid1 = addEntity(world);
     const eid2 = addEntity(world);
 
@@ -75,7 +76,7 @@ describe.skip("Sprite System", () => {
   });
 
   it("should handle sprite loading errors", async () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
     const consoleError = vi.spyOn(console, "error");
 
@@ -110,7 +111,7 @@ describe.skip("Sprite System", () => {
   });
 
   it("should ignore empty sprite sources", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const eid = addEntity(world);
 
     // Mock Image constructor

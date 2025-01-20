@@ -1,6 +1,6 @@
-import type { World } from "bitecs";
 import { addComponent, addEntity, query } from "bitecs";
 
+import type { World } from "../types";
 import { Scene } from "../components";
 
 // Scene definition

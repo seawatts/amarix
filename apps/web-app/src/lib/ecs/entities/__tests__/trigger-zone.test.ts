@@ -1,6 +1,7 @@
 import { createWorld, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import {
   BoundingBox,
   Collidable,
@@ -14,7 +15,7 @@ import { createTriggerZone } from "../trigger-zone";
 
 describe("Trigger Zone Entity", () => {
   it("should create a trigger zone with all required components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const triggerEid = createTriggerZone(world, {
       actionId: 1,
       cooldown: 1000,
@@ -67,7 +68,7 @@ describe("Trigger Zone Entity", () => {
   });
 
   it("should create a non-repeatable trigger zone", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const triggerEid = createTriggerZone(world, {
       actionId: 2,
       cooldown: 0,

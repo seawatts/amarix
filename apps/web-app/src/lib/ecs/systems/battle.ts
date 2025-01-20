@@ -1,6 +1,6 @@
-import type { createWorld } from "bitecs";
 import { addComponent, query, removeComponent } from "bitecs";
 
+import type { World } from "../types";
 import {
   BattleAction,
   BattleState,
@@ -53,7 +53,7 @@ function getValidMoves(x: number, y: number) {
 }
 
 export function createBattleSystem() {
-  return (world: ReturnType<typeof createWorld>) => {
+  return (world: World) => {
     const players = query(world, [Transform, Player, Movement]);
     const hostileNpcs = query(world, [Transform, NPC, HostileNPC]);
     const battling = query(world, [InBattle]);

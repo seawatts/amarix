@@ -17,7 +17,8 @@ import {
   SidebarMenuItem,
 } from "@acme/ui/sidebar";
 
-import { useGameStore } from "~/providers/game-store-provider";
+import { useDebugStore } from "~/providers/debug-provider";
+import { useGame } from "~/providers/game-provider";
 
 interface EntityDetailsSidebarProps {
   entityId: number;
@@ -26,8 +27,8 @@ interface EntityDetailsSidebarProps {
 type TypedArray = Float32Array | Uint8Array | Uint32Array | Int32Array;
 
 export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
-  const metrics = useGameStore((state) => state.metrics);
-  const engine = useGameStore((state) => state.engine);
+  const metrics = useDebugStore((state) => state.metrics);
+  const engine = useGame((state) => state.engine);
   const entity = metrics?.entities.find((entity) => entity.id === entityId);
 
   if (!entity || !engine) {

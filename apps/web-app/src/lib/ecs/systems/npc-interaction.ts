@@ -1,6 +1,6 @@
-import type { createWorld } from "bitecs";
 import { addComponent, query, removeComponent } from "bitecs";
 
+import type { World } from "../types";
 import {
   CollisionManifold,
   InteractionCooldown,
@@ -11,7 +11,7 @@ import {
   Transform,
 } from "../components";
 
-interface WorldWithTime extends ReturnType<typeof createWorld> {
+interface WorldWithTime extends World {
   time?: {
     delta: number;
   };

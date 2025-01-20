@@ -13,10 +13,9 @@ import "@acme/ui/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 
-import { AppSidebar } from "~/components/app-sidebar";
 import { env } from "~/env.server";
 import { DebugStoreProvider } from "~/providers/debug-provider";
-import { GameStoreProvider } from "~/providers/game-store-provider";
+import { GameProvider } from "~/providers/game-provider";
 
 export const metadata: Metadata = {
   description: "Amarix",
@@ -63,12 +62,11 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           <AnalyticsProviders identifyUser>
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
               <DebugStoreProvider>
-                <GameStoreProvider>
+                <GameProvider>
                   <SidebarProvider defaultOpen={defaultOpen}>
-                    <AppSidebar />
                     <main className="flex-1">{props.children}</main>
                   </SidebarProvider>
-                </GameStoreProvider>
+                </GameProvider>
               </DebugStoreProvider>
               <Toaster />
             </ThemeProvider>

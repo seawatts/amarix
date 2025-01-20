@@ -1,12 +1,13 @@
 import { createWorld, query } from "bitecs";
 import { describe, expect, it } from "vitest";
 
+import type { WorldProps } from "../../types";
 import { CollisionManifold, Named, Transform } from "../../components";
 import { createCollisionManifold } from "../collision-manifold";
 
 describe("Collision Manifold Entity", () => {
   it("should create a collision manifold with all required components", () => {
-    const world = createWorld();
+    const world = createWorld<WorldProps>();
     const manifoldEid = createCollisionManifold(world);
 
     // Check if collision manifold entity has all required components

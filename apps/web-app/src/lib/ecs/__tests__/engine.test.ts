@@ -20,7 +20,18 @@ describe("GameEngine", () => {
     // Mock stores
     mockGameStore = {
       engine: null,
-      lastFrameTime: 0,
+      initializeEngine: vi.fn(),
+      reset: vi.fn(),
+      setWorld: vi.fn(),
+      update: vi.fn(),
+      world: null,
+    };
+
+    mockDebugStore = {
+      getSystems: vi.fn(),
+      handleDebugEvent: vi.fn(),
+      isDebugging: false,
+      isPaused: false,
       metrics: {
         entities: [],
         performance: {
@@ -30,44 +41,37 @@ describe("GameEngine", () => {
           systems: {},
         },
       },
-      reset: vi.fn(),
-      setEngine: vi.fn(),
-      setWorld: vi.fn(),
-      update: vi.fn(),
-      world: null,
-    };
-
-    mockDebugStore = {
-      lastFrameTime: 0,
-      metrics: {
-        performance: {
-          fps: 60,
-          frameTime: 16.67,
-          memoryUsage: 0,
-          systems: {},
-        },
-      },
       selectedEntityId: null,
+      setIsDebugging: vi.fn(),
+      setIsPaused: vi.fn(),
       setSelectedEntityId: vi.fn(),
-      systems: {
-        animation: true,
-        battle: true,
-        collision: true,
-        keyboard: true,
-        mouse: true,
-        movement: true,
-        npcInteraction: true,
-        particle: true,
-        physics: true,
-        scene: true,
-        script: true,
-        sound: true,
-        sprite: true,
-        trigger: true,
+      setSystems: vi.fn(),
+      sidebarSections: {
+        ecs: true,
+        performance: true,
+        systems: true,
+        visualizations: true,
       },
+      systems: {
+        animation: { isEnabled: true, isPaused: false },
+        battle: { isEnabled: true, isPaused: false },
+        collision: { isEnabled: true, isPaused: false },
+        keyboard: { isEnabled: true, isPaused: false },
+        mouse: { isEnabled: true, isPaused: false },
+        movement: { isEnabled: true, isPaused: false },
+        npcInteraction: { isEnabled: true, isPaused: false },
+        particle: { isEnabled: true, isPaused: false },
+        physics: { isEnabled: true, isPaused: false },
+        scene: { isEnabled: true, isPaused: false },
+        script: { isEnabled: true, isPaused: false },
+        sound: { isEnabled: true, isPaused: false },
+        sprite: { isEnabled: true, isPaused: false },
+        trigger: { isEnabled: true, isPaused: false },
+      },
+      toggleSidebarSection: vi.fn(),
       toggleSystem: vi.fn(),
+      toggleSystemPause: vi.fn(),
       toggleVisualization: vi.fn(),
-      update: vi.fn(),
       visualizations: {
         showBoundingBoxes: false,
         showCollisionPoints: false,
@@ -83,7 +87,7 @@ describe("GameEngine", () => {
     vi.spyOn(performance, "now").mockReturnValue(1000);
 
     // Create engine instance
-    engine = new GameEngine(canvas, mockGameStore, mockDebugStore);
+    engine = new GameEngine(canvas, mockGameStore);
   });
 
   it("should initialize with correct properties", () => {
@@ -146,7 +150,6 @@ describe("GameEngine", () => {
       setTimeout(() => {
         // Verify store updates
         expect(mockGameStore.update).toHaveBeenCalled();
-        expect(mockDebugStore.update).toHaveBeenCalled();
         expect(frameCount).toBe(maxFrames);
         resolve();
       }, 100);

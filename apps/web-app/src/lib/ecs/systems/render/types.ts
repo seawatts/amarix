@@ -1,10 +1,9 @@
-import type { World } from "bitecs";
+import type { World } from "../../types";
 
 export interface RenderContext {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   world: World;
-  deltaTime: number;
   camera: {
     x: number;
     y: number;
