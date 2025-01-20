@@ -3,79 +3,22 @@ import { query } from "bitecs";
 import type { World } from "./types";
 import type { GameStore } from "~/lib/stores/game-state";
 import { Camera, CurrentPlayer } from "./components";
-import { createAnimationSystem } from "./systems/animation";
-import { createCameraSystem } from "./systems/camera";
-import { createKeyboardSystem } from "./systems/keyboard";
-import { createMouseSystem } from "./systems/mouse";
-import { createMovementSystem } from "./systems/movement";
-import { createParticleSystem } from "./systems/particle";
-import { createPhysicsSystem } from "./systems/physics";
-import { createRenderSystem } from "./systems/render";
-import { createSceneSystem } from "./systems/scene";
-import { createScriptSystem } from "./systems/script";
-import { createSoundSystem } from "./systems/sound";
-import { createSpriteSystem } from "./systems/sprite";
-import { createTriggerSystem } from "./systems/trigger";
 import { createGameWorld } from "./world";
 
-type GameSystem = (world: World) => World;
-
 export class GameEngine {
-  private canvas: HTMLCanvasElement;
   public world: World;
-  private _systems: { name: string; system: GameSystem }[];
   private animationFrameId: number | null = null;
   private frameInterval = 1 / 60; // Convert to milliseconds
   private store: GameStore;
   private isPaused = false;
 
-  constructor(canvas: HTMLCanvasElement, store: GameStore) {
-    this.canvas = canvas;
+  constructor(store: GameStore) {
     this.store = store;
-    this.world = createGameWorld(canvas);
+    this.world = createGameWorld();
     this.world.timing = {
       delta: 0,
       lastFrame: performance.now(),
     };
-
-    const context = this.canvas.getContext("2d");
-    if (!context) {
-      throw new Error("Failed to get canvas context");
-    }
-
-    // Create systems
-    this._systems = [
-      { name: "keyboard", system: createKeyboardSystem() },
-      { name: "mouse", system: createMouseSystem(canvas) },
-      { name: "movement", system: createMovementSystem(canvas) },
-      { name: "physics", system: createPhysicsSystem() },
-      { name: "trigger", system: createTriggerSystem() },
-      { name: "script", system: createScriptSystem() },
-      { name: "sprite", system: createSpriteSystem() },
-      { name: "animation", system: createAnimationSystem() },
-      { name: "sound", system: createSoundSystem() },
-      { name: "particle", system: createParticleSystem() },
-      { name: "scene", system: createSceneSystem() },
-      { name: "camera", system: createCameraSystem() },
-      { name: "render", system: createRenderSystem(canvas, context) },
-    ];
-
-    const initialSystems: Record<
-      string,
-      { isEnabled: boolean; isPaused: boolean }
-    > = {};
-    for (const { name } of this._systems) {
-      initialSystems[name] = { isEnabled: true, isPaused: false };
-    }
-    // this.debugStore.setSystems(initialSystems);
-  }
-
-  public addSystem(system: GameSystem) {
-    this._systems.push({ name: system.name, system });
-  }
-
-  public get systems() {
-    return [...this._systems];
   }
 
   public start() {
@@ -111,18 +54,22 @@ export class GameEngine {
       // Skip system updates if paused, but still update debug state
       if (!this.isPaused) {
         // Run each system in sequence
-        let currentWorld = this.world;
         const systemPerformance: Record<string, number> = {};
 
-        for (const { name, system } of this._systems) {
+        for (const { name, system, isPaused } of this.world.systems) {
+          // Skip if system doesn't exist or is disabled/paused
+          if (isPaused) {
+            continue;
+          }
+
           const startTime = performance.now();
-          currentWorld = system(currentWorld);
+          system(this.world);
           const endTime = performance.now();
           systemPerformance[name] = endTime - startTime;
         }
 
         // Update game state
-        this.store.update(currentWorld);
+        this.store.update(this.world);
       }
 
       // Always update debug state
@@ -153,9 +100,11 @@ export class GameEngine {
   public reset() {
     // Stop the current game loop
     this.stop();
+    const canvas = this.world.canvas;
 
     // Reset the world to initial state
-    this.world = createGameWorld(this.canvas);
+    this.world = createGameWorld();
+    this.world.canvas = canvas;
     // Reset the stores
     this.store.setWorld(this.world);
     // this.debugStore.setSelectedEntityId(null);

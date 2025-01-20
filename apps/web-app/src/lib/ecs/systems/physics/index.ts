@@ -164,8 +164,6 @@ function applyGravitySystem(world: World) {
     // F = m * g
     Force.y[eid] = (Force.y[eid] ?? 0) + mass * gy;
   }
-
-  return world;
 }
 
 /* ----------------------------------------------------------------------------
@@ -206,8 +204,6 @@ export function applyForcesSystem(world: World, dt: number) {
     Force.y[eid] = 0;
     Force.torque[eid] = 0;
   }
-
-  return world;
 }
 
 /* ----------------------------------------------------------------------------
@@ -258,8 +254,6 @@ export function integrationSystem(world: World, dt: number) {
     Velocity.y[eid] = vy;
     RigidBody.angularVelocity[eid] = omega;
   }
-
-  return world;
 }
 
 /* ----------------------------------------------------------------------------
@@ -381,8 +375,6 @@ export function collisionSystem(world: World) {
       }
     }
   }
-
-  return world;
 }
 
 export function createPhysicsSystem() {
@@ -404,8 +396,6 @@ export function createPhysicsSystem() {
       // 4) Collisions (torque-based)
       collisionSystem(world);
     }
-
-    return world;
   };
 }
 

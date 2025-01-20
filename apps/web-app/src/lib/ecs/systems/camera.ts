@@ -22,7 +22,7 @@ export function createCameraSystem() {
   // Track the previous camera position for smoothing
   const previousPositions = new Map<number, { x: number; y: number }>();
 
-  return function cameraSystem(world: World): World {
+  return function cameraSystem(world: World) {
     const cameras = query(world, [Camera, Transform]);
 
     // Only process the first active camera
@@ -145,8 +145,6 @@ export function createCameraSystem() {
 
       break; // Only process first active camera
     }
-
-    return world;
   };
 }
 

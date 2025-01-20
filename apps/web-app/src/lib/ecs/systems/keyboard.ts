@@ -131,6 +131,5 @@ export function createKeyboardSystem() {
         handleExplorationInput(world, playerEid);
       }
     }
-    return world;
   };
 }

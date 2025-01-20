@@ -54,8 +54,6 @@ export function createScriptSystem() {
         }
       }
     }
-
-    return world;
   };
 }
 

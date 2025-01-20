@@ -193,7 +193,7 @@ export function createBattleSystem() {
             if (moves.length > 0) {
               // Choose move that gets closer to player
               const firstMove = moves[0];
-              if (!firstMove) return world;
+              if (!firstMove) return;
 
               let bestMove = firstMove;
               let bestDistance =
@@ -239,7 +239,5 @@ export function createBattleSystem() {
         }
       }
     }
-
-    return world;
   };
 }

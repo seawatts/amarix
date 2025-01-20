@@ -57,7 +57,5 @@ export const createMovementSystem = (_canvas: HTMLCanvasElement) => {
         Force.y[eid] = (Force.y[eid] ?? 0) * scale;
       }
     }
-
-    return world;
   };
 };

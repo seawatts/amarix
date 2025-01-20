@@ -8,7 +8,11 @@ export class ParticleLayer implements RenderLayer {
   name = "particles";
   order = RENDER_LAYERS.PARTICLES;
 
-  render({ ctx, world }: RenderContext): void {
+  render({ world }: RenderContext): void {
+    const context = world.canvas?.context;
+    const canvas = world.canvas?.element;
+    if (!context || !canvas) return;
+
     const particles = query(world, [Particle]);
 
     for (const eid of particles) {
@@ -21,11 +25,11 @@ export class ParticleLayer implements RenderLayer {
       const color = String(Particle.color[eid] ?? "#ffffff");
 
       // Draw particle
-      ctx.globalAlpha = alpha;
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-      ctx.fill();
+      context.globalAlpha = alpha;
+      context.fillStyle = color;
+      context.beginPath();
+      context.arc(x, y, size / 2, 0, Math.PI * 2);
+      context.fill();
     }
   }
 }

@@ -26,7 +26,17 @@ export const createGameStore = (initState: State = defaultInitState) => {
   return createStore<GameStore>((set, get) => ({
     ...initState,
     initializeEngine: (canvas) => {
-      const engine = new GameEngine(canvas, get());
+      const engine = new GameEngine(get());
+      if (!engine.world.canvas) {
+        const context = canvas.getContext("2d");
+        if (!context) {
+          throw new Error("Failed to get canvas context");
+        }
+        engine.world.canvas = {
+          context,
+          element: canvas,
+        };
+      }
       engine.start();
       set({ engine });
       return engine;

@@ -42,7 +42,5 @@ export function createSpriteSystem() {
         void loadSprite(source).catch(console.error);
       }
     }
-
-    return world;
   };
 }

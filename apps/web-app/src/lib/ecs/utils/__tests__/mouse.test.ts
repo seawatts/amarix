@@ -7,7 +7,7 @@ import {
 } from "bitecs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import type { WorldProps } from "../../types";
+import type { World, WorldProps } from "../../types";
 import { Camera, CurrentPlayer, MouseState, Transform } from "../../components";
 import { createMouseSystem } from "../../systems/mouse";
 import { initialGameWorldState } from "../../world";
@@ -233,7 +233,7 @@ describe("Mouse Utils", () => {
 
 describe("Mouse Coordinate Transformations", () => {
   let entityIndex: ReturnType<typeof createEntityIndex>;
-  let world: ReturnType<typeof createWorld<WorldProps>>;
+  let world: World;
   let mouseEid: number;
   let cameraEid: number;
 

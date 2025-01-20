@@ -61,7 +61,11 @@ export function GameCanvas() {
 
     // Initialize game engine
     const gameEngine = initializeEngine(canvas);
-    gameEngine.addSystem(createDebugSystem(debugStore));
+    gameEngine.world.systems.push({
+      isPaused: false,
+      name: "debug",
+      system: createDebugSystem(debugStore),
+    });
 
     // Define keyboard handlers
     const handleKeyDown = (event: KeyboardEvent) => {

@@ -36,10 +36,10 @@ export function createTriggerSystem() {
   return function triggerSystem(world: World) {
     // Get the current player
     const players = query(world, [CurrentPlayer, Transform, BoundingBox]);
-    if (players.length === 0) return world;
+    if (players.length === 0) return;
 
     const playerEid = players[0];
-    if (!playerEid) return world;
+    if (!playerEid) return;
     const playerX = Transform.x[playerEid] ?? 0;
     const playerY = Transform.y[playerEid] ?? 0;
     const playerWidth = BoundingBox.width[playerEid] ?? 0;
@@ -112,7 +112,6 @@ export function createTriggerSystem() {
           }
           default: {
             console.warn(`Unknown trigger type: ${triggerType}`);
-            return world;
           }
         }
 
@@ -121,7 +120,5 @@ export function createTriggerSystem() {
         TriggerZone.lastActivatedTime[triggerEid] = currentTime;
       }
     }
-
-    return world;
   };
 }

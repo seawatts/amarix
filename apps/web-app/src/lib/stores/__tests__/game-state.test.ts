@@ -1,8 +1,7 @@
-import { addEntity, createWorld } from "bitecs";
+import { createWorld } from "bitecs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { WorldProps } from "~/lib/ecs/types";
-import { Debug, Named } from "../../ecs/components";
 import { createGameStore, defaultInitState } from "../game-state";
 
 describe("Game State Store", () => {

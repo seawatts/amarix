@@ -113,8 +113,6 @@ export function createParticleSystem() {
         Particle.alpha[eid] = newLife;
       }
     }
-
-    return world;
   };
 }
 

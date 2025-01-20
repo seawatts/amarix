@@ -24,7 +24,7 @@ export function createDebugSystem(debugStore: DebugStore) {
   const lastPerformanceUpdate = { value: performance.now() };
   const PERFORMANCE_UPDATE_INTERVAL = 100; // Update every second
 
-  return function debugSystem(world: World): World {
+  return function debugSystem(world: World) {
     const context: DebugSystemContext = {
       debugStore,
       world,
@@ -74,8 +74,6 @@ export function createDebugSystem(debugStore: DebugStore) {
       // Sync debug store state with components
       syncDebugStoreState(eid, context);
     }
-
-    return world;
   };
 }
 

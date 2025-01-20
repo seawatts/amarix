@@ -258,10 +258,10 @@ function handlePolygonShapes(
 export function createMouseSystem(canvas: HTMLCanvasElement) {
   return function mouseSystem(world: World) {
     const mouseEid = query(world, [CurrentPlayer, MouseState])[0];
-    if (!mouseEid) return world;
+    if (!mouseEid) return;
 
     const mousePos = getMousePosition(world, canvas);
-    if (!mousePos) return world;
+    if (!mousePos) return;
 
     resetMouseState(world, mouseEid);
 
@@ -269,7 +269,5 @@ export function createMouseSystem(canvas: HTMLCanvasElement) {
     handleBoxShapes(world, mouseEid, mousePos);
     handleCircleShapes(world, mouseEid, mousePos);
     handlePolygonShapes(world, mouseEid, mousePos);
-
-    return world;
   };
 }

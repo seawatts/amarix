@@ -18,27 +18,41 @@ export class Renderer implements RenderSystem {
   }
 
   private applyCameraTransform(context: RenderContext): void {
-    const { ctx, canvas, camera } = context;
+    const canvas = context.world.canvas;
+    const camera = context.camera;
+
+    if (!canvas) {
+      return;
+    }
 
     // 1. Move to the center of the viewport
-    ctx.translate(canvas.width / 2, canvas.height / 2);
+    canvas.context.translate(
+      canvas.element.width / 2,
+      canvas.element.height / 2,
+    );
 
     // 2. Apply zoom and PIXELS_PER_METER scaling
     const scale = camera.zoom / PIXELS_PER_METER;
-    ctx.scale(scale, scale);
+    canvas.context.scale(scale, scale);
 
     // 3. Apply rotation
-    ctx.rotate(camera.rotation);
+    canvas.context.rotate(camera.rotation);
 
     // 4. Move world opposite to camera position
-    ctx.translate(-camera.x * PIXELS_PER_METER, -camera.y * PIXELS_PER_METER);
+    canvas.context.translate(
+      -camera.x * PIXELS_PER_METER,
+      -camera.y * PIXELS_PER_METER,
+    );
   }
 
   render(context: RenderContext): void {
-    const { ctx, canvas } = context;
+    const canvas = context.world.canvas;
 
     // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!canvas) {
+      return;
+    }
+    canvas.context.clearRect(0, 0, canvas.element.width, canvas.element.height);
 
     // Sort layers by order and render
     const sortedLayers = [...this.layers.values()].sort(
@@ -47,7 +61,7 @@ export class Renderer implements RenderSystem {
 
     for (const layer of sortedLayers) {
       // Save context state before any transformations
-      ctx.save();
+      canvas.context.save();
 
       try {
         // Apply camera transform unless the layer should ignore it
@@ -59,7 +73,7 @@ export class Renderer implements RenderSystem {
         layer.render(context);
       } finally {
         // Always restore context state, even if rendering fails
-        ctx.restore();
+        canvas.context.restore();
       }
     }
   }

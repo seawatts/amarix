@@ -176,6 +176,6 @@ export function createCameraSystem() {
       break; // Only process first active camera
     }
 
-    return world;
+
   };
 }

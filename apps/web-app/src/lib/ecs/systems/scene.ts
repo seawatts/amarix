@@ -49,10 +49,10 @@ export function changeScene(
 export function createSceneSystem() {
   return function sceneSystem(world: World) {
     const entities = query(world, [Scene]);
-    if (entities.length === 0) return world;
+    if (entities.length === 0) return;
 
     const sceneEid = entities[0];
-    if (typeof sceneEid !== "number") return world;
+    if (typeof sceneEid !== "number") return;
 
     const currentScene = Scene.current[0] ?? "";
     const nextScene = Scene.next[0] ?? "";
@@ -97,8 +97,6 @@ export function createSceneSystem() {
         config.onUpdate(world, Scene.data[sceneEid]);
       }
     }
-
-    return world;
   };
 }
 

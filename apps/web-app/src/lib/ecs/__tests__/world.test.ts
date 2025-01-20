@@ -18,7 +18,15 @@ describe("Game World", () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    const world = createGameWorld(canvas);
+    const world = createGameWorld();
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+    world.canvas = {
+      context,
+      element: canvas,
+    };
 
     // Check for player entity
     const players = query(world, [CurrentPlayer]);
@@ -63,8 +71,16 @@ describe("Game World", () => {
     canvas.width = 800;
     canvas.height = 600;
     const CELL_SIZE = 50;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
 
-    const world = createGameWorld(canvas);
+    const world = createGameWorld();
+    world.canvas = {
+      context,
+      element: canvas,
+    };
 
     // Get all NPCs
     const npcs = query(world, [NPC, Transform]);
@@ -85,7 +101,15 @@ describe("Game World", () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    const world = createGameWorld(canvas);
+    const world = createGameWorld();
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+    world.canvas = {
+      context,
+      element: canvas,
+    };
 
     // Get player entity
     const players = query(world, [CurrentPlayer, Transform]);
@@ -102,7 +126,15 @@ describe("Game World", () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    const world = createGameWorld(canvas);
+    const world = createGameWorld();
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+    world.canvas = {
+      context,
+      element: canvas,
+    };
 
     // Get all positioned entities
     const players = query(world, [CurrentPlayer, Transform]);
@@ -133,7 +165,15 @@ describe("Game World", () => {
     canvas.width = 800;
     canvas.height = 600;
 
-    createGameWorld(canvas);
+    const world = createGameWorld();
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+    world.canvas = {
+      context,
+      element: canvas,
+    };
 
     // Note: Since animations are registered in a separate module,
     // we can't directly test the registration.

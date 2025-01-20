@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { DebugStore } from "~/lib/stores/debug";
 import type { GameStore } from "~/lib/stores/game-state";
 import { CurrentPlayer } from "../components";
 import { GameEngine } from "../engine";
@@ -8,7 +7,6 @@ import { GameEngine } from "../engine";
 describe("GameEngine", () => {
   let canvas: HTMLCanvasElement;
   let mockGameStore: GameStore;
-  let mockDebugStore: DebugStore;
   let engine: GameEngine;
 
   beforeEach(() => {
@@ -27,67 +25,11 @@ describe("GameEngine", () => {
       world: null,
     };
 
-    mockDebugStore = {
-      getSystems: vi.fn(),
-      handleDebugEvent: vi.fn(),
-      isDebugging: false,
-      isPaused: false,
-      metrics: {
-        entities: [],
-        performance: {
-          fps: 60,
-          frameTime: 16.67,
-          memoryUsage: 0,
-          systems: {},
-        },
-      },
-      selectedEntityId: null,
-      setIsDebugging: vi.fn(),
-      setIsPaused: vi.fn(),
-      setSelectedEntityId: vi.fn(),
-      setSystems: vi.fn(),
-      sidebarSections: {
-        ecs: true,
-        performance: true,
-        systems: true,
-        visualizations: true,
-      },
-      systems: {
-        animation: { isEnabled: true, isPaused: false },
-        battle: { isEnabled: true, isPaused: false },
-        collision: { isEnabled: true, isPaused: false },
-        keyboard: { isEnabled: true, isPaused: false },
-        mouse: { isEnabled: true, isPaused: false },
-        movement: { isEnabled: true, isPaused: false },
-        npcInteraction: { isEnabled: true, isPaused: false },
-        particle: { isEnabled: true, isPaused: false },
-        physics: { isEnabled: true, isPaused: false },
-        scene: { isEnabled: true, isPaused: false },
-        script: { isEnabled: true, isPaused: false },
-        sound: { isEnabled: true, isPaused: false },
-        sprite: { isEnabled: true, isPaused: false },
-        trigger: { isEnabled: true, isPaused: false },
-      },
-      toggleSidebarSection: vi.fn(),
-      toggleSystem: vi.fn(),
-      toggleSystemPause: vi.fn(),
-      toggleVisualization: vi.fn(),
-      visualizations: {
-        showBoundingBoxes: false,
-        showCollisionPoints: false,
-        showForceVectors: false,
-        showParticleEmitters: false,
-        showPolygons: false,
-        showTriggerZones: false,
-        showVelocityVectors: false,
-      },
-    };
-
     // Mock performance.now
     vi.spyOn(performance, "now").mockReturnValue(1000);
 
     // Create engine instance
-    engine = new GameEngine(canvas, mockGameStore);
+    engine = new GameEngine(mockGameStore);
   });
 
   it("should initialize with correct properties", () => {

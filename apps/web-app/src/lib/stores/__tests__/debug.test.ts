@@ -1,7 +1,7 @@
 import { addEntity, createWorld } from "bitecs";
 import { describe, expect, it, vi } from "vitest";
 
-import type { WorldProps } from "../../ecs/types";
+import type { WorldProps } from "~/lib/ecs/types";
 import { Debug, Named } from "../../ecs/components";
 import { createDebugStore, defaultInitState } from "../debug";
 
@@ -139,7 +139,6 @@ describe("Debug Store", () => {
   });
 
   it("should collect performance metrics", () => {
-    const _world = createWorld<WorldProps>();
     const store = createDebugStore();
     store.getState().handleDebugEvent({
       data: {

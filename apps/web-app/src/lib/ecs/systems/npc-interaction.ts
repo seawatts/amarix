@@ -29,12 +29,10 @@ export function createNPCInteractionSystem() {
     if (!isInitialized) {
       systemStartTime = Date.now();
       isInitialized = true;
-      return world;
     }
 
     // Don't process interactions during initial delay
     if (Date.now() - systemStartTime < INITIAL_DELAY * 1000) {
-      return world;
     }
 
     const players = query(world, [Transform, Player]);
@@ -82,7 +80,5 @@ export function createNPCInteractionSystem() {
         Movement.dy[playerEid] = 0;
       }
     }
-
-    return world;
   };
 }

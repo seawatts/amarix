@@ -181,7 +181,11 @@ export class EntityLayer implements RenderLayer {
   name = "entities";
   order = RENDER_LAYERS.ENTITIES;
 
-  render({ ctx, world }: RenderContext): void {
+  render({ world }: RenderContext): void {
+    const context = world.canvas?.context;
+    const canvas = world.canvas?.element;
+    if (!context || !canvas) return;
+
     const npcs = query(world, [Transform, NPC, Polygon, Style]);
     const players = query(world, [
       Transform,
@@ -215,12 +219,12 @@ export class EntityLayer implements RenderLayer {
     for (const eid of renderOrder) {
       // Render shapes first
       if (boxes.includes(eid)) {
-        renderBox(ctx, eid);
+        renderBox(context, eid);
         continue;
       }
 
       if (circles.includes(eid)) {
-        renderCircle(ctx, eid);
+        renderCircle(context, eid);
         continue;
       }
 
@@ -238,13 +242,13 @@ export class EntityLayer implements RenderLayer {
           Style.strokeWidth[eid] = 3;
         }
 
-        renderPolygon(ctx, eid);
+        renderPolygon(context, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;
         const maxHealth = Health.max[eid] ?? 0;
         renderHealthBar(
-          ctx,
+          context,
           x - width / 2,
           y - height / 2,
           width,
@@ -254,18 +258,18 @@ export class EntityLayer implements RenderLayer {
 
         // Show cursor pointer when hovering
         if (isHovered) {
-          ctx.canvas.style.cursor = "pointer";
+          canvas.style.cursor = "pointer";
         }
       }
 
       if (players.includes(eid)) {
-        renderPolygon(ctx, eid);
+        renderPolygon(context, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;
         const maxHealth = Health.max[eid] ?? 0;
         renderHealthBar(
-          ctx,
+          context,
           x - width / 2,
           y - height / 2,
           width,

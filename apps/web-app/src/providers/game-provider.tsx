@@ -29,7 +29,7 @@ export function GameProvider({ children }: GameProviderProps) {
       return engineRef.current;
     }
 
-    const engine = new GameEngine(canvas, storeRef.current.getState());
+    const engine = new GameEngine(storeRef.current.getState());
     engineRef.current = engine;
     // storeRef.current.getState().setEngine(engine);
     engine.start();

@@ -193,8 +193,6 @@ Debug features include:
          // Update entity state
          NewComponent.value1[eid] += deltaTime;
        }
-
-       return world;
      };
    }
    ```

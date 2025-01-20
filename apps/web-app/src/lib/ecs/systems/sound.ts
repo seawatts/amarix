@@ -91,8 +91,6 @@ export function createSoundSystem() {
         }
       }
     }
-
-    return world;
   };
 }
 

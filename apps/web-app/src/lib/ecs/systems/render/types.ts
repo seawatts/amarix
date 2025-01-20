@@ -1,8 +1,6 @@
 import type { World } from "../../types";
 
 export interface RenderContext {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
   world: World;
   camera: {
     x: number;

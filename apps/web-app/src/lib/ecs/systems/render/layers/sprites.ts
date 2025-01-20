@@ -9,7 +9,7 @@ export class SpriteLayer implements RenderLayer {
   name = "sprites";
   order = RENDER_LAYERS.ENTITIES;
 
-  render({ ctx, world }: RenderContext): void {
+  render({ world }: RenderContext): void {
     const sprites = query(world, [Transform, Sprite]);
 
     // Sort sprites by y position for proper layering
@@ -43,17 +43,20 @@ export class SpriteLayer implements RenderLayer {
       const isFlipped = Sprite.isFlipped[eid] ?? 0;
 
       // Transform context
-      ctx.translate(x + offsetX, y + offsetY);
-      ctx.rotate(rotation);
-      ctx.scale(isFlipped ? -scaleX : scaleX, scaleY);
-      ctx.globalAlpha = opacity;
+      world.canvas?.context.translate(x + offsetX, y + offsetY);
+      world.canvas?.context.rotate(rotation);
+      world.canvas?.context.scale(isFlipped ? -scaleX : scaleX, scaleY);
+      if (world.canvas?.context) {
+        world.canvas.context.globalAlpha = opacity;
+      }
 
+      // Calculate source frame rectangle
       // Calculate source frame rectangle
       const sx = (frame * frameWidth) % sprite.width;
       const sy = Math.floor((frame * frameWidth) / sprite.width) * frameHeight;
 
       // Draw sprite frame
-      ctx.drawImage(
+      world.canvas?.context.drawImage(
         sprite,
         sx,
         sy,

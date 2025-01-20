@@ -85,7 +85,11 @@ export class DebugLayer implements RenderLayer {
     }
   }
 
-  render({ ctx: context, world }: RenderContext): void {
+  render({ world }: RenderContext): void {
+    const context = world.canvas?.context;
+    const canvas = world.canvas?.element;
+    if (!context || !canvas) return;
+
     context.save();
     context.lineWidth = 2;
     context.font = "14px monospace";

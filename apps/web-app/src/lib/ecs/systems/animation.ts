@@ -119,7 +119,5 @@ export function createAnimationSystem() {
         Animation.timer[eid] = 0;
       }
     }
-
-    return world;
   };
 }

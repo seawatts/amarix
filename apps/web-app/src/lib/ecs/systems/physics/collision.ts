@@ -272,6 +272,4 @@ export function collisionSystem(world: World) {
       }
     }
   }
-
-  return world;
 }
