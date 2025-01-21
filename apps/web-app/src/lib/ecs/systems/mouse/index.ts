@@ -6,10 +6,9 @@ import {
   Camera,
   Circle,
   Clickable,
-  CurrentPlayer,
   Debug,
+  GlobalMouseState,
   Hoverable,
-  MouseState,
   Polygon,
   Transform,
 } from "../../components";
@@ -25,32 +24,26 @@ function getMousePosition(
   world: World,
   canvas: HTMLCanvasElement,
 ): MousePosition | null {
-  const mouseEid = query(world, [CurrentPlayer, MouseState])[0];
-  if (!mouseEid) return null;
-
   const cameras = query(world, [Camera, Transform]);
   const cameraEid = cameras.find((eid) => Camera.isActive[eid]);
   if (!cameraEid) return null;
 
-  const screenMouseX = MouseState.screenX[mouseEid] ?? 0;
-  const screenMouseY = MouseState.screenY[mouseEid] ?? 0;
-
   const { x: worldMouseX, y: worldMouseY } = transformMouseToWorld(
-    screenMouseX,
-    screenMouseY,
+    GlobalMouseState.screenX,
+    GlobalMouseState.screenY,
     canvas,
     cameraEid,
   );
 
-  MouseState.worldX[mouseEid] = worldMouseX;
-  MouseState.worldY[mouseEid] = worldMouseY;
+  GlobalMouseState.worldX = worldMouseX;
+  GlobalMouseState.worldY = worldMouseY;
 
   return { worldX: worldMouseX, worldY: worldMouseY };
 }
 
-function resetMouseState(world: World, mouseEid: number) {
-  MouseState.hoveredEntity[mouseEid] = 0;
-  MouseState.clickedEntity[mouseEid] = 0;
+function resetMouseState(world: World) {
+  GlobalMouseState.hoveredEntity = 0;
+  GlobalMouseState.clickedEntity = 0;
 
   const debugEntities = query(world, [
     Debug,
@@ -60,12 +53,6 @@ function resetMouseState(world: World, mouseEid: number) {
   for (const eid of debugEntities) {
     Debug.hoveredEntity[eid] = 0;
     Debug.clickedEntity[eid] = 0;
-  }
-
-  const mouseStateEntities = query(world, [MouseState]);
-  for (const eid of mouseStateEntities) {
-    MouseState.hoveredEntity[eid] = 0;
-    MouseState.clickedEntity[eid] = 0;
   }
 }
 
@@ -103,15 +90,12 @@ export function createMouseSystem(canvas: HTMLCanvasElement) {
       lastQueryTime = currentTime;
     }
 
-    const mouseEid = query(world, [CurrentPlayer, MouseState])[0];
-    if (!mouseEid) return;
-
     // Get mouse position in world space
     const mousePos = getMousePosition(world, canvas);
     if (!mousePos) return;
 
     // Reset state once at start of frame
-    resetMouseState(world, mouseEid);
+    resetMouseState(world);
 
     // Get all interactive entities once
     const boxes = query(world, [Transform, Box, IsA(world.prefabs.shape)]);
@@ -121,8 +105,6 @@ export function createMouseSystem(canvas: HTMLCanvasElement) {
       Polygon,
       IsA(world.prefabs.shape),
     ]);
-
-    const buttonsDown = MouseState.buttonsDown[mouseEid] ?? 0;
 
     // Process all shapes with a single iteration
     const allEntities = new Set([
@@ -191,14 +173,14 @@ export function createMouseSystem(canvas: HTMLCanvasElement) {
 
       // Update entity state based on collision
       if (isInShape) {
-        MouseState.hoveredEntity[mouseEid] = eid;
-        if (buttonsDown > 0) {
-          MouseState.clickedEntity[mouseEid] = eid;
+        GlobalMouseState.hoveredEntity = eid;
+        if (GlobalMouseState.buttonsDown > 0) {
+          GlobalMouseState.clickedEntity = eid;
         }
 
         if (hasComponent(world, eid, Debug)) {
           Debug.hoveredEntity[eid] = 1;
-          if (buttonsDown > 0) {
+          if (GlobalMouseState.buttonsDown > 0) {
             Debug.clickedEntity[eid] = 1;
           }
         }
@@ -207,7 +189,10 @@ export function createMouseSystem(canvas: HTMLCanvasElement) {
           Hoverable.isHovered[eid] = 1;
         }
 
-        if (hasComponent(world, eid, Clickable) && buttonsDown > 0) {
+        if (
+          hasComponent(world, eid, Clickable) &&
+          GlobalMouseState.buttonsDown > 0
+        ) {
           Clickable.isClicked[eid] = 1;
         }
       } else {

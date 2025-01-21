@@ -5,11 +5,11 @@ import {
   BoundingBox,
   Collidable,
   CollisionMask,
-  Debug,
   Named,
   Transform,
   TriggerZone,
 } from "../components";
+import { createDebug } from "./debug";
 
 interface CreateTriggerZoneOptions {
   actionId: number;
@@ -37,7 +37,6 @@ export function createTriggerZone(
     Collidable,
     TriggerZone,
     Named,
-    Debug,
   );
 
   // Set transform values
@@ -67,6 +66,7 @@ export function createTriggerZone(
 
   // Set name
   Named.name[eid] = `${options.type} Trigger`;
+  createDebug(world, eid);
 
   return eid;
 }

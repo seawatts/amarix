@@ -69,24 +69,25 @@ export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
           </DropdownMenu>
         </div> */}
         <SidebarMenu>
-          {Object.entries(entity.components).map(
-            ([componentName, componentData]) => (
+          {Object.entries(entity.components)
+            .sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
+            .map(([componentName, componentData]) => (
               <Collapsible key={componentName} className="group/entity-details">
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton className="flex items-center justify-between">
                     <span>{componentName}</span>
                     {/* <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-6 opacity-0 group-hover/entity-details:opacity-100"
-                        onClick={(event: React.MouseEvent) => {
-                          event.stopPropagation();
-                          engine.removeComponent(entityId, componentName);
-                        }}
-                      >
-                        <Trash2Icon className="size-4" />
-                      </Button> */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-6 opacity-0 group-hover/entity-details:opacity-100"
+                          onClick={(event: React.MouseEvent) => {
+                            event.stopPropagation();
+                            engine.removeComponent(entityId, componentName);
+                          }}
+                        >
+                          <Trash2Icon className="size-4" />
+                        </Button> */}
                     <ChevronRight className="size-4 transition-transform duration-200 group-data-[state=open]/entity-details:rotate-90" />
                     {/* </div> */}
                   </SidebarMenuButton>
@@ -131,8 +132,7 @@ export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
                   ))}
                 </CollapsibleContent>
               </Collapsible>
-            ),
-          )}
+            ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

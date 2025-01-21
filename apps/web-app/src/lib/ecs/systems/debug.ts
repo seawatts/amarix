@@ -21,54 +21,56 @@ interface DebugSystemContext {
 }
 
 export function createDebugSystem(debugStore: DebugStore) {
-  const lastPerformanceUpdate = { value: performance.now() };
-  // const PERFORMANCE_UPDATE_INTERVAL = 1000; // Update every second
-
   return function debugSystem(world: World) {
     const context: DebugSystemContext = {
       debugStore,
       world,
     };
 
-    // Update performance metrics periodically
+    // Update performance metrics
     const currentTime = performance.now();
-    // if (
-    // currentTime - lastPerformanceUpdate.value >
-    // PERFORMANCE_UPDATE_INTERVAL
-    // ) {
     updateMetrics(context, currentTime);
-    // lastPerformanceUpdate.value = currentTime;
-    // }
 
     // Get all entities with Debug components
     const debugEntities = query(world, [Debug]);
 
     for (const eid of debugEntities) {
-      const isCommandPressed = isCommandKeyDown(eid);
+      // Update performance metrics
+      Debug.frameTime[eid] = world.timing.delta;
+      Debug.lastUpdated[eid] = performance.now();
 
-      if (isCommandPressed) {
-        // Show bounding box when hovering with command key pressed
-        if (Debug.hoveredEntity[eid] === 1) {
-          Debug.showBoundingBox[eid] = 1;
-          debugStore.toggleVisualization("showBoundingBoxes");
-        }
+      // Check if command key is pressed
+      const isCommandPressed = isCommandKeyDown();
 
-        // Handle entity selection on command + click
-        if (Debug.clickedEntity[eid] === 1) {
-          Debug.isSelected[eid] = 1;
-          const event: DebugUpdateEvent = {
-            data: { selectedEntityId: eid },
-            type: "entitySelected",
-          };
-          debugStore.handleDebugEvent(event);
-        }
+      // Show debug visualizations when command key is pressed and entity is hovered
+      if (isCommandPressed && Debug.hoveredEntity[eid]) {
+        Debug.showBoundingBox[eid] = 1;
+        Debug.showColliders[eid] = 1;
+        Debug.showForceVectors[eid] = 1;
+        Debug.showVelocityVector[eid] = 1;
+        Debug.showTriggerZones[eid] = 1;
+        Debug.showOrigin[eid] = 1;
+
+        // Sync with debug store
+        debugStore.toggleVisualization("showBoundingBoxes");
+        debugStore.toggleVisualization("showCollisionPoints");
+        debugStore.toggleVisualization("showForceVectors");
+        debugStore.toggleVisualization("showVelocityVectors");
+        debugStore.toggleVisualization("showTriggerZones");
       } else {
-        // Reset debug flags when command key is not pressed
+        // Reset visualizations when command key is not pressed
         Debug.showBoundingBox[eid] = 0;
         Debug.showColliders[eid] = 0;
         Debug.showForceVectors[eid] = 0;
         Debug.showVelocityVector[eid] = 0;
         Debug.showTriggerZones[eid] = 0;
+        Debug.showOrigin[eid] = 0;
+      }
+
+      // Select entity when command key is pressed and entity is clicked
+      if (isCommandPressed && Debug.clickedEntity[eid]) {
+        Debug.isSelected[eid] = 1;
+        debugStore.setSelectedEntityId(eid);
       }
 
       // Sync debug store state with components
@@ -164,23 +166,6 @@ function updateMetrics(context: DebugSystemContext, currentTime: number) {
   context.debugStore.handleDebugEvent(event);
 }
 
-function syncDebugStoreState(entity: number, context: DebugSystemContext) {
-  const { debugStore } = context;
-
-  // Sync visualizations
-  if (Debug.showBoundingBox[entity] === 1) {
-    debugStore.toggleVisualization("showBoundingBoxes");
-  }
-  if (Debug.showColliders[entity] === 1) {
-    debugStore.toggleVisualization("showCollisionPoints");
-  }
-  if (Debug.showForceVectors[entity] === 1) {
-    debugStore.toggleVisualization("showForceVectors");
-  }
-  if (Debug.showVelocityVector[entity] === 1) {
-    debugStore.toggleVisualization("showVelocityVectors");
-  }
-  if (Debug.showTriggerZones[entity] === 1) {
-    debugStore.toggleVisualization("showTriggerZones");
-  }
+function syncDebugStoreState(_entity: number, _context: DebugSystemContext) {
+  // Currently not using store sync
 }

@@ -5,15 +5,13 @@ import {
   Box,
   Circle,
   Clickable,
-  CurrentPlayer,
   Health,
   Hoverable,
-  NPC,
-  Player,
   Polygon,
   Style,
   Transform,
 } from "../../../components";
+import { PIXELS_PER_METER } from "../../../systems/physics";
 import { RENDER_LAYERS } from "../types";
 
 const HEALTH_BAR_HEIGHT = 8;
@@ -80,8 +78,8 @@ function renderHealthBar(
 }
 
 function renderPolygon(context: CanvasRenderingContext2D, eid: number): void {
-  const x = Transform.x[eid] ?? 0;
-  const y = Transform.y[eid] ?? 0;
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
   const rotation = Polygon.rotation[eid] ?? 0;
   const vertCount = Polygon.vertexCount[eid] ?? 0;
 
@@ -100,8 +98,8 @@ function renderPolygon(context: CanvasRenderingContext2D, eid: number): void {
   // Draw polygon vertices in local space
   context.beginPath();
   for (let index = 0; index < vertCount; index++) {
-    const vx = Polygon.verticesX[eid]?.[index] ?? 0;
-    const vy = Polygon.verticesY[eid]?.[index] ?? 0;
+    const vx = (Polygon.verticesX[eid]?.[index] ?? 0) * PIXELS_PER_METER;
+    const vy = (Polygon.verticesY[eid]?.[index] ?? 0) * PIXELS_PER_METER;
     if (index === 0) {
       context.moveTo(vx, vy);
     } else {
@@ -116,14 +114,14 @@ function renderPolygon(context: CanvasRenderingContext2D, eid: number): void {
 }
 
 function renderBox(context: CanvasRenderingContext2D, eid: number): void {
-  const x = Transform.x[eid] ?? 0;
-  const y = Transform.y[eid] ?? 0;
-  const width = Box.width[eid] ?? 0;
-  const height = Box.height[eid] ?? 0;
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+  const width = (Box.width[eid] ?? 0) * PIXELS_PER_METER;
+  const height = (Box.height[eid] ?? 0) * PIXELS_PER_METER;
   const rotation = Box.rotation[eid] ?? 0;
   const isWireframe = Box.isWireframe[eid] === 1;
-  const originX = Box.originX[eid] ?? 0;
-  const originY = Box.originY[eid] ?? 0;
+  const originX = (Box.originX[eid] ?? 0) * PIXELS_PER_METER;
+  const originY = (Box.originY[eid] ?? 0) * PIXELS_PER_METER;
 
   // Apply styles with better defaults
   context.fillStyle = Style.fillColor[eid] ?? "#666666";
@@ -146,14 +144,14 @@ function renderBox(context: CanvasRenderingContext2D, eid: number): void {
 }
 
 function renderCircle(context: CanvasRenderingContext2D, eid: number): void {
-  const x = Transform.x[eid] ?? 0;
-  const y = Transform.y[eid] ?? 0;
-  const radius = Circle.radius[eid] ?? 0;
+  const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
+  const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+  const radius = (Circle.radius[eid] ?? 0) * PIXELS_PER_METER;
   const startAngle = Circle.startAngle[eid] ?? 0;
   const endAngle = Circle.endAngle[eid] ?? Math.PI * 2;
   const isWireframe = Circle.isWireframe[eid] === 1;
-  const originX = Circle.originX[eid] ?? 0;
-  const originY = Circle.originY[eid] ?? 0;
+  const originX = (Circle.originX[eid] ?? 0) * PIXELS_PER_METER;
+  const originY = (Circle.originY[eid] ?? 0) * PIXELS_PER_METER;
 
   // Apply styles with better defaults
   context.fillStyle = Style.fillColor[eid] ?? "#666666";
@@ -182,13 +180,11 @@ export class EntityLayer implements RenderLayer {
   order = RENDER_LAYERS.ENTITIES;
 
   render({ world, ctx, canvas }: RenderContext): void {
-    const npcs = query(world, [Transform, NPC, Polygon, Style]);
-    const players = query(world, [
+    const polygons = query(world, [
       Transform,
-      Player,
-      CurrentPlayer,
-      Polygon,
       Style,
+      Polygon,
+      IsA(world.prefabs.shape),
     ]);
     const boxes = query(world, [
       Transform,
@@ -204,13 +200,11 @@ export class EntityLayer implements RenderLayer {
     ]);
 
     // Sort all entities by y position for proper layering
-    const renderOrder = [...npcs, ...players, ...boxes, ...circles].sort(
-      (a, b) => {
-        const yA = Transform.y[a] ?? 0;
-        const yB = Transform.y[b] ?? 0;
-        return yA - yB;
-      },
-    );
+    const renderOrder = [...polygons, ...boxes, ...circles].sort((a, b) => {
+      const yA = Transform.y[a] ?? 0;
+      const yB = Transform.y[b] ?? 0;
+      return yA - yB;
+    });
 
     for (const eid of renderOrder) {
       // Render shapes first
@@ -228,29 +222,39 @@ export class EntityLayer implements RenderLayer {
       const y = Transform.y[eid] ?? 0;
       const { width, height } = getPolygonBounds(eid);
 
-      if (npcs.includes(eid)) {
+      if (polygons.includes(eid)) {
         const isHovered = Hoverable.isHovered[eid] === 1;
         const isClicked = Clickable.isClicked[eid] === 1;
 
-        // Update style for hover/click state
+        // Store original style values
+        const originalStrokeColor = Style.strokeColor[eid];
+        const originalStrokeWidth = Style.strokeWidth[eid];
+
+        // Temporarily update context styles for hover/click state
         if (isHovered || isClicked) {
-          Style.strokeColor[eid] = "#ffffff";
-          Style.strokeWidth[eid] = 3;
+          ctx.strokeStyle = "#ffffff";
+          ctx.lineWidth = 3;
         }
 
         renderPolygon(ctx, eid);
 
+        // Restore original context styles
+        if (isHovered || isClicked) {
+          ctx.strokeStyle = originalStrokeColor ?? "#333333";
+          ctx.lineWidth = originalStrokeWidth ?? 2;
+        }
+
         // Health bar
         const health = Health.current[eid] ?? 0;
         const maxHealth = Health.max[eid] ?? 0;
-        renderHealthBar(
-          ctx,
-          x - width / 2,
-          y - height / 2,
-          width,
-          health,
-          maxHealth,
-        );
+        // renderHealthBar(
+        //   ctx,
+        //   x - width / 2,
+        //   y - height / 2,
+        //   width,
+        //   health,
+        //   maxHealth,
+        // );
 
         // Show cursor pointer when hovering
         if (isHovered) {
@@ -258,21 +262,21 @@ export class EntityLayer implements RenderLayer {
         }
       }
 
-      if (players.includes(eid)) {
-        renderPolygon(ctx, eid);
+      // if (players.includes(eid)) {
+      //   renderPolygon(ctx, eid);
 
-        // Health bar
-        const health = Health.current[eid] ?? 0;
-        const maxHealth = Health.max[eid] ?? 0;
-        renderHealthBar(
-          ctx,
-          x - width / 2,
-          y - height / 2,
-          width,
-          health,
-          maxHealth,
-        );
-      }
+      //   // Health bar
+      //   const health = Health.current[eid] ?? 0;
+      //   const maxHealth = Health.max[eid] ?? 0;
+      //   renderHealthBar(
+      //     ctx,
+      //     x - width / 2,
+      //     y - height / 2,
+      //     width,
+      //     health,
+      //     maxHealth,
+      //   );
+      // }
     }
   }
 }

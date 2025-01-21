@@ -6,7 +6,6 @@ import {
   CollisionManifold,
   CollisionMask,
   Force,
-  KeyboardState,
   Player,
   RigidBody,
   Transform,
@@ -33,7 +32,6 @@ export const createMovementSystem = () => {
       Transform,
       Force,
       RigidBody,
-      KeyboardState,
       Player,
       Collidable,
     ]);
@@ -67,7 +65,7 @@ export const createMovementSystem = () => {
       }
 
       // Get movement input using helper function
-      const { dx, dy } = getMovementInput(eid);
+      const { dx, dy } = getMovementInput();
 
       // Handle jumping
       const jumpCooldown = jumpCooldowns.get(eid) ?? 0;

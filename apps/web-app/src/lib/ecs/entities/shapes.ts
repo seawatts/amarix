@@ -6,12 +6,12 @@ import {
   Circle,
   Collidable,
   CollisionMask,
-  Debug,
   Named,
   RigidBody,
   Style,
   Transform,
 } from "../components";
+import { createDebug } from "./debug";
 
 interface CreateShapeOptions {
   isStatic?: boolean;
@@ -59,7 +59,6 @@ export function createBox(world: World, options: CreateBoxOptions) {
     RigidBody,
     Collidable,
     Named,
-    Debug,
     IsA(world.prefabs.shape),
   );
 
@@ -100,6 +99,7 @@ export function createBox(world: World, options: CreateBoxOptions) {
 
   // Set name
   Named.name[eid] = options.name ?? "Box";
+  createDebug(world, eid);
 
   return eid;
 }
@@ -117,7 +117,6 @@ export function createCircle(world: World, options: CreateCircleOptions) {
     RigidBody,
     Collidable,
     Named,
-    Debug,
     IsA(world.prefabs.shape),
   );
 
@@ -159,7 +158,7 @@ export function createCircle(world: World, options: CreateCircleOptions) {
 
   // Set name
   Named.name[eid] = options.name ?? "Circle";
-
+  createDebug(world, eid);
   return eid;
 }
 

@@ -1,3 +1,6 @@
+import { addComponent } from "bitecs";
+
+import type { World } from "../types";
 import { Debug } from "../components";
 
 interface CreateDebugOptions {
@@ -10,21 +13,32 @@ interface CreateDebugOptions {
   showVelocityVector?: boolean;
 }
 
-export function createDebug(eid: number, options?: CreateDebugOptions) {
-  // Set debug component values
+export function createDebug(
+  world: World,
+  eid: number,
+  options?: CreateDebugOptions,
+) {
+  // Initialize all debug flags
+  addComponent(world, eid, Debug);
+
+  // Initialize debug flags
+  Debug.hoveredEntity[eid] = 0;
+  Debug.clickedEntity[eid] = 0;
+  Debug.isSelected[eid] = 0;
+  Debug.showBoundingBox[eid] = Number(options?.showBoundingBox ?? false);
+  Debug.showColliders[eid] = Number(options?.showColliders ?? false);
+  Debug.showForceVectors[eid] = Number(options?.showForceVectors ?? false);
+  Debug.showVelocityVector[eid] = Number(options?.showVelocityVector ?? false);
+  Debug.showTriggerZones[eid] = Number(options?.showTriggerZones ?? false);
+  Debug.showOrigin[eid] = Number(options?.showOrigin ?? false);
+
+  // Set performance metrics
   Debug.frameTime[eid] = 0;
   Debug.isPaused[eid] = 0;
-  Debug.isSelected[eid] = 0;
   Debug.lastUpdated[eid] = performance.now();
   Debug.logLevel[eid] = options?.logLevel ?? 3; // Default to INFO level
   Debug.physicsTime[eid] = 0;
   Debug.renderTime[eid] = 0;
-  Debug.showBoundingBox[eid] = Number(options?.showBoundingBox ?? false);
-  Debug.showColliders[eid] = Number(options?.showColliders ?? false);
-  Debug.showForceVectors[eid] = Number(options?.showForceVectors ?? false);
-  Debug.showOrigin[eid] = Number(options?.showOrigin ?? false);
-  Debug.showTriggerZones[eid] = Number(options?.showTriggerZones ?? false);
-  Debug.showVelocityVector[eid] = Number(options?.showVelocityVector ?? false);
   Debug.stepFrame[eid] = 0;
   Debug.updateTime[eid] = 0;
 

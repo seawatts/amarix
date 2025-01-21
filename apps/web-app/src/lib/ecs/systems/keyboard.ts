@@ -5,7 +5,6 @@ import {
   BattleAction,
   BattleState,
   CurrentPlayer,
-  KeyboardState,
   Movement,
   ValidActions,
 } from "../components";
@@ -27,7 +26,7 @@ function handleBattleInput(world: World, playerEid: number) {
   const validMoves = (ValidActions.cells[playerEid] ?? []) as ValidMove[];
 
   // Check each movement key
-  if (isKeyDown(playerEid, "ArrowLeft")) {
+  if (isKeyDown("ArrowLeft")) {
     const targetX = playerX - CELL_SIZE;
     const targetY = playerY;
     if (
@@ -39,7 +38,7 @@ function handleBattleInput(world: World, playerEid: number) {
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, "ArrowRight")) {
+  } else if (isKeyDown("ArrowRight")) {
     const targetX = playerX + CELL_SIZE;
     const targetY = playerY;
     if (
@@ -51,7 +50,7 @@ function handleBattleInput(world: World, playerEid: number) {
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, "ArrowUp")) {
+  } else if (isKeyDown("ArrowUp")) {
     const targetX = playerX;
     const targetY = playerY - CELL_SIZE;
     if (
@@ -63,7 +62,7 @@ function handleBattleInput(world: World, playerEid: number) {
       BattleAction.targetX[playerEid] = targetX;
       BattleAction.targetY[playerEid] = targetY;
     }
-  } else if (isKeyDown(playerEid, "ArrowDown")) {
+  } else if (isKeyDown("ArrowDown")) {
     const targetX = playerX;
     const targetY = playerY + CELL_SIZE;
     if (
@@ -78,7 +77,7 @@ function handleBattleInput(world: World, playerEid: number) {
   }
 
   // Check for attack action
-  if (isKeyDown(playerEid, "Space") || isKeyDown(playerEid, "Enter")) {
+  if (isKeyDown("Space") || isKeyDown("Enter")) {
     const attackMove = validMoves.find((move: ValidMove) => {
       // Find a valid move that's not the player's current position
       return move.x !== playerX || move.y !== playerY;
@@ -97,18 +96,18 @@ function handleExplorationInput(world: World, playerEid: number) {
   Movement.dy[playerEid] = 0;
 
   // Handle horizontal movement
-  if (isKeyDown(playerEid, "ArrowLeft")) {
+  if (isKeyDown("ArrowLeft")) {
     Movement.dx[playerEid] -= 1;
   }
-  if (isKeyDown(playerEid, "ArrowRight")) {
+  if (isKeyDown("ArrowRight")) {
     Movement.dx[playerEid] += 1;
   }
 
   // Handle vertical movement
-  if (isKeyDown(playerEid, "ArrowUp")) {
+  if (isKeyDown("ArrowUp")) {
     Movement.dy[playerEid] -= 1;
   }
-  if (isKeyDown(playerEid, "ArrowDown")) {
+  if (isKeyDown("ArrowDown")) {
     Movement.dy[playerEid] += 1;
   }
 
@@ -122,8 +121,8 @@ function handleExplorationInput(world: World, playerEid: number) {
 
 export function createKeyboardSystem() {
   return function keyboardSystem(world: World) {
-    // Query for entities with both CurrentPlayer and InputState components
-    const players = query(world, [CurrentPlayer, KeyboardState]);
+    // Query for entities with CurrentPlayer component
+    const players = query(world, [CurrentPlayer]);
     for (const playerEid of players) {
       if (BattleState.isActive[playerEid]) {
         handleBattleInput(world, playerEid);

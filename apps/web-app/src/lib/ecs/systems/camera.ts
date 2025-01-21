@@ -1,7 +1,8 @@
 import { hasComponent, query } from "bitecs";
 
 import type { World } from "../types";
-import { Camera, KeyboardState, MouseState, Transform } from "../components";
+import { Camera, GlobalMouseState, Transform } from "../components";
+import { isKeyDown } from "../utils/keyboard";
 
 function lerp(start: number, end: number, t: number): number {
   return start + (end - start) * t;
@@ -54,33 +55,31 @@ export function createCameraSystem() {
       let newY = currentY;
       let newZoom = currentZoom;
 
-      // Handle keyboard-based panning if keyboard state exists
-      if (KeyboardState.keys[eid] !== undefined) {
-        const isSpaceDown = (KeyboardState.keys[eid] ?? 0) & (1 << 32); // Space key code
-        const mouseX = MouseState.screenX[eid] ?? 0;
-        const mouseY = MouseState.screenY[eid] ?? 0;
+      // Handle keyboard-based panning
+      const isSpaceDown = isKeyDown("Space");
+      const mouseX = GlobalMouseState.screenX;
+      const mouseY = GlobalMouseState.screenY;
 
-        if (isSpaceDown) {
-          shouldFollowTarget = false;
-          if (Camera.isPanning[eid]) {
-            // Continue panning - calculate delta from last position
-            const deltaX = mouseX - (Camera.lastPanX[eid] ?? mouseX);
-            const deltaY = mouseY - (Camera.lastPanY[eid] ?? mouseY);
+      if (isSpaceDown) {
+        shouldFollowTarget = false;
+        if (Camera.isPanning[eid]) {
+          // Continue panning - calculate delta from last position
+          const deltaX = mouseX - (Camera.lastPanX[eid] ?? mouseX);
+          const deltaY = mouseY - (Camera.lastPanY[eid] ?? mouseY);
 
-            // Update camera position based on mouse movement
-            // We divide by zoom to make the pan speed consistent at different zoom levels
-            newX = currentX - deltaX / currentZoom;
-            newY = currentY - deltaY / currentZoom;
-          }
-
-          // Update panning state
-          Camera.isPanning[eid] = 1;
-          Camera.lastPanX[eid] = mouseX;
-          Camera.lastPanY[eid] = mouseY;
-        } else {
-          // Stop panning
-          Camera.isPanning[eid] = 0;
+          // Update camera position based on mouse movement
+          // We divide by zoom to make the pan speed consistent at different zoom levels
+          newX = currentX - deltaX / currentZoom;
+          newY = currentY - deltaY / currentZoom;
         }
+
+        // Update panning state
+        Camera.isPanning[eid] = 1;
+        Camera.lastPanX[eid] = mouseX;
+        Camera.lastPanY[eid] = mouseY;
+      } else {
+        // Stop panning
+        Camera.isPanning[eid] = 0;
       }
 
       // Handle touchpad gestures

@@ -8,7 +8,6 @@ import {
   Clickable,
   Collidable,
   CollisionMask,
-  Debug,
   Force,
   Gravity,
   Health,
@@ -103,7 +102,6 @@ export function createNPC(world: World, options: CreateNPCOptions) {
     Velocity,
     Force,
     Named,
-    Debug,
     Style,
     IsA(world.prefabs.shape),
   );
@@ -184,7 +182,7 @@ export function createNPC(world: World, options: CreateNPCOptions) {
 
   // Set name
   Named.name[eid] = "NPC";
-  createDebug(eid);
+  createDebug(world, eid);
   // Set style values
   Style.fillColor[eid] = "#4d94ff"; // Blue for friendly NPCs
   Style.strokeColor[eid] = "#ffffff66";
@@ -218,7 +216,7 @@ export function createHostileNPC(world: World, options: CreateNPCOptions) {
   Style.fillOpacity[eid] = 1;
 
   // Set name
-  createDebug(eid);
+  createDebug(world, eid);
   Named.name[eid] = "Hostile NPC";
 
   return eid;

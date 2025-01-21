@@ -1,4 +1,4 @@
-import { KeyboardState } from "../components";
+import { GlobalKeyboardState } from "../components";
 
 // Key codes for movement
 export const MOVEMENT_KEYS = {
@@ -42,41 +42,47 @@ function getKeyBit(code: string): number {
 }
 
 // Helper function to check if a key is pressed
-export function isKeyDown(eid: number, code: string): boolean {
+export function isKeyDown(code: string): boolean {
+  // First check the bit field for movement keys (for backward compatibility)
   const bit = getKeyBit(code);
-  if (bit === -1) return false;
-  const value = KeyboardState.keys[eid];
-  if (value === undefined) return false;
-  return (value & (1 << bit)) !== 0;
+  if (bit !== -1) {
+    return (GlobalKeyboardState.keys & (1 << bit)) !== 0;
+  }
+  // Then check the pressedKeys Set for all other keys
+  return GlobalKeyboardState.pressedKeys.has(code);
 }
 
 // Helper function to set key state
-export function setKeyDown(eid: number, code: string) {
+export function setKeyDown(code: string) {
+  // Update bit field for movement keys
   const bit = getKeyBit(code);
-  if (bit === -1) return;
-  const value = KeyboardState.keys[eid];
-  if (value === undefined) return;
-  KeyboardState.keys[eid] = value | (1 << bit);
+  if (bit !== -1) {
+    GlobalKeyboardState.keys |= 1 << bit;
+  }
+  // Update pressedKeys Set for all keys
+  GlobalKeyboardState.pressedKeys.add(code);
 }
 
 // Helper function to clear key state
-export function clearKeyDown(eid: number, code: string) {
+export function clearKeyDown(code: string) {
+  // Update bit field for movement keys
   const bit = getKeyBit(code);
-  if (bit === -1) return;
-  const value = KeyboardState.keys[eid];
-  if (value === undefined) return;
-  KeyboardState.keys[eid] = value & ~(1 << bit);
+  if (bit !== -1) {
+    GlobalKeyboardState.keys &= ~(1 << bit);
+  }
+  // Update pressedKeys Set for all keys
+  GlobalKeyboardState.pressedKeys.delete(code);
 }
 
 // Helper function to get movement input
-export function getMovementInput(eid: number): {
+export function getMovementInput(): {
   dx: number;
   dy: number;
 } {
-  const up = isKeyDown(eid, "ArrowUp") || isKeyDown(eid, "KeyW");
-  const down = isKeyDown(eid, "ArrowDown") || isKeyDown(eid, "KeyS");
-  const left = isKeyDown(eid, "ArrowLeft") || isKeyDown(eid, "KeyA");
-  const right = isKeyDown(eid, "ArrowRight") || isKeyDown(eid, "KeyD");
+  const up = isKeyDown("ArrowUp") || isKeyDown("KeyW");
+  const down = isKeyDown("ArrowDown") || isKeyDown("KeyS");
+  const left = isKeyDown("ArrowLeft") || isKeyDown("KeyA");
+  const right = isKeyDown("ArrowRight") || isKeyDown("KeyD");
 
   const dx = (right ? 1 : 0) - (left ? 1 : 0);
   const dy = (down ? 1 : 0) - (up ? 1 : 0);
@@ -85,6 +91,11 @@ export function getMovementInput(eid: number): {
 }
 
 // Helper function to check if command key is pressed
-export function isCommandKeyDown(eid: number): boolean {
-  return isKeyDown(eid, "MetaLeft") || isKeyDown(eid, "MetaRight");
+export function isCommandKeyDown(): boolean {
+  return isKeyDown("MetaLeft") || isKeyDown("MetaRight");
+}
+
+// Helper function to get all currently pressed keys
+export function getPressedKeys(): string[] {
+  return [...GlobalKeyboardState.pressedKeys];
 }

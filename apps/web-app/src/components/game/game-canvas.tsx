@@ -111,34 +111,30 @@ export function GameCanvas() {
 
     // Define keyboard handlers
     const handleKeyDown = (event: KeyboardEvent) => {
-      const playerEid = gameEngine.getPlayerEid();
-      const cameraEid = gameEngine.getCameraEid();
-      setKeyDown(playerEid, event.code);
-      setKeyDown(cameraEid, event.code);
+      setKeyDown(event.code);
     };
 
     const handleKeyUp = (event: KeyboardEvent) => {
-      const playerEid = gameEngine.getPlayerEid();
-      const cameraEid = gameEngine.getCameraEid();
-      clearKeyDown(playerEid, event.code);
-      clearKeyDown(cameraEid, event.code);
+      clearKeyDown(event.code);
     };
 
     // Define mouse handlers
     const handleMouseMove = (event: MouseEvent) => {
-      const playerEid = gameEngine.getPlayerEid();
-      const { x, y } = getCanvasCoordinates(event, canvas);
-      updateMousePosition(playerEid, x, y, x, y);
+      if (!canvasRef.current) return;
+      const { x, y } = getCanvasCoordinates(event, canvasRef.current);
+      // Update mouse position in both screen and world coordinates
+      // Since we don't have world coordinates yet, use screen coordinates
+      updateMousePosition(x, y, x, y);
     };
 
     const handleMouseDown = (event: MouseEvent) => {
-      const playerEid = gameEngine.getPlayerEid();
-      setMouseButtonDown(playerEid, event.button);
+      event.preventDefault();
+      setMouseButtonDown(event.button);
     };
 
     const handleMouseUp = (event: MouseEvent) => {
-      const playerEid = gameEngine.getPlayerEid();
-      clearMouseButtonDown(playerEid, event.button);
+      event.preventDefault();
+      clearMouseButtonDown(event.button);
     };
 
     const handleContextMenu = (event: MouseEvent) => {

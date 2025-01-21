@@ -123,38 +123,40 @@ export const ValidActions = {
 } as const;
 
 // Input state using bit fields for multiple key tracking
-export const KeyboardState = {
-  _name: "KeyboardState",
+export const GlobalKeyboardState = {
+  _name: "GlobalKeyboardState",
 
-  // Single array to track all keys (128 possible keys)
-  keys: new Uint32Array(128),
+  // Single value to track all keys (using bit field)
+  keys: 0 as number,
+
+  // Map to store all pressed keys
+  pressedKeys: new Set<string>(),
 } as const;
 
-// Mouse state component
-export const MouseState = {
-  _name: "MouseState",
+// Global mouse state
+export const GlobalMouseState = {
+  _name: "GlobalMouseState",
 
   // Mouse buttons state (using bit field like keyboard)
   // Bit 0: Left button
   // Bit 1: Right button
   // Bit 2: Middle button
-  buttonsDown: u8(Array.from({ length: baseInitializationSize })),
+  buttonsDown: 0,
 
   // Entity being clicked (0 if none)
-  clickedEntity: u32(Array.from({ length: baseInitializationSize })),
+  clickedEntity: 0,
 
   // Entity being hovered over (0 if none)
-  hoveredEntity: u32(Array.from({ length: baseInitializationSize })),
+  hoveredEntity: 0,
 
   // Current mouse position in screen coordinates
-  screenX: f32(Array.from({ length: baseInitializationSize })),
-
-  screenY: f32(Array.from({ length: baseInitializationSize })),
+  screenX: 0,
+  screenY: 0,
 
   // Current mouse position in world coordinates
-  worldX: f32(Array.from({ length: baseInitializationSize })),
-  worldY: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+  worldX: 0,
+  worldY: 0,
+};
 
 // BoundingBox component for collision detection and interaction areas
 export const BoundingBox = {

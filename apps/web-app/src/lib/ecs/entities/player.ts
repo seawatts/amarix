@@ -3,17 +3,13 @@ import { addComponent, addEntity, IsA } from "bitecs";
 import type { World } from "../types";
 import {
   Acceleration,
-  Animation,
   Clickable,
   Collidable,
   CollisionMask,
   CurrentPlayer,
-  Debug,
   Force,
   Gravity,
   Health,
-  KeyboardState,
-  MouseState,
   Named,
   Player,
   Polygon,
@@ -25,6 +21,8 @@ import {
   Velocity,
 } from "../components";
 import { PIXELS_PER_METER } from "../systems/physics";
+// Increased rotational resistance
+
 import { createDebug } from "./debug";
 
 // Player dimensions (1 meter x 1 meter)
@@ -36,24 +34,11 @@ const PLAYER_MASS = 70; // kg
 const PLAYER_FRICTION = 0.2; // Increased friction for better control
 const PLAYER_RESTITUTION = 0.1; // Reduced bounciness
 const PLAYER_LINEAR_DAMPING = 0.9; // Increased air resistance for better control
-const PLAYER_ANGULAR_DAMPING = 0.95; // Increased rotational resistance
+const PLAYER_ANGULAR_DAMPING = 0.95;
 
 // Game constants
 const INITIAL_HEALTH = 100;
 const PLAYER_FOOTSTEP = "/sounds/footstep.mp3";
-
-const PLAYER_ANIMATIONS = {
-  idle: {
-    frameDuration: 200,
-    frames: [0, 1, 2, 3],
-    isLooping: true,
-  },
-  walk: {
-    frameDuration: 150,
-    frames: [4, 5, 6, 7],
-    isLooping: true,
-  },
-};
 
 function createBoxPolygon(
   width: number,
@@ -91,118 +76,95 @@ interface CreatePlayerOptions {
 }
 
 export function createPlayer(world: World, options: CreatePlayerOptions) {
-  const playerEid = addEntity(world);
+  const eid = addEntity(world);
 
+  // Initialize player state
+  CurrentPlayer.eid[eid] = eid;
   // Add player components
   addComponent(
     world,
-    playerEid,
+    eid,
     Transform,
     Player,
     Health,
     CurrentPlayer,
-    KeyboardState,
-    MouseState,
     Polygon,
     IsA(world.prefabs.shape),
     RigidBody,
     Collidable,
     Clickable,
     Sprite,
-    Animation,
     Sound,
     Gravity,
     Acceleration,
     Velocity,
     Force,
     Named,
-    Debug,
     Style,
   );
-
+  // Initialize physics properties
   // Set player values
-  Transform.x[playerEid] = options.x;
-  Transform.y[playerEid] = options.y;
-  Transform.rotation[playerEid] = 0;
-  Transform.scaleX[playerEid] = 1;
-  Transform.scaleY[playerEid] = 1;
-  Player.eid[playerEid] = 1;
-  Health.current[playerEid] = INITIAL_HEALTH;
-  Health.max[playerEid] = INITIAL_HEALTH;
-  CurrentPlayer.eid[playerEid] = 1;
-
+  Transform.x[eid] = options.x;
+  Transform.y[eid] = options.y;
+  Transform.rotation[eid] = 0;
+  Transform.scaleX[eid] = 1;
+  Transform.scaleY[eid] = 1;
+  Player.eid[eid] = 1;
+  Health.current[eid] = INITIAL_HEALTH;
+  Health.max[eid] = INITIAL_HEALTH;
+  CurrentPlayer.eid[eid] = 1;
+  RigidBody.restitution[eid] = 0.5;
   // Set physics values for player
-  Velocity.x[playerEid] = 0;
-  Velocity.y[playerEid] = 0;
-  Acceleration.x[playerEid] = 0;
-  Acceleration.y[playerEid] = 0;
-  Force.x[playerEid] = 0;
-  Force.y[playerEid] = 0;
-  RigidBody.mass[playerEid] = PLAYER_MASS;
-  RigidBody.friction[playerEid] = PLAYER_FRICTION;
-  RigidBody.restitution[playerEid] = PLAYER_RESTITUTION;
-  RigidBody.isStatic[playerEid] = 0;
-  RigidBody.linearDamping[playerEid] = PLAYER_LINEAR_DAMPING;
-  RigidBody.angularDamping[playerEid] = PLAYER_ANGULAR_DAMPING;
-  Gravity.x[playerEid] = 0;
-  Gravity.y[playerEid] = GRAVITY;
+  Velocity.x[eid] = 0;
+  Velocity.y[eid] = 0;
+  Acceleration.x[eid] = 0;
+  Acceleration.y[eid] = 0;
+  Force.x[eid] = 0;
+  Force.y[eid] = 0;
+  RigidBody.mass[eid] = PLAYER_MASS;
+  RigidBody.friction[eid] = PLAYER_FRICTION;
+  RigidBody.restitution[eid] = PLAYER_RESTITUTION;
+  RigidBody.isStatic[eid] = 0;
+  RigidBody.linearDamping[eid] = PLAYER_LINEAR_DAMPING;
+  RigidBody.angularDamping[eid] = PLAYER_ANGULAR_DAMPING;
+  Gravity.x[eid] = 0;
+  Gravity.y[eid] = GRAVITY;
 
   // Set player polygon
   const playerBox = createBoxPolygon(PLAYER_SIZE, PLAYER_SIZE);
-  Polygon.isConvex[playerEid] = 1;
-  Polygon.rotation[playerEid] = 0;
-  Polygon.vertexCount[playerEid] = 4;
-  Polygon.originX[playerEid] = 0;
-  Polygon.originY[playerEid] = 0;
-  Polygon.verticesX[playerEid] = playerBox.x;
-  Polygon.verticesY[playerEid] = playerBox.y;
+  Polygon.isConvex[eid] = 1;
+  Polygon.rotation[eid] = 0;
+  Polygon.vertexCount[eid] = 4;
+  Polygon.originX[eid] = 0;
+  Polygon.originY[eid] = 0;
+  Polygon.verticesX[eid] = playerBox.x;
+  Polygon.verticesY[eid] = playerBox.y;
 
   // Set collision values for player
-  Collidable.isActive[playerEid] = 1;
-  Collidable.isTrigger[playerEid] = 0;
-  Collidable.layer[playerEid] = CollisionMask.Player;
-  Collidable.mask[playerEid] =
+  Collidable.isActive[eid] = 1;
+  Collidable.isTrigger[eid] = 0;
+  Collidable.layer[eid] = CollisionMask.Player;
+  Collidable.mask[eid] =
     CollisionMask.Wall |
     CollisionMask.NPC |
     CollisionMask.Item |
     CollisionMask.Trigger;
 
-  // Initialize keyboard state
-  KeyboardState.keys[playerEid] = 0;
-
-  // Initialize mouse state
-  MouseState.screenX[playerEid] = 0;
-  MouseState.screenY[playerEid] = 0;
-  MouseState.buttonsDown[playerEid] = 0;
-  MouseState.hoveredEntity[playerEid] = 0;
-  MouseState.clickedEntity[playerEid] = 0;
-
-  // Set animation values for player
-  Animation.currentSequence[playerEid] = "idle";
-  Animation.isPlaying[playerEid] = 1;
-  Animation.isLooping[playerEid] = 1;
-  Animation.timer[playerEid] = 0;
-  Animation.frameDuration[playerEid] = PLAYER_ANIMATIONS.idle.frameDuration;
-
+  // Set bounding box size
   // Set sound values for player
-  Sound.src[playerEid] = PLAYER_FOOTSTEP;
-  Sound.isPlaying[playerEid] = 0;
-  Sound.isLooping[playerEid] = 0;
-  Sound.volume[playerEid] = 0.5;
-  Sound.playbackRate[playerEid] = 1;
-  Sound.panX[playerEid] = 0;
-  Sound.panY[playerEid] = 0;
-  Sound.maxDistance[playerEid] = 500;
+  Sound.src[eid] = PLAYER_FOOTSTEP;
+  Sound.isPlaying[eid] = 0;
+  Sound.isLooping[eid] = 0;
+  Sound.volume[eid] = 0.5;
+  Sound.playbackRate[eid] = 1;
+  Sound.panX[eid] = 0;
+  Sound.panY[eid] = 0;
+  Sound.maxDistance[eid] = 500; // Set name
+  Named.name[eid] = "Player";
+  createDebug(world, eid);
+  Style.strokeColor[eid] = "#ffffff";
+  Style.strokeWidth[eid] = 2;
+  Style.fillOpacity[eid] = 1;
 
-  // Set name
-  Named.name[playerEid] = "Player";
-  createDebug(playerEid);
-
-  // Set style values
-  Style.fillColor[playerEid] = "#00ff88";
-  Style.strokeColor[playerEid] = "#ffffff";
-  Style.strokeWidth[playerEid] = 2;
-  Style.fillOpacity[playerEid] = 1;
-
-  return playerEid;
+  return eid;
 }

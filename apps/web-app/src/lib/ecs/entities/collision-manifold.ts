@@ -2,6 +2,7 @@ import { addComponent, addEntity } from "bitecs";
 
 import type { World } from "../types";
 import { CollisionManifold, Named, Transform } from "../components";
+import { createDebug } from "./debug";
 
 export function createCollisionManifold(world: World) {
   const collisionManifoldEid = addEntity(world);
@@ -22,6 +23,7 @@ export function createCollisionManifold(world: World) {
 
   // Set name
   Named.name[collisionManifoldEid] = "Collision Manifold";
+  createDebug(world, collisionManifoldEid);
 
   return collisionManifoldEid;
 }

@@ -1,6 +1,12 @@
 "use client";
 
-import { ChevronRight, Component, LayersIcon, Settings } from "lucide-react";
+import {
+  ChevronRight,
+  KeyboardIcon,
+  LayersIcon,
+  MousePointerIcon,
+  Settings,
+} from "lucide-react";
 
 import {
   Collapsible,
@@ -17,66 +23,9 @@ import {
   SidebarMenuSub,
 } from "@acme/ui/sidebar";
 
+import { getPressedKeys } from "~/lib/ecs/utils/keyboard";
+import { getMouseState } from "~/lib/ecs/utils/mouse";
 import { useDebugStore } from "~/providers/debug-provider";
-
-function formatValue(value: unknown): string {
-  if (typeof value === "boolean") {
-    return value ? "Yes" : "No";
-  }
-  if (typeof value === "number") {
-    return value.toString();
-  }
-  if (typeof value === "string") {
-    return value;
-  }
-  if (Array.isArray(value)) {
-    return value.join(", ");
-  }
-  if (value && typeof value === "object") {
-    return Object.entries(value)
-      .map(([k, v]) => `${k}: ${formatValue(v)}`)
-      .join(", ");
-  }
-  return String(value);
-}
-
-interface ComponentTreeItem {
-  name: string;
-  value: unknown;
-  children?: ComponentTreeItem[];
-}
-
-function ComponentTree({ item }: { item: ComponentTreeItem }) {
-  if (!item.children) {
-    return (
-      <SidebarMenuButton className="data-[active=true]:bg-transparent">
-        <span className="text-muted-foreground">{item.name}:</span>
-        <span className="ml-2">{formatValue(item.value)}</span>
-      </SidebarMenuButton>
-    );
-  }
-
-  return (
-    <SidebarMenuItem>
-      <Collapsible className="group/collapsible">
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton>
-            <Component className="size-4" />
-            {item.name}
-            <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />{" "}
-          </SidebarMenuButton>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <SidebarMenuSub>
-            {item.children.map((child) => (
-              <ComponentTree key={`${item.name}-${child.name}`} item={child} />
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
-      </Collapsible>
-    </SidebarMenuItem>
-  );
-}
 
 export function ECSStatus() {
   const entities = useDebugStore((state) => state.metrics?.entities);
@@ -103,6 +52,12 @@ export function ECSStatus() {
       );
     }
   }
+
+  // Get current mouse state
+  const mouseState = getMouseState();
+
+  // Get current keyboard state
+  const pressedKeys = getPressedKeys();
 
   return (
     <SidebarGroup>
@@ -132,8 +87,110 @@ export function ECSStatus() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+              {/* Mouse State Section */}
               <SidebarMenuItem>
-                <Collapsible className="group/components [&[data-state=open]>button>svg:first-child]:rotate-90">
+                <Collapsible className="group/mouse">
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      <MousePointerIcon className="size-4" />
+                      <span>Mouse State</span>
+                      <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/mouse:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">
+                            Buttons:
+                          </span>
+                          <span className="ml-2">
+                            {Object.entries(mouseState.buttons)
+                              .filter(([, pressed]) => pressed)
+                              .map(([button]) => button)
+                              .join(", ") || "None"}
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">Screen:</span>
+                          <span className="ml-2">
+                            ({mouseState.position.screen.x},{" "}
+                            {mouseState.position.screen.y})
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">World:</span>
+                          <span className="ml-2">
+                            ({mouseState.position.world.x},{" "}
+                            {mouseState.position.world.y})
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">
+                            Hovered:
+                          </span>
+                          <span className="ml-2">
+                            {mouseState.hoveredEntity > 0
+                              ? mouseState.hoveredEntity
+                              : "None"}
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">
+                            Clicked:
+                          </span>
+                          <span className="ml-2">
+                            {mouseState.clickedEntity > 0
+                              ? mouseState.clickedEntity
+                              : "None"}
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
+
+              {/* Keyboard State Section */}
+              <SidebarMenuItem>
+                <Collapsible className="group/keyboard">
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton>
+                      <KeyboardIcon className="size-4" />
+                      <span>Keyboard State</span>
+                      <ChevronRight className="ml-auto size-4 transition-transform duration-200 group-data-[state=open]/keyboard:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton>
+                          <span className="text-muted-foreground">
+                            Pressed:
+                          </span>
+                          <span className="ml-2">
+                            {pressedKeys.length > 0
+                              ? pressedKeys.join(", ")
+                              : "None"}
+                          </span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
+
+              {/* Components Section */}
+              <SidebarMenuItem>
+                <Collapsible className="group/components">
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton>
                       <Settings className="size-4" />
@@ -157,6 +214,7 @@ export function ECSStatus() {
                 </Collapsible>
               </SidebarMenuItem>
 
+              {/* Entity Tree Section */}
               <SidebarMenuItem>
                 <Collapsible className="group/entities">
                   <CollapsibleTrigger asChild>
@@ -175,9 +233,6 @@ export function ECSStatus() {
                           >
                             <LayersIcon className="size-4" />
                             {entity.name ?? `Entity ${entity.id}`}
-                            {/* <ChevronRight */}
-                            {/* className={`ml-auto size-4 transition-transform duration-200 group-data-[state=open]/entity-${entity.id}:rotate-90`} */}
-                            {/* /> */}
                           </SidebarMenuButton>
                         </SidebarMenuItem>
                       ))}

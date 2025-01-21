@@ -1,11 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 
 import { AnalyticsProviders } from "@acme/analytics/providers";
 import { cn } from "@acme/ui/lib/utils";
-import { SidebarProvider } from "@acme/ui/sidebar";
 import { ThemeProvider } from "@acme/ui/theme";
 import { Toaster } from "@acme/ui/toast";
 
@@ -45,9 +43,9 @@ export const viewport: Viewport = {
   ],
 };
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+export default function RootLayout(props: { children: React.ReactNode }) {
+  // const cookieStore = await cookies();
+  // const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -63,9 +61,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
             <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
               <DebugStoreProvider>
                 <GameProvider>
-                  <SidebarProvider defaultOpen={defaultOpen}>
-                    <main className="flex-1">{props.children}</main>
-                  </SidebarProvider>
+                  {/* <SidebarProvider defaultOpen={defaultOpen}> */}
+                  <main className="flex-1">{props.children}</main>
+                  {/* </SidebarProvider> */}
                 </GameProvider>
               </DebugStoreProvider>
               <Toaster />

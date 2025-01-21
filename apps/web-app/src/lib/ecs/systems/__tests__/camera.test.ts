@@ -1,8 +1,15 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { WorldProps } from "../../types";
-import { Camera, KeyboardState, MouseState, Transform } from "../../components";
+import {
+  Camera,
+  GlobalKeyboardState,
+  GlobalMouseState,
+  Transform,
+} from "../../components";
+import { setKeyDown } from "../../utils/keyboard";
+import { initialGameWorldState } from "../../world";
 import { createCameraSystem } from "../camera";
 
 // Helper function to initialize components
@@ -29,10 +36,12 @@ function logEntityState(eid: number, label: string) {
       target: Camera.target[eid],
       zoom: Camera.zoom[eid],
     },
-    keyboard: KeyboardState.keys[eid],
+    keyboard: {
+      isSpaceDown: GlobalKeyboardState.keys & (1 << 32),
+    },
     mouse: {
-      x: MouseState.screenX[eid],
-      y: MouseState.screenY[eid],
+      x: GlobalMouseState.screenX,
+      y: GlobalMouseState.screenY,
     },
     transform: {
       x: Transform.x[eid],
@@ -42,6 +51,13 @@ function logEntityState(eid: number, label: string) {
 }
 
 describe("Camera System", () => {
+  beforeEach(() => {
+    // Reset keyboard and mouse state
+    GlobalKeyboardState.keys = 0;
+    GlobalMouseState.screenX = 0;
+    GlobalMouseState.screenY = 0;
+  });
+
   describe("Basic Initialization", () => {
     it("should maintain initial position when no target is set", () => {
       console.log("test");
@@ -435,14 +451,12 @@ describe("Camera System", () => {
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
-      addComponent(world, cameraEid, KeyboardState);
-      addComponent(world, cameraEid, MouseState);
       Camera.isActive[cameraEid] = 1;
       Camera.zoom[cameraEid] = 1;
 
-      KeyboardState.keys[cameraEid] = 1 << 32; // Space key
-      MouseState.screenX[cameraEid] = 100;
-      MouseState.screenY[cameraEid] = 100;
+      setKeyDown("Space");
+      GlobalMouseState.screenX = 100;
+      GlobalMouseState.screenY = 100;
 
       const cameraSystem = createCameraSystem();
       cameraSystem(world);
@@ -462,8 +476,6 @@ describe("Camera System", () => {
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
-      addComponent(world, cameraEid, KeyboardState);
-      addComponent(world, cameraEid, MouseState);
       Transform.x[cameraEid] = 0;
       Transform.y[cameraEid] = 0;
       Camera.target[cameraEid] = targetEid;
@@ -473,14 +485,14 @@ describe("Camera System", () => {
       const cameraSystem = createCameraSystem();
 
       // Start panning
-      KeyboardState.keys[cameraEid] = 1 << 32;
-      MouseState.screenX[cameraEid] = 0;
-      MouseState.screenY[cameraEid] = 0;
+      setKeyDown("Space");
+      GlobalMouseState.screenX = 0;
+      GlobalMouseState.screenY = 0;
       cameraSystem(world);
 
       // Move mouse
-      MouseState.screenX[cameraEid] = 50;
-      MouseState.screenY[cameraEid] = 50;
+      GlobalMouseState.screenX = 50;
+      GlobalMouseState.screenY = 50;
       cameraSystem(world);
 
       // Should move with pan, not towards target
@@ -498,8 +510,6 @@ describe("Camera System", () => {
       const cameraEid = addEntity(world);
       addComponent(world, cameraEid, Camera);
       addComponent(world, cameraEid, Transform);
-      addComponent(world, cameraEid, KeyboardState);
-      addComponent(world, cameraEid, MouseState);
       Transform.x[cameraEid] = 0;
       Transform.y[cameraEid] = 0;
       Camera.target[cameraEid] = targetEid;
@@ -510,21 +520,56 @@ describe("Camera System", () => {
       const cameraSystem = createCameraSystem();
 
       // Start panning
-      KeyboardState.keys[cameraEid] = 1 << 32;
-      MouseState.screenX[cameraEid] = 0;
-      MouseState.screenY[cameraEid] = 0;
+      setKeyDown("Space");
+      GlobalMouseState.screenX = 0;
+      GlobalMouseState.screenY = 0;
       cameraSystem(world);
 
       // Pan away from target
-      MouseState.screenX[cameraEid] = 50;
-      MouseState.screenY[cameraEid] = 50;
+      GlobalMouseState.screenX = 50;
+      GlobalMouseState.screenY = 50;
       cameraSystem(world);
 
       // Stop panning
-      KeyboardState.keys[cameraEid] = 0;
+      GlobalKeyboardState.keys = 0;
       cameraSystem(world);
 
       // Should snap back to target
+      expect(Transform.x[cameraEid]).toBe(100);
+      expect(Transform.y[cameraEid]).toBe(100);
+    });
+  });
+
+  describe("camera system", () => {
+    it("should update camera position based on target", () => {
+      const world = {
+        ...initialGameWorldState,
+        timing: { delta: 1 / 60, elapsed: 0, lastFrame: performance.now() },
+      };
+      const cameraSystem = createCameraSystem();
+
+      // Create camera entity
+      const cameraEid = addEntity(world);
+      addComponent(world, cameraEid, Camera);
+      addComponent(world, cameraEid, Transform);
+
+      // Create target entity
+      const targetEid = addEntity(world);
+      addComponent(world, targetEid, Transform);
+
+      // Set initial positions
+      Transform.x[cameraEid] = 0;
+      Transform.y[cameraEid] = 0;
+      Transform.x[targetEid] = 100;
+      Transform.y[targetEid] = 100;
+
+      // Set camera target
+      Camera.target[cameraEid] = targetEid;
+
+      // Run camera system
+      cameraSystem(world);
+
+      // Camera should move towards target
       expect(Transform.x[cameraEid]).toBe(100);
       expect(Transform.y[cameraEid]).toBe(100);
     });

@@ -1,4 +1,4 @@
-import { MouseState } from "../components";
+import { GlobalMouseState } from "../components";
 
 // Mouse button constants
 export const MOUSE_BUTTONS = {
@@ -23,89 +23,54 @@ export function getCanvasCoordinates(
 }
 
 // Helper function to check if a mouse button is pressed
-export function isMouseButtonDown(playerEid: number, button: number): boolean {
-  const value = MouseState.buttonsDown[playerEid];
-  if (value === undefined) return false;
-  return (value & (1 << button)) !== 0;
+export function isMouseButtonDown(button: number): boolean {
+  return (GlobalMouseState.buttonsDown & (1 << button)) !== 0;
 }
 
 // Helper function to set mouse button state
-export function setMouseButtonDown(playerEid: number, button: number) {
-  let value = MouseState.buttonsDown[playerEid];
-  if (value === undefined) {
-    value = 0;
-    MouseState.buttonsDown[playerEid] = value;
-  }
-  MouseState.buttonsDown[playerEid] = value | (1 << button);
+export function setMouseButtonDown(button: number) {
+  GlobalMouseState.buttonsDown |= 1 << button;
 }
 
 // Helper function to clear mouse button state
-export function clearMouseButtonDown(playerEid: number, button: number) {
-  let value = MouseState.buttonsDown[playerEid];
-  if (value === undefined) {
-    value = 0;
-    MouseState.buttonsDown[playerEid] = value;
-  }
-  MouseState.buttonsDown[playerEid] = value & ~(1 << button);
+export function clearMouseButtonDown(button: number) {
+  GlobalMouseState.buttonsDown &= ~(1 << button);
 }
 
 // Helper function to update mouse position
 export function updateMousePosition(
-  playerEid: number,
   screenX: number,
   screenY: number,
   worldX: number,
   worldY: number,
 ) {
-  MouseState.screenX[playerEid] = screenX;
-  MouseState.screenY[playerEid] = screenY;
-  MouseState.worldX[playerEid] = worldX;
-  MouseState.worldY[playerEid] = worldY;
+  GlobalMouseState.screenX = screenX;
+  GlobalMouseState.screenY = screenY;
+  GlobalMouseState.worldX = worldX;
+  GlobalMouseState.worldY = worldY;
 }
 
 // Helper function to set hovered entity
-export function setHoveredEntity(playerEid: number, entityId: number) {
-  MouseState.hoveredEntity[playerEid] = entityId;
+export function setHoveredEntity(entityId: number) {
+  GlobalMouseState.hoveredEntity = entityId;
 }
 
 // Helper function to set clicked entity
-export function setClickedEntity(playerEid: number, entityId: number) {
-  MouseState.clickedEntity[playerEid] = entityId;
+export function setClickedEntity(entityId: number) {
+  GlobalMouseState.clickedEntity = entityId;
 }
 
 // Helper function to get mouse state for display
-export function getMouseState(playerEid: number) {
-  // Initialize state if undefined
-  if (MouseState.buttonsDown[playerEid] === undefined) {
-    MouseState.buttonsDown[playerEid] = 0;
-  }
-  if (MouseState.hoveredEntity[playerEid] === undefined) {
-    MouseState.hoveredEntity[playerEid] = 0;
-  }
-  if (MouseState.clickedEntity[playerEid] === undefined) {
-    MouseState.clickedEntity[playerEid] = 0;
-  }
-  if (MouseState.screenX[playerEid] === undefined) {
-    MouseState.screenX[playerEid] = 0;
-  }
-  if (MouseState.screenY[playerEid] === undefined) {
-    MouseState.screenY[playerEid] = 0;
-  }
-  if (MouseState.worldX[playerEid] === undefined) {
-    MouseState.worldX[playerEid] = 0;
-  }
-  if (MouseState.worldY[playerEid] === undefined) {
-    MouseState.worldY[playerEid] = 0;
-  }
-
-  // Get current values with fallbacks
-  const buttonsDown = MouseState.buttonsDown[playerEid] ?? 0;
-  const hoveredEntity = MouseState.hoveredEntity[playerEid] ?? 0;
-  const clickedEntity = MouseState.clickedEntity[playerEid] ?? 0;
-  const screenX = Math.round(MouseState.screenX[playerEid] ?? 0);
-  const screenY = Math.round(MouseState.screenY[playerEid] ?? 0);
-  const worldX = Math.round(MouseState.worldX[playerEid] ?? 0);
-  const worldY = Math.round(MouseState.worldY[playerEid] ?? 0);
+export function getMouseState() {
+  const {
+    buttonsDown,
+    hoveredEntity,
+    clickedEntity,
+    screenX,
+    screenY,
+    worldX,
+    worldY,
+  } = GlobalMouseState;
 
   return {
     buttons: {
@@ -117,12 +82,12 @@ export function getMouseState(playerEid: number) {
     hoveredEntity,
     position: {
       screen: {
-        x: screenX,
-        y: screenY,
+        x: Math.round(screenX),
+        y: Math.round(screenY),
       },
       world: {
-        x: worldX,
-        y: worldY,
+        x: Math.round(worldX),
+        y: Math.round(worldY),
       },
     },
   };

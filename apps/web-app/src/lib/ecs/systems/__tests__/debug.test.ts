@@ -3,7 +3,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { World, WorldProps } from "../../types";
 import type { DebugStore } from "~/lib/stores/debug";
-import { Debug, KeyboardState, MouseState } from "../../components";
+import {
+  Debug,
+  GlobalKeyboardState,
+  GlobalMouseState,
+  Transform,
+} from "../../components";
+import { initialGameWorldState } from "../../world";
 import { createDebugSystem } from "../debug";
 
 describe("Debug System", () => {
@@ -17,8 +23,14 @@ describe("Debug System", () => {
 
     // Set up debug entity
     addComponent(world, eid, Debug);
-    addComponent(world, eid, KeyboardState);
-    addComponent(world, eid, MouseState);
+    addComponent(world, eid, Transform);
+
+    // Reset global state
+    GlobalKeyboardState.keys = 0;
+    GlobalMouseState.screenX = 0;
+    GlobalMouseState.screenY = 0;
+    GlobalMouseState.hoveredEntity = 0;
+    GlobalMouseState.clickedEntity = 0;
 
     // Mock debug store
     mockDebugStore = {
@@ -88,7 +100,7 @@ describe("Debug System", () => {
 
   it("should show bounding boxes when command key is pressed and entity is hovered", () => {
     // Set up command key and hover state
-    KeyboardState.keys[eid] = 1 << 4; // Command key
+    GlobalKeyboardState.keys = 1 << 4; // Command key
     Debug.hoveredEntity[eid] = 1;
 
     const debugSystem = createDebugSystem(mockDebugStore);
@@ -103,7 +115,7 @@ describe("Debug System", () => {
 
   it("should select entity when command key is pressed and entity is clicked", () => {
     // Set up command key and click state
-    KeyboardState.keys[eid] = 1 << 4; // Command key
+    GlobalKeyboardState.keys = 1 << 4; // Command key
     Debug.clickedEntity[eid] = 1;
 
     const debugSystem = createDebugSystem(mockDebugStore);
@@ -169,5 +181,36 @@ describe("Debug System", () => {
     expect(Debug.showForceVectors[eid]).toBe(0);
     expect(Debug.showVelocityVector[eid]).toBe(0);
     expect(Debug.showTriggerZones[eid]).toBe(0);
+  });
+
+  it("should update debug state", () => {
+    const world = {
+      ...initialGameWorldState,
+      timing: { delta: 1 / 60, elapsed: 0, lastFrame: performance.now() },
+    };
+    const debugStore = {
+      isEnabled: true,
+      showBoundingBox: false,
+      showColliders: false,
+      showGrid: false,
+      showTriggerZones: false,
+    };
+    const debugSystem = createDebugSystem(debugStore as unknown as DebugStore);
+
+    // Create debug entity
+    const debugEid = addEntity(world);
+    addComponent(world, debugEid, Debug);
+    addComponent(world, debugEid, Transform);
+
+    // Set initial position
+    Transform.x[debugEid] = 0;
+    Transform.y[debugEid] = 0;
+
+    // Run debug system
+    debugSystem(world);
+
+    // Debug state should be updated
+    expect(Debug.frameTime[debugEid]).toBe(world.timing.delta);
+    expect(Debug.lastUpdated[debugEid]).toBeGreaterThan(0);
   });
 });

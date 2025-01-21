@@ -85,7 +85,7 @@ export const defaultInitState: DebugState = {
   },
   systems: {},
   visualizations: {
-    showBoundingBoxes: false,
+    showBoundingBoxes: true,
     showCollisionPoints: false,
     showForceVectors: false,
     showParticleEmitters: false,

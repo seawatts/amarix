@@ -1,10 +1,10 @@
 import { addComponent, addEntity, createWorld } from "bitecs";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 import type { WorldProps } from "../../types";
 import {
   Force,
-  KeyboardState,
+  GlobalKeyboardState,
   Player,
   RigidBody,
   Transform,
@@ -13,6 +13,11 @@ import { setKeyDown } from "../../utils/keyboard";
 import { createMovementSystem } from "../movement";
 
 describe("Movement System", () => {
+  beforeEach(() => {
+    // Reset keyboard state
+    GlobalKeyboardState.keys = 0;
+  });
+
   it("should apply force based on keyboard input", () => {
     const world = createWorld<WorldProps>();
     const eid = addEntity(world);
@@ -21,13 +26,11 @@ describe("Movement System", () => {
     addComponent(world, eid, Transform);
     addComponent(world, eid, Force);
     addComponent(world, eid, RigidBody);
-    addComponent(world, eid, KeyboardState);
     addComponent(world, eid, Player);
 
     // Set initial values
     RigidBody.mass[eid] = 1;
-    KeyboardState.keys[eid] = 0;
-    setKeyDown(eid, "KeyW"); // Simulate pressing up key
+    setKeyDown("KeyW"); // Simulate pressing up key
 
     const movementSystem = createMovementSystem();
     movementSystem(world);
@@ -45,13 +48,11 @@ describe("Movement System", () => {
     addComponent(world, eid, Transform);
     addComponent(world, eid, Force);
     addComponent(world, eid, RigidBody);
-    addComponent(world, eid, KeyboardState);
     addComponent(world, eid, Player);
 
     // Set initial force
     Force.x[eid] = 1000;
     Force.y[eid] = 1000;
-    KeyboardState.keys[eid] = 0; // No keys pressed
 
     const movementSystem = createMovementSystem();
     movementSystem(world);
@@ -69,13 +70,11 @@ describe("Movement System", () => {
     addComponent(world, eid, Transform);
     addComponent(world, eid, Force);
     addComponent(world, eid, RigidBody);
-    addComponent(world, eid, KeyboardState);
     addComponent(world, eid, Player);
 
     // Set diagonal movement input
-    KeyboardState.keys[eid] = 0;
-    setKeyDown(eid, "KeyW"); // Up
-    setKeyDown(eid, "KeyD"); // Right
+    setKeyDown("KeyW"); // Up
+    setKeyDown("KeyD"); // Right
 
     const movementSystem = createMovementSystem();
     movementSystem(world);
@@ -101,13 +100,11 @@ describe("Movement System", () => {
     addComponent(world, eid, Transform);
     addComponent(world, eid, Force);
     addComponent(world, eid, RigidBody);
-    addComponent(world, eid, KeyboardState);
     addComponent(world, eid, Player);
 
     // Set very high mass to generate large force
     RigidBody.mass[eid] = 1000;
-    KeyboardState.keys[eid] = 0;
-    setKeyDown(eid, "KeyW"); // Up
+    setKeyDown("KeyW"); // Up
 
     const movementSystem = createMovementSystem();
     movementSystem(world);

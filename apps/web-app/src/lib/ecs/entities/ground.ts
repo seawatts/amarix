@@ -4,13 +4,13 @@ import type { World } from "../types";
 import {
   Collidable,
   CollisionMask,
-  Debug,
   Named,
   Polygon,
   RigidBody,
   Style,
   Transform,
 } from "../components";
+import { createDebug } from "./debug";
 
 interface CreateGroundOptions {
   height: number;
@@ -61,7 +61,6 @@ export function createGround(world: World, options: CreateGroundOptions) {
     RigidBody,
     Collidable,
     Named,
-    Debug,
     Style,
     IsA(world.prefabs.shape),
   );
@@ -103,6 +102,7 @@ export function createGround(world: World, options: CreateGroundOptions) {
 
   // Set name
   Named.name[eid] = "Ground";
+  createDebug(world, eid);
 
   return eid;
 }

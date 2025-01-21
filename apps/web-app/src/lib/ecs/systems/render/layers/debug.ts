@@ -1,192 +1,219 @@
 import { IsA, query } from "bitecs";
 
-import type { World } from "../../../types";
 import type { RenderContext, RenderLayer } from "../types";
-import {
-  BoundingBox,
-  CollisionManifold,
-  Debug,
-  Polygon,
-  Transform,
-  Velocity,
-} from "../../../components";
-import { PIXELS_PER_METER } from "../../../systems/physics";
+import { Debug, Polygon, Transform } from "../../../components";
 import { RENDER_LAYERS } from "../types";
 
-/**
- * Transforms local-space polygon vertices to world-space
- */
-function getWorldVertices(eid: number): number[][] {
-  const x0 = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-  const y0 = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
-  const rotation = Polygon.rotation[eid] ?? 0;
-  const vertCount = Polygon.vertexCount[eid] ?? 0;
-  const result: number[][] = [];
+interface Point {
+  x: number;
+  y: number;
+}
 
-  // Get local vertices and convert to pixels
-  const vertices: [number, number][] = [];
+interface Bounds {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+}
+
+interface DebugRenderStyles {
+  lineWidth: number;
+  strokeStyle: string;
+  fillStyle: string;
+}
+
+function getLocalVertices(eid: number, scale = 1): Point[] {
+  const vertCount = Polygon.vertexCount[eid] ?? 0;
+  const vertices: Point[] = [];
+
   for (let index = 0; index < vertCount; index++) {
-    const x = (Polygon.verticesX[eid]?.[index] ?? 0) * PIXELS_PER_METER;
-    const y = (Polygon.verticesY[eid]?.[index] ?? 0) * PIXELS_PER_METER;
-    vertices.push([x, y]);
+    const x = (Polygon.verticesX[eid]?.[index] ?? 0) * scale;
+    const y = (Polygon.verticesY[eid]?.[index] ?? 0) * scale;
+    vertices.push({ x, y });
   }
 
-  // Transform to world space
+  return vertices;
+}
+
+function transformToWorldSpace(vertices: Point[], eid: number): Point[] {
+  const x0 = Transform.x[eid] ?? 0;
+  const y0 = Transform.y[eid] ?? 0;
+  const rotation = Polygon.rotation[eid] ?? 0;
   const cos = Math.cos(rotation);
   const sin = Math.sin(rotation);
 
-  for (const [vx, vy] of vertices) {
-    // Apply rotation then translation (no need to scale again)
-    const rotX = vx * cos - vy * sin;
-    const rotY = vx * sin + vy * cos;
-    result.push([x0 + rotX, y0 + rotY]);
-  }
-
-  return result;
+  return vertices.map((point) => ({
+    x: x0 + (point.x * cos - point.y * sin),
+    y: y0 + (point.x * sin + point.y * cos),
+  }));
 }
 
-/**
- * Basic point-in-polygon test using ray-casting
- */
-function pointInPolygon(px: number, py: number, polygon: number[][]): boolean {
-  let inside = false;
-  for (
-    let index = 0, index_ = polygon.length - 1;
-    index < polygon.length;
-    index_ = index++
-  ) {
-    const xi = polygon[index]?.[0] ?? 0;
-    const yi = polygon[index]?.[1] ?? 0;
-    const xj = polygon[index_]?.[0] ?? 0;
-    const yj = polygon[index_]?.[1] ?? 0;
+function transformToScreenSpace(
+  vertices: Point[],
+  camera: RenderContext["camera"],
+  canvas: RenderContext["canvas"],
+): Point[] {
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
 
-    const intersect =
-      yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi;
-    if (intersect) inside = !inside;
+  return vertices.map(({ x, y }) => ({
+    x: x + centerX - camera.x,
+    y: y + centerY - camera.y,
+  }));
+}
+
+function getScreenVertices(
+  eid: number,
+  camera: RenderContext["camera"],
+  canvas: RenderContext["canvas"],
+): Point[] {
+  const localVertices = getLocalVertices(eid, 1.1); // 10% larger for debug outline
+  const worldVertices = transformToWorldSpace(localVertices, eid);
+  return transformToScreenSpace(worldVertices, camera, canvas);
+}
+
+function drawCornerBoxes(
+  context: CanvasRenderingContext2D,
+  bounds: Bounds,
+  styles: DebugRenderStyles,
+) {
+  const boxSize = 12;
+  const padding = 4;
+  const corners = [
+    { x: bounds.minX - padding, y: bounds.minY - padding },
+    { x: bounds.maxX + padding - boxSize, y: bounds.minY - padding },
+    { x: bounds.minX - padding, y: bounds.maxY + padding - boxSize },
+    { x: bounds.maxX + padding - boxSize, y: bounds.maxY + padding - boxSize },
+  ];
+
+  context.fillStyle = styles.strokeStyle;
+  for (const corner of corners) {
+    context.fillRect(corner.x, corner.y, boxSize, boxSize);
   }
-  return inside;
+}
+
+function drawBoundingBox(
+  context: CanvasRenderingContext2D,
+  vertices: Point[],
+  styles: DebugRenderStyles,
+) {
+  const bounds = getPolygonBounds(vertices);
+  const padding = 4;
+
+  context.lineWidth = styles.lineWidth;
+  context.strokeStyle = styles.strokeStyle;
+  context.strokeRect(
+    bounds.minX - padding,
+    bounds.minY - padding,
+    bounds.maxX - bounds.minX + padding * 2,
+    bounds.maxY - bounds.minY + padding * 2,
+  );
+
+  drawCornerBoxes(context, bounds, styles);
+}
+
+function drawDebugText(context: CanvasRenderingContext2D, bounds: Bounds) {
+  const width = Math.round(bounds.maxX - bounds.minX);
+  const height = Math.round(bounds.maxY - bounds.minY);
+  const text = `${width} × ${height}`;
+
+  // Set font first to get correct text measurements
+  context.font = "20px GeistSans";
+
+  // Draw pill background
+  context.fillStyle = "#3b82f6"; // blue-500
+  const horizontalPadding = 32;
+  const textMetrics = context.measureText(text);
+  const pillWidth = Math.max(textMetrics.width + horizontalPadding * 2, 140);
+  const pillHeight = 48;
+  const pillX = bounds.minX + (bounds.maxX - bounds.minX - pillWidth) / 2;
+  const pillY = bounds.maxY + 32;
+  const radius = pillHeight / 2;
+
+  // Draw rounded rectangle
+  context.beginPath();
+  context.moveTo(pillX + radius, pillY);
+  context.lineTo(pillX + pillWidth - radius, pillY);
+  context.arc(
+    pillX + pillWidth - radius,
+    pillY + radius,
+    radius,
+    -Math.PI / 2,
+    Math.PI / 2,
+  );
+  context.lineTo(pillX + radius, pillY + pillHeight);
+  context.arc(
+    pillX + radius,
+    pillY + radius,
+    radius,
+    Math.PI / 2,
+    -Math.PI / 2,
+  );
+  context.closePath();
+  context.fill();
+
+  // Draw text
+  context.fillStyle = "#ffffff";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(text, pillX + pillWidth / 2, pillY + pillHeight / 2);
+}
+
+function getPolygonBounds(vertices: Point[]): Bounds {
+  if (vertices.length === 0) {
+    return { maxX: 0, maxY: 0, minX: 0, minY: 0 };
+  }
+
+  const bounds: Bounds = {
+    maxX: Number.NEGATIVE_INFINITY,
+    maxY: Number.NEGATIVE_INFINITY,
+    minX: Number.POSITIVE_INFINITY,
+    minY: Number.POSITIVE_INFINITY,
+  };
+
+  for (const point of vertices) {
+    bounds.maxX = Math.max(bounds.maxX, point.x);
+    bounds.maxY = Math.max(bounds.maxY, point.y);
+    bounds.minX = Math.min(bounds.minX, point.x);
+    bounds.minY = Math.min(bounds.minY, point.y);
+  }
+
+  return bounds;
 }
 
 export class DebugLayer implements RenderLayer {
   name = "debug";
   order = RENDER_LAYERS.DEBUG;
-  private hoveredEntity: number | null = null;
+  ignoreCamera = true; // Draw in screen space
 
-  updateHoveredEntity(mouseX: number, mouseY: number, world: World): void {
-    const entities = query(world, [Transform, Polygon]);
-    this.hoveredEntity = null;
-
-    for (const eid of entities) {
-      const polygon = getWorldVertices(eid);
-      if (pointInPolygon(mouseX, mouseY, polygon)) {
-        this.hoveredEntity = eid;
-        break;
-      }
-    }
-  }
-
-  render({ world, ctx }: RenderContext): void {
+  render({ world, ctx, camera, canvas }: RenderContext): void {
     ctx.save();
-    ctx.lineWidth = 2;
-    ctx.font = "14px monospace";
-    ctx.textBaseline = "top";
 
-    // Get debug entity to check visualization flags
-    const debugEntities = query(world, [Debug]);
-    // debugger;
-    const debugEid = debugEntities[0];
-    const showBoundingBoxes = debugEid
-      ? Debug.showBoundingBox[debugEid] === 1
-      : false;
-
-    // Draw collision shapes
     const entities = query(world, [Transform, IsA(world.prefabs.shape)]);
+
     for (const eid of entities) {
-      const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
-      const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
+      const isHovered = Debug.hoveredEntity[eid] === 1;
+      const shouldShowBoundingBox = Debug.showBoundingBox[eid] === 1;
 
-      // Check if hovered
-      const isHovered = this.hoveredEntity === eid;
-      ctx.strokeStyle = isHovered ? "#ffff00" : "#ff0000";
-      ctx.fillStyle = isHovered ? "#ffff0033" : "#ff000033";
+      // Only render debug visuals if explicitly enabled by the debug system
+      if (
+        shouldShowBoundingBox &&
+        isHovered &&
+        Polygon.vertexCount[eid] !== undefined
+      ) {
+        const screenVertices = getScreenVertices(eid, camera, canvas);
+        const bounds = getPolygonBounds(screenVertices);
 
-      // Draw bounding box if enabled
-      if (BoundingBox.width[eid] !== undefined) {
-        const width = (BoundingBox.width[eid] ?? 0) * PIXELS_PER_METER;
-        const height = (BoundingBox.height[eid] ?? 0) * PIXELS_PER_METER;
-        ctx.strokeStyle = isHovered ? "#ffff00" : "#00ff00";
-        ctx.strokeRect(x - width / 2, y - height / 2, width, height);
+        // Draw bounding box with corner boxes
+        drawBoundingBox(ctx, screenVertices, {
+          fillStyle: "",
+          lineWidth: 6,
+          strokeStyle: "#2563eb", // blue-600
+        });
+
+        // Draw debug text below
+        drawDebugText(ctx, bounds);
       }
-
-      // Draw polygon if entity has one
-      if (Polygon.vertexCount[eid] !== undefined) {
-        const polygon = getWorldVertices(eid);
-        if (polygon.length > 1) {
-          ctx.beginPath();
-          ctx.moveTo(polygon[0]?.[0] ?? 0, polygon[0]?.[1] ?? 0);
-          for (let index = 1; index < polygon.length; index++) {
-            ctx.lineTo(polygon[index]?.[0] ?? 0, polygon[index]?.[1] ?? 0);
-          }
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-        }
-      }
-
-      // Draw a small dot at the entity's position
-      ctx.fillStyle = isHovered ? "#ffff00" : "#ff0000";
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Build debug text with shadow for better visibility
-      let debugText = `EID ${eid}`;
-      const vx = Velocity.x[eid];
-      const vy = Velocity.y[eid];
-      if (vx !== undefined && vy !== undefined) {
-        debugText += ` | v=(${vx.toFixed(2)}, ${vy.toFixed(2)})`;
-      }
-
-      // Draw collision manifolds
-      const manifolds = query(world, [CollisionManifold]);
-      for (const manifoldEid of manifolds) {
-        if (
-          CollisionManifold.entity1[manifoldEid] === eid ||
-          CollisionManifold.entity2[manifoldEid] === eid
-        ) {
-          debugText += " | COLLIDING";
-
-          // Draw collision normal
-          const normalX = CollisionManifold.normalX[manifoldEid] ?? 0;
-          const normalY = CollisionManifold.normalY[manifoldEid] ?? 0;
-          const contactX =
-            (CollisionManifold.contactPointX[manifoldEid] ?? 0) *
-            PIXELS_PER_METER;
-          const contactY =
-            (CollisionManifold.contactPointY[manifoldEid] ?? 0) *
-            PIXELS_PER_METER;
-          const normalScale = 20 * PIXELS_PER_METER; // Scale for visualization
-
-          ctx.strokeStyle = "#00ff00";
-          ctx.beginPath();
-          ctx.moveTo(contactX, contactY);
-          ctx.lineTo(
-            contactX + normalX * normalScale,
-            contactY + normalY * normalScale,
-          );
-          ctx.stroke();
-
-          // Draw contact point
-          ctx.fillStyle = "#00ff00";
-          ctx.beginPath();
-          ctx.arc(contactX, contactY, 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // Draw debug text with shadow for better visibility
-      ctx.fillStyle = "#000000";
-      ctx.fillText(debugText, x + 8, y - 24);
     }
 
     ctx.restore();

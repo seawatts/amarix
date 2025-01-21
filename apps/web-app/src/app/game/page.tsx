@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { SidebarInset, SidebarProvider } from "@acme/ui/sidebar";
 
 import { DebugSidebarLeft } from "~/components/debug-sidebar-left/sidebar";
@@ -18,9 +20,14 @@ declare global {
   }
 }
 
-export default function GamePage() {
+export default async function GamePage() {
+  const cookieStore = await cookies();
+  const defaultOpen =
+    // eslint-disable-next-line no-constant-binary-expression, @typescript-eslint/no-unnecessary-condition
+    cookieStore.get("sidebar:state")?.value === "true" ?? true;
+
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={defaultOpen}>
       <DebugSidebarLeft />
       <SidebarInset>
         <main className="fixed inset-0 bg-zinc-800">
