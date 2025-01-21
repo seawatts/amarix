@@ -63,37 +63,28 @@ export class GameEngine {
     if (this.animationFrameId === null) return;
 
     const deltaTimeMs = timestamp - this.world.timing.lastFrame;
-    const deltaTime = Math.min(deltaTimeMs / 1000, this.frameInterval); // Cap delta time
+    const deltaTime = deltaTimeMs / 1000; // Convert to seconds
 
-    // Only update if enough time has passed (vsync)
-    if (timestamp - this.lastFrameTime >= 1000 / 60) {
-      this.world.timing.lastFrame = timestamp;
-      this.world.timing.delta = deltaTime;
-      this.lastFrameTime = timestamp;
+    // Update timing immediately
+    this.world.timing.lastFrame = timestamp;
+    this.world.timing.delta = deltaTime;
 
-      // Skip system updates if paused, but still update debug state
-      if (!this.isPaused) {
-        // Run each system in sequence
-        const systemPerformance: Record<string, number> = {};
+    // Skip system updates if paused, but still update debug state
+    if (!this.isPaused) {
+      // Run each system in sequence
+      const systemPerformance: Record<string, number> = {};
 
-        for (const { name, system, isPaused } of this.systems) {
-          // Skip if system doesn't exist or is disabled/paused
-          if (isPaused) {
-            continue;
-          }
-
-          const startTime = performance.now();
-          system(this.world);
-          const endTime = performance.now();
-          systemPerformance[name] = endTime - startTime;
+      for (const { name, system, isPaused } of this.systems) {
+        // Skip if system doesn't exist or is disabled/paused
+        if (isPaused) {
+          continue;
         }
 
-        // Update game state
-        // this.store.update(this.world);
+        const startTime = performance.now();
+        system(this.world);
+        const endTime = performance.now();
+        systemPerformance[name] = endTime - startTime;
       }
-
-      // Always update debug state
-      // this.debugStore.update(this.world);
     }
 
     // Request next frame

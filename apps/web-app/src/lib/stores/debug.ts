@@ -110,28 +110,24 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
         case "metricsUpdated": {
           if (event.data.metrics) {
             const currentState = get();
+            const { fps, frameTime, memoryUsage, systems, entities } =
+              event.data.metrics;
+
             set({
               metrics: {
-                entities: event.data.metrics.entities ?? [],
-                // currentState.metrics?.entities,
-                // [],
+                entities: entities ?? [],
                 performance: {
-                  fps:
-                    event.data.metrics.fps ??
-                    currentState.metrics?.performance.fps ??
-                    60,
+                  fps: fps ?? currentState.metrics?.performance.fps ?? 60,
                   frameTime:
-                    event.data.metrics.frameTime ??
+                    frameTime ??
                     currentState.metrics?.performance.frameTime ??
                     16.67,
                   memoryUsage:
-                    event.data.metrics.memoryUsage ??
+                    memoryUsage ??
                     currentState.metrics?.performance.memoryUsage ??
                     0,
                   systems:
-                    event.data.metrics.systems ??
-                    currentState.metrics?.performance.systems ??
-                    {},
+                    systems ?? currentState.metrics?.performance.systems ?? {},
                 },
               },
             });

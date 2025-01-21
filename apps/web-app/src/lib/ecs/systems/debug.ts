@@ -28,8 +28,7 @@ export function createDebugSystem(debugStore: DebugStore) {
     };
 
     // Update performance metrics
-    const currentTime = performance.now();
-    updateMetrics(context, currentTime);
+    updateMetrics(context);
 
     // Get all entities with Debug components
     const debugEntities = query(world, [Debug]);
@@ -79,11 +78,11 @@ export function createDebugSystem(debugStore: DebugStore) {
   };
 }
 
-function updateMetrics(context: DebugSystemContext, currentTime: number) {
+function updateMetrics(context: DebugSystemContext) {
   const { world, debugStore } = context;
-  const lastFrameTime = world.timing.lastFrame;
-  const frameTime = currentTime - lastFrameTime;
-  const fps = Math.round(1000 / frameTime);
+
+  // Calculate FPS using the world's delta time which is more stable
+  const fps = world.timing.delta > 0 ? Math.round(1 / world.timing.delta) : 60;
 
   // Get all entities and their components
   const allEntities = getAllEntities(world);
@@ -155,7 +154,7 @@ function updateMetrics(context: DebugSystemContext, currentTime: number) {
       metrics: {
         entities,
         fps,
-        frameTime,
+        frameTime: world.timing.delta * 1000,
         memoryUsage: performance.memory?.usedJSHeapSize ?? 0,
         systems: debugStore.metrics?.performance.systems ?? {},
       },
