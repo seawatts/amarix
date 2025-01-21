@@ -20,7 +20,7 @@ renderer.addLayer(new EntityLayer());
 renderer.addLayer(new DebugLayer());
 
 // Create the render system
-export function createRenderSystem() {
+export function createRenderSystem(canvas: HTMLCanvasElement) {
   return function renderSystem(world: World) {
     // Get camera information
     const cameras = query(world, [Camera]);
@@ -51,9 +51,16 @@ export function createRenderSystem() {
       break;
     }
 
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Failed to get canvas context");
+    }
+
     // Render all layers
     renderer.render({
       camera: cameraInfo,
+      canvas,
+      ctx: context,
       world,
     });
   };

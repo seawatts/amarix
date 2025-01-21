@@ -17,7 +17,7 @@ const MOVEMENT_FORCE = BASE_MOVEMENT_FORCE * PIXELS_PER_METER; // Scale force by
 const MAX_SPEED = 10 * PIXELS_PER_METER; // 10 meters per second
 const DAMPING = 0.95; // Smoother damping for more natural movement
 
-export const createMovementSystem = (_canvas: HTMLCanvasElement) => {
+export const createMovementSystem = () => {
   return function movementSystem(world: World) {
     const entities = query(world, [
       Transform,

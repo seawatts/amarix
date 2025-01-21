@@ -85,15 +85,11 @@ export class DebugLayer implements RenderLayer {
     }
   }
 
-  render({ world }: RenderContext): void {
-    const context = world.canvas?.context;
-    const canvas = world.canvas?.element;
-    if (!context || !canvas) return;
-
-    context.save();
-    context.lineWidth = 2;
-    context.font = "14px monospace";
-    context.textBaseline = "top";
+  render({ world, ctx }: RenderContext): void {
+    ctx.save();
+    ctx.lineWidth = 2;
+    ctx.font = "14px monospace";
+    ctx.textBaseline = "top";
 
     // Get debug entity to check visualization flags
     const debugEntities = query(world, [Debug]);
@@ -110,37 +106,37 @@ export class DebugLayer implements RenderLayer {
 
       // Check if hovered
       const isHovered = this.hoveredEntity === eid;
-      context.strokeStyle = isHovered ? "#ffff00" : "#ff0000";
-      context.fillStyle = isHovered ? "#ffff0033" : "#ff000033";
+      ctx.strokeStyle = isHovered ? "#ffff00" : "#ff0000";
+      ctx.fillStyle = isHovered ? "#ffff0033" : "#ff000033";
 
       // Draw bounding box if enabled
       if (showBoundingBoxes && BoundingBox.width[eid] !== undefined) {
         const width = (BoundingBox.width[eid] ?? 0) * PIXELS_PER_METER;
         const height = (BoundingBox.height[eid] ?? 0) * PIXELS_PER_METER;
-        context.strokeStyle = isHovered ? "#ffff00" : "#00ff00";
-        context.strokeRect(x - width / 2, y - height / 2, width, height);
+        ctx.strokeStyle = isHovered ? "#ffff00" : "#00ff00";
+        ctx.strokeRect(x - width / 2, y - height / 2, width, height);
       }
 
       // Draw polygon if entity has one
       if (Polygon.vertexCount[eid] !== undefined) {
         const polygon = getWorldVertices(eid);
         if (polygon.length > 1) {
-          context.beginPath();
-          context.moveTo(polygon[0]?.[0] ?? 0, polygon[0]?.[1] ?? 0);
+          ctx.beginPath();
+          ctx.moveTo(polygon[0]?.[0] ?? 0, polygon[0]?.[1] ?? 0);
           for (let index = 1; index < polygon.length; index++) {
-            context.lineTo(polygon[index]?.[0] ?? 0, polygon[index]?.[1] ?? 0);
+            ctx.lineTo(polygon[index]?.[0] ?? 0, polygon[index]?.[1] ?? 0);
           }
-          context.closePath();
-          context.fill();
-          context.stroke();
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
         }
       }
 
       // Draw a small dot at the entity's position
-      context.fillStyle = isHovered ? "#ffff00" : "#ff0000";
-      context.beginPath();
-      context.arc(x, y, 3, 0, Math.PI * 2);
-      context.fill();
+      ctx.fillStyle = isHovered ? "#ffff00" : "#ff0000";
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
 
       // Build debug text with shadow for better visibility
       let debugText = `EID ${eid}`;
@@ -170,28 +166,28 @@ export class DebugLayer implements RenderLayer {
             PIXELS_PER_METER;
           const normalScale = 20 * PIXELS_PER_METER; // Scale for visualization
 
-          context.strokeStyle = "#00ff00";
-          context.beginPath();
-          context.moveTo(contactX, contactY);
-          context.lineTo(
+          ctx.strokeStyle = "#00ff00";
+          ctx.beginPath();
+          ctx.moveTo(contactX, contactY);
+          ctx.lineTo(
             contactX + normalX * normalScale,
             contactY + normalY * normalScale,
           );
-          context.stroke();
+          ctx.stroke();
 
           // Draw contact point
-          context.fillStyle = "#00ff00";
-          context.beginPath();
-          context.arc(contactX, contactY, 3, 0, Math.PI * 2);
-          context.fill();
+          ctx.fillStyle = "#00ff00";
+          ctx.beginPath();
+          ctx.arc(contactX, contactY, 3, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
 
       // Draw debug text with shadow for better visibility
-      context.fillStyle = "#000000";
-      context.fillText(debugText, x + 8, y - 24);
+      ctx.fillStyle = "#000000";
+      ctx.fillText(debugText, x + 8, y - 24);
     }
 
-    context.restore();
+    ctx.restore();
   }
 }

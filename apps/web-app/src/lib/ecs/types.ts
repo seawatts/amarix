@@ -12,16 +12,7 @@ export interface WorldProps {
     shape: Entity;
     [key: string]: Entity;
   };
-  canvas?: {
-    element: HTMLCanvasElement;
-    context: CanvasRenderingContext2D;
-  };
   isPaused: boolean;
-  systems: {
-    name: string;
-    isPaused?: boolean;
-    system: GameSystem;
-  }[];
   components: ComponentRef[];
 }
 export type World = BitecsWorld<WorldProps>;

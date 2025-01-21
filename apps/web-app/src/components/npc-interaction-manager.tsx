@@ -4,38 +4,37 @@ import { useEffect, useState } from "react";
 import { query } from "bitecs";
 
 import { NPCInteraction } from "~/lib/ecs/components";
-import { useGame } from "~/providers/game-provider";
 import { NPCDialog } from "./npc-dialog";
 
 export function NPCInteractionManager() {
-  const world = useGame((state) => state.world);
+  // const world = useGame((state) => state.world);
   const [activeInteraction, setActiveInteraction] = useState<{
     message: string;
     entityId: number;
   } | null>(null);
 
-  useEffect(() => {
-    // Check for active interactions each frame
-    function checkInteractions() {
-      if (!world) return;
-      const interacting = query(world, [NPCInteraction]);
+  // useEffect(() => {
+  //   // Check for active interactions each frame
+  //   function checkInteractions() {
+  //     if (!world) return;
+  //     const interacting = query(world, [NPCInteraction]);
 
-      // Find the first active interaction
-      for (const eid of interacting) {
-        const message = NPCInteraction.message[eid];
-        if (typeof message === "string" && message.length > 0) {
-          setActiveInteraction({ entityId: eid, message });
-          return;
-        }
-      }
+  //     // Find the first active interaction
+  //     for (const eid of interacting) {
+  //       const message = NPCInteraction.message[eid];
+  //       if (typeof message === "string" && message.length > 0) {
+  //         setActiveInteraction({ entityId: eid, message });
+  //         return;
+  //       }
+  //     }
 
-      // No active interactions found
-      setActiveInteraction(null);
-    }
+  //     // No active interactions found
+  //     setActiveInteraction(null);
+  //   }
 
-    const interval = setInterval(checkInteractions, 100);
-    return () => clearInterval(interval);
-  }, [world]);
+  //   const interval = setInterval(checkInteractions, 100);
+  //   return () => clearInterval(interval);
+  // }, [world]);
 
   const handleClose = () => {
     if (activeInteraction) {

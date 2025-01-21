@@ -112,10 +112,9 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
             const currentState = get();
             set({
               metrics: {
-                entities:
-                  event.data.metrics.entities ??
-                  currentState.metrics?.entities ??
-                  [],
+                entities: event.data.metrics.entities ?? [],
+                // currentState.metrics?.entities,
+                // [],
                 performance: {
                   fps:
                     event.data.metrics.fps ??

@@ -16,7 +16,6 @@ describe("Movement System", () => {
   it("should apply force based on keyboard input", () => {
     const world = createWorld<WorldProps>();
     const eid = addEntity(world);
-    const canvas = document.createElement("canvas");
 
     // Add required components
     addComponent(world, eid, Transform);
@@ -30,7 +29,7 @@ describe("Movement System", () => {
     KeyboardState.keys[eid] = 0;
     setKeyDown(eid, "KeyW"); // Simulate pressing up key
 
-    const movementSystem = createMovementSystem(canvas);
+    const movementSystem = createMovementSystem();
     movementSystem(world);
 
     // Verify force is applied in upward direction
@@ -41,7 +40,6 @@ describe("Movement System", () => {
   it("should apply damping when no input", () => {
     const world = createWorld<WorldProps>();
     const eid = addEntity(world);
-    const canvas = document.createElement("canvas");
 
     // Add required components
     addComponent(world, eid, Transform);
@@ -55,7 +53,7 @@ describe("Movement System", () => {
     Force.y[eid] = 1000;
     KeyboardState.keys[eid] = 0; // No keys pressed
 
-    const movementSystem = createMovementSystem(canvas);
+    const movementSystem = createMovementSystem();
     movementSystem(world);
 
     // Verify force is reduced by damping
@@ -66,7 +64,6 @@ describe("Movement System", () => {
   it("should normalize diagonal movement", () => {
     const world = createWorld<WorldProps>();
     const eid = addEntity(world);
-    const canvas = document.createElement("canvas");
 
     // Add required components
     addComponent(world, eid, Transform);
@@ -80,7 +77,7 @@ describe("Movement System", () => {
     setKeyDown(eid, "KeyW"); // Up
     setKeyDown(eid, "KeyD"); // Right
 
-    const movementSystem = createMovementSystem(canvas);
+    const movementSystem = createMovementSystem();
     movementSystem(world);
 
     // Get resulting force magnitude
@@ -99,7 +96,6 @@ describe("Movement System", () => {
   it("should respect max speed limit", () => {
     const world = createWorld<WorldProps>();
     const eid = addEntity(world);
-    const canvas = document.createElement("canvas");
 
     // Add required components
     addComponent(world, eid, Transform);
@@ -113,7 +109,7 @@ describe("Movement System", () => {
     KeyboardState.keys[eid] = 0;
     setKeyDown(eid, "KeyW"); // Up
 
-    const movementSystem = createMovementSystem(canvas);
+    const movementSystem = createMovementSystem();
     movementSystem(world);
 
     // Get resulting force magnitude

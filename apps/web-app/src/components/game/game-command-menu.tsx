@@ -26,6 +26,7 @@ import {
   createPlayer,
   createTriggerZone,
 } from "~/lib/ecs/entities";
+import { createGameWorld } from "~/lib/ecs/world";
 import { useDebugStore } from "~/providers/debug-provider";
 import { useGame } from "~/providers/game-provider";
 
@@ -98,7 +99,8 @@ export function GameCommandMenu() {
     },
     "Meta+r": () => {
       if (!engine) return;
-      engine.reset();
+      const world = createGameWorld();
+      engine.reset(world);
       setOpen(false);
     },
     "Meta+t": () => {
@@ -203,7 +205,8 @@ export function GameCommandMenu() {
           onSelect: () => {
             if (!engine) return;
             // TODO: Implement reset in GameEngine
-            engine.reset();
+            const world = createGameWorld();
+            engine.reset(world);
             setOpen(false);
           },
           shortcut: ["r"],

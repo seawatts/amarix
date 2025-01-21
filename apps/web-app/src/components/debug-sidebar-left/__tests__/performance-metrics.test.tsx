@@ -38,9 +38,6 @@ const mockGameStore: GameStore = {
   } as unknown as GameEngine,
   initializeEngine: vi.fn(),
   reset: vi.fn(),
-  setWorld: vi.fn(),
-  update: vi.fn(),
-  world: {} as World,
 };
 
 // Mock the debug store

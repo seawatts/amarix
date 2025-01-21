@@ -9,34 +9,29 @@ export class BackgroundLayer implements RenderLayer {
   order = RENDER_LAYERS.BACKGROUND;
   ignoreCamera = true;
 
-  render({ world }: RenderContext): void {
-    const context = world.canvas?.context;
-    const canvas = world.canvas?.element;
-
-    if (!context || !canvas) return;
-
+  render({ ctx, canvas }: RenderContext): void {
     // Fill background with black
-    context.fillStyle = "black";
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Set grid style
-    context.strokeStyle = `rgba(255, 255, 255, ${GRID_ALPHA})`;
-    context.lineWidth = 1;
+    ctx.strokeStyle = `rgba(255, 255, 255, ${GRID_ALPHA})`;
+    ctx.lineWidth = 1;
 
     // Draw vertical lines
     for (let x = 0; x <= canvas.width; x += CELL_SIZE) {
-      context.beginPath();
-      context.moveTo(x, 0);
-      context.lineTo(x, canvas.height);
-      context.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
     }
 
     // Draw horizontal lines
     for (let y = 0; y <= canvas.height; y += CELL_SIZE) {
-      context.beginPath();
-      context.moveTo(0, y);
-      context.lineTo(canvas.width, y);
-      context.stroke();
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
     }
   }
 }

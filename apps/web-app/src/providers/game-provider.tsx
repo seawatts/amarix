@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { createContext, useContext, useRef } from "react";
 import { useStore } from "zustand";
 
+import type { GameEngine } from "~/lib/ecs/engine";
 import type { GameStore } from "~/lib/stores/game-state";
-import { GameEngine } from "~/lib/ecs/engine";
 import { createGameStore, defaultInitState } from "~/lib/stores/game-state";
 
 export type GameStoreApi = ReturnType<typeof createGameStore>;
@@ -29,11 +29,11 @@ export function GameProvider({ children }: GameProviderProps) {
       return engineRef.current;
     }
 
-    const engine = new GameEngine(storeRef.current.getState());
-    engineRef.current = engine;
+    // const engine = new GameEngine({ store: storeRef.current.getState() });
+    // engineRef.current = engine;
     // storeRef.current.getState().setEngine(engine);
-    engine.start();
-    return engine;
+    // engine.start();
+    // return engine;
   };
 
   const cleanupEngine = () => {

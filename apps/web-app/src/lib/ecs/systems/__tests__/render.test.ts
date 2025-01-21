@@ -88,10 +88,6 @@ describe("Render System", () => {
 
   it("should handle camera transformations correctly", () => {
     const world = createWorld<WorldProps>();
-    world.canvas = {
-      context,
-      element: canvas,
-    };
     const cameraEid = addEntity(world);
 
     // Set up camera entity
@@ -103,7 +99,7 @@ describe("Render System", () => {
     Transform.scaleX[cameraEid] = 2;
     Transform.rotation[cameraEid] = Math.PI / 4;
 
-    const renderSystem = createRenderSystem();
+    const renderSystem = createRenderSystem(canvas);
     renderSystem(world);
 
     // Verify camera transformations were applied in correct order
@@ -124,10 +120,6 @@ describe("Render System", () => {
     const world = createWorld<WorldProps>();
     const cameraEid = addEntity(world);
     const targetEid = addEntity(world);
-    world.canvas = {
-      context,
-      element: canvas,
-    };
 
     // Set up camera entity with target
     addComponent(world, cameraEid, Camera);
@@ -140,7 +132,7 @@ describe("Render System", () => {
     Transform.x[targetEid] = 300;
     Transform.y[targetEid] = 400;
 
-    const renderSystem = createRenderSystem();
+    const renderSystem = createRenderSystem(canvas);
     renderSystem(world);
 
     // Verify camera follows target position
@@ -149,10 +141,6 @@ describe("Render System", () => {
 
   it("should render layers in correct order", () => {
     const world = createWorld<WorldProps>();
-    world.canvas = {
-      context,
-      element: canvas,
-    };
     const renderOrder: string[] = [];
 
     // Create mock layers
@@ -187,6 +175,8 @@ describe("Render System", () => {
     // Create render context
     const renderContext: RenderContext = {
       camera: { rotation: 0, x: 0, y: 0, zoom: 1 },
+      canvas,
+      ctx: context,
       world,
     };
 
@@ -228,6 +218,8 @@ describe("Render System", () => {
     // Create render context
     const renderContext: RenderContext = {
       camera: { rotation: 0, x: 100, y: 200, zoom: 1 },
+      canvas,
+      ctx: context,
       world,
     };
 
@@ -248,6 +240,8 @@ describe("Render System", () => {
     // Create render context
     const renderContext: RenderContext = {
       camera: { rotation: 0, x: 0, y: 0, zoom: 1 },
+      canvas,
+      ctx: context,
       world,
     };
 
@@ -261,10 +255,6 @@ describe("Render System", () => {
     const world = createWorld<WorldProps>();
     const camera1Eid = addEntity(world);
     const camera2Eid = addEntity(world);
-    world.canvas = {
-      context,
-      element: canvas,
-    };
 
     // Set up first camera
     addComponent(world, camera1Eid, Camera);
@@ -280,7 +270,7 @@ describe("Render System", () => {
     Transform.x[camera2Eid] = 300;
     Transform.y[camera2Eid] = 400;
 
-    const renderSystem = createRenderSystem();
+    const renderSystem = createRenderSystem(canvas);
     renderSystem(world);
 
     // Verify only first camera's transform was applied

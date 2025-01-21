@@ -15,6 +15,7 @@ import {
 } from "@acme/ui/context-menu";
 import { Icons } from "@acme/ui/icons";
 
+import { createGameWorld } from "~/lib/ecs/world";
 import { useDebugStore } from "~/providers/debug-provider";
 import { useGame } from "~/providers/game-provider";
 
@@ -52,7 +53,7 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
           inset
           onSelect={() => {
             if (!engine) return;
-            engine.reset();
+            engine.reset(createGameWorld());
           }}
         >
           Reset Game

@@ -2,51 +2,43 @@
 
 import { createStore } from "zustand/vanilla";
 
-import type { World } from "../ecs/types";
+import type { GameSystem, World } from "../ecs/types";
 import { GameEngine } from "../ecs/engine";
 
 interface State {
   engine: GameEngine | null;
-  world: World | null;
 }
 
 export const defaultInitState: State = {
   engine: null,
-  world: null,
 };
 
 export type GameStore = State & {
   reset: () => void;
-  setWorld: (world: World | null) => void;
-  update: (world: World) => void;
-  initializeEngine: (canvas: HTMLCanvasElement) => GameEngine;
+  initializeEngine: (props: {
+    canvas: HTMLCanvasElement;
+    world: World;
+    systems: {
+      name: string;
+      system: GameSystem;
+      isPaused?: boolean;
+    }[];
+  }) => GameEngine;
 };
 
 export const createGameStore = (initState: State = defaultInitState) => {
   return createStore<GameStore>((set, get) => ({
     ...initState,
-    initializeEngine: (canvas) => {
-      const engine = new GameEngine(get());
-      if (!engine.world.canvas) {
-        const context = canvas.getContext("2d");
-        if (!context) {
-          throw new Error("Failed to get canvas context");
-        }
-        engine.world.canvas = {
-          context,
-          element: canvas,
-        };
-      }
+    initializeEngine: (props) => {
+      const { canvas, world, systems } = props;
+      const engine = new GameEngine({ canvas, store: get(), systems, world });
       engine.start();
       set({ engine });
       return engine;
     },
+
     reset: () => {
       set(defaultInitState);
-    },
-    setWorld: (world) => set({ world }),
-    update: (_world) => {
-      // No-op for now
     },
   }));
 };

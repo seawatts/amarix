@@ -18,42 +18,27 @@ export class Renderer implements RenderSystem {
   }
 
   private applyCameraTransform(context: RenderContext): void {
-    const canvas = context.world.canvas;
-    const camera = context.camera;
-
-    if (!canvas) {
-      return;
-    }
-
+    const { canvas, camera, ctx } = context;
     // 1. Move to the center of the viewport
-    canvas.context.translate(
-      canvas.element.width / 2,
-      canvas.element.height / 2,
-    );
+    ctx.translate(canvas.width / 2, canvas.height / 2);
 
     // 2. Apply zoom and PIXELS_PER_METER scaling
     const scale = camera.zoom / PIXELS_PER_METER;
-    canvas.context.scale(scale, scale);
+    ctx.scale(scale, scale);
 
     // 3. Apply rotation
-    canvas.context.rotate(camera.rotation);
+    ctx.rotate(camera.rotation);
 
     // 4. Move world opposite to camera position
-    canvas.context.translate(
-      -camera.x * PIXELS_PER_METER,
-      -camera.y * PIXELS_PER_METER,
-    );
+    ctx.translate(-camera.x * PIXELS_PER_METER, -camera.y * PIXELS_PER_METER);
   }
 
   render(context: RenderContext): void {
-    const canvas = context.world.canvas;
-
+    const { canvas, ctx } = context;
     // Clear the canvas
-    if (!canvas) {
-      return;
-    }
-    canvas.context.clearRect(0, 0, canvas.element.width, canvas.element.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Sort layers by order and render
     // Sort layers by order and render
     const sortedLayers = [...this.layers.values()].sort(
       (a, b) => a.order - b.order,
@@ -61,7 +46,7 @@ export class Renderer implements RenderSystem {
 
     for (const layer of sortedLayers) {
       // Save context state before any transformations
-      canvas.context.save();
+      ctx.save();
 
       try {
         // Apply camera transform unless the layer should ignore it
@@ -73,7 +58,7 @@ export class Renderer implements RenderSystem {
         layer.render(context);
       } finally {
         // Always restore context state, even if rendering fails
-        canvas.context.restore();
+        ctx.restore();
       }
     }
   }

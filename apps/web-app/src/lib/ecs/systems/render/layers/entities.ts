@@ -181,11 +181,7 @@ export class EntityLayer implements RenderLayer {
   name = "entities";
   order = RENDER_LAYERS.ENTITIES;
 
-  render({ world }: RenderContext): void {
-    const context = world.canvas?.context;
-    const canvas = world.canvas?.element;
-    if (!context || !canvas) return;
-
+  render({ world, ctx, canvas }: RenderContext): void {
     const npcs = query(world, [Transform, NPC, Polygon, Style]);
     const players = query(world, [
       Transform,
@@ -219,12 +215,12 @@ export class EntityLayer implements RenderLayer {
     for (const eid of renderOrder) {
       // Render shapes first
       if (boxes.includes(eid)) {
-        renderBox(context, eid);
+        renderBox(ctx, eid);
         continue;
       }
 
       if (circles.includes(eid)) {
-        renderCircle(context, eid);
+        renderCircle(ctx, eid);
         continue;
       }
 
@@ -242,13 +238,13 @@ export class EntityLayer implements RenderLayer {
           Style.strokeWidth[eid] = 3;
         }
 
-        renderPolygon(context, eid);
+        renderPolygon(ctx, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;
         const maxHealth = Health.max[eid] ?? 0;
         renderHealthBar(
-          context,
+          ctx,
           x - width / 2,
           y - height / 2,
           width,
@@ -263,13 +259,13 @@ export class EntityLayer implements RenderLayer {
       }
 
       if (players.includes(eid)) {
-        renderPolygon(context, eid);
+        renderPolygon(ctx, eid);
 
         // Health bar
         const health = Health.current[eid] ?? 0;
         const maxHealth = Health.max[eid] ?? 0;
         renderHealthBar(
-          context,
+          ctx,
           x - width / 2,
           y - height / 2,
           width,

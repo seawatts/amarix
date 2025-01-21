@@ -1,20 +1,39 @@
 import { query } from "bitecs";
 
-import type { World } from "./types";
+import type { GameSystem, World } from "./types";
 import type { GameStore } from "~/lib/stores/game-state";
 import { Camera, CurrentPlayer } from "./components";
-import { createGameWorld } from "./world";
 
 export class GameEngine {
   public world: World;
   private animationFrameId: number | null = null;
-  private frameInterval = 1 / 60; // Convert to milliseconds
+  private frameInterval = 1 / 60; // Target 60 FPS
   private store: GameStore;
   private isPaused = false;
+  private lastFrameTime = 0;
+  public systems: {
+    name: string;
+    system: GameSystem;
+    isPaused?: boolean;
+  }[] = [];
 
-  constructor(store: GameStore) {
+  constructor({
+    store,
+    world,
+    systems,
+  }: {
+    store: GameStore;
+    canvas: HTMLCanvasElement;
+    world: World;
+    systems: {
+      name: string;
+      system: GameSystem;
+      isPaused?: boolean;
+    }[];
+  }) {
     this.store = store;
-    this.world = createGameWorld();
+    this.world = world;
+    this.systems = systems;
     this.world.timing = {
       delta: 0,
       lastFrame: performance.now(),
@@ -44,19 +63,20 @@ export class GameEngine {
     if (this.animationFrameId === null) return;
 
     const deltaTimeMs = timestamp - this.world.timing.lastFrame;
-    const deltaTime = deltaTimeMs / 1000;
+    const deltaTime = Math.min(deltaTimeMs / 1000, this.frameInterval); // Cap delta time
 
-    if (deltaTimeMs >= this.frameInterval * 1000) {
-      this.world.timing.lastFrame =
-        timestamp - (deltaTimeMs % (this.frameInterval * 1000));
+    // Only update if enough time has passed (vsync)
+    if (timestamp - this.lastFrameTime >= 1000 / 60) {
+      this.world.timing.lastFrame = timestamp;
       this.world.timing.delta = deltaTime;
+      this.lastFrameTime = timestamp;
 
       // Skip system updates if paused, but still update debug state
       if (!this.isPaused) {
         // Run each system in sequence
         const systemPerformance: Record<string, number> = {};
 
-        for (const { name, system, isPaused } of this.world.systems) {
+        for (const { name, system, isPaused } of this.systems) {
           // Skip if system doesn't exist or is disabled/paused
           if (isPaused) {
             continue;
@@ -69,7 +89,7 @@ export class GameEngine {
         }
 
         // Update game state
-        this.store.update(this.world);
+        // this.store.update(this.world);
       }
 
       // Always update debug state
@@ -93,21 +113,25 @@ export class GameEngine {
   public cleanup() {
     if (this.animationFrameId !== null) {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
     }
+
+    // Reset performance metrics
+    this.world.timing = {
+      delta: 0,
+      lastFrame: performance.now(),
+    };
+
     this.store.reset();
   }
 
-  public reset() {
-    // Stop the current game loop
+  public reset(world: World) {
+    // Stop the current game loop and clean up
     this.stop();
-    const canvas = this.world.canvas;
+    this.cleanup();
 
     // Reset the world to initial state
-    this.world = createGameWorld();
-    this.world.canvas = canvas;
-    // Reset the stores
-    this.store.setWorld(this.world);
-    // this.debugStore.setSelectedEntityId(null);
+    this.world = world;
 
     // Restart the game loop
     this.start();

@@ -22,7 +22,7 @@ interface DebugSystemContext {
 
 export function createDebugSystem(debugStore: DebugStore) {
   const lastPerformanceUpdate = { value: performance.now() };
-  const PERFORMANCE_UPDATE_INTERVAL = 100; // Update every second
+  // const PERFORMANCE_UPDATE_INTERVAL = 1000; // Update every second
 
   return function debugSystem(world: World) {
     const context: DebugSystemContext = {
@@ -32,13 +32,13 @@ export function createDebugSystem(debugStore: DebugStore) {
 
     // Update performance metrics periodically
     const currentTime = performance.now();
-    if (
-      currentTime - lastPerformanceUpdate.value >
-      PERFORMANCE_UPDATE_INTERVAL
-    ) {
-      updateMetrics(context, currentTime);
-      lastPerformanceUpdate.value = currentTime;
-    }
+    // if (
+    // currentTime - lastPerformanceUpdate.value >
+    // PERFORMANCE_UPDATE_INTERVAL
+    // ) {
+    updateMetrics(context, currentTime);
+    // lastPerformanceUpdate.value = currentTime;
+    // }
 
     // Get all entities with Debug components
     const debugEntities = query(world, [Debug]);

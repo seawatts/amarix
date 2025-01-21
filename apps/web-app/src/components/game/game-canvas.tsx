@@ -3,12 +3,25 @@
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { createAnimationSystem } from "~/lib/ecs/systems/animation";
 import {
+  createCameraSystem,
   handleGestureEnd,
   handleGestureStart,
   handleGestureUpdate,
 } from "~/lib/ecs/systems/camera";
 import { createDebugSystem } from "~/lib/ecs/systems/debug";
+import { createKeyboardSystem } from "~/lib/ecs/systems/keyboard";
+import { createMouseSystem } from "~/lib/ecs/systems/mouse";
+import { createMovementSystem } from "~/lib/ecs/systems/movement";
+import { createParticleSystem } from "~/lib/ecs/systems/particle";
+import { createPhysicsSystem } from "~/lib/ecs/systems/physics";
+import { createRenderSystem } from "~/lib/ecs/systems/render";
+import { createSceneSystem } from "~/lib/ecs/systems/scene";
+import { createScriptSystem } from "~/lib/ecs/systems/script";
+import { createSoundSystem } from "~/lib/ecs/systems/sound";
+import { createSpriteSystem } from "~/lib/ecs/systems/sprite";
+import { createTriggerSystem } from "~/lib/ecs/systems/trigger";
 import { clearKeyDown, setKeyDown } from "~/lib/ecs/utils/keyboard";
 import {
   clearMouseButtonDown,
@@ -16,6 +29,7 @@ import {
   setMouseButtonDown,
   updateMousePosition,
 } from "~/lib/ecs/utils/mouse";
+import { createGameWorld } from "~/lib/ecs/world";
 import { useDebugStore } from "~/providers/debug-provider";
 import { useGame } from "~/providers/game-provider";
 
@@ -60,11 +74,39 @@ export function GameCanvas() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
     // Initialize game engine
-    const gameEngine = initializeEngine(canvas);
-    gameEngine.world.systems.push({
+    const world = createGameWorld();
+    // Initialize systems based on what's available
+    const baseSystems = [
+      // Input systems first for responsiveness
+      { name: "keyboard", system: createKeyboardSystem() },
+      { name: "physics", system: createPhysicsSystem() },
+      { name: "trigger", system: createTriggerSystem() },
+      { name: "script", system: createScriptSystem() },
+      { name: "sprite", system: createSpriteSystem() },
+      { name: "animation", system: createAnimationSystem() },
+      { name: "sound", system: createSoundSystem() },
+      { name: "particle", system: createParticleSystem() },
+      { name: "scene", system: createSceneSystem() },
+    ];
+
+    const canvasBasedSystems = [
+      { name: "mouse", system: createMouseSystem(canvas) },
+      { name: "movement", system: createMovementSystem() },
+      { name: "camera", system: createCameraSystem() },
+      { name: "render", system: createRenderSystem(canvas) },
+    ];
+
+    const debugSystem = {
       isPaused: false,
       name: "debug",
       system: createDebugSystem(debugStore),
+    };
+
+    // world.systems =
+    const gameEngine = initializeEngine({
+      canvas,
+      systems: [...baseSystems, ...canvasBasedSystems, debugSystem],
+      world,
     });
 
     // Define keyboard handlers
