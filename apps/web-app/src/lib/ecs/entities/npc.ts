@@ -1,4 +1,4 @@
-import { addComponent, addEntity } from "bitecs";
+import { addComponent, addEntity, IsA } from "bitecs";
 
 import type { World } from "../types";
 import {
@@ -105,6 +105,7 @@ export function createNPC(world: World, options: CreateNPCOptions) {
     Named,
     Debug,
     Style,
+    IsA(world.prefabs.shape),
   );
 
   // Set NPC values

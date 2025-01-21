@@ -164,13 +164,17 @@ export function createGameWorld(
   createGround(world, {
     height: 20,
     // 10 pixels from bottom
-    width: worldWidth,
+    width: worldWidth * 2,
     x: worldWidth / 2,
     y: worldHeight - 10,
   });
 
   // Create camera targeting the player
-  createCamera(world, { x: 1500, y: 1000 });
+  createCamera(world, {
+    target: _playerEntity,
+    // x: worldWidth / 2,
+    // y: worldHeight / 2,
+  });
 
   // Create scene entity (not canvas dependent)
   createScene(world, { initialScene: "GAME" });

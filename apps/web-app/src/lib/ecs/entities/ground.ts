@@ -1,4 +1,4 @@
-import { addComponent, addEntity } from "bitecs";
+import { addComponent, addEntity, IsA } from "bitecs";
 
 import type { World } from "../types";
 import {
@@ -63,6 +63,7 @@ export function createGround(world: World, options: CreateGroundOptions) {
     Named,
     Debug,
     Style,
+    IsA(world.prefabs.shape),
   );
 
   // Set transform values

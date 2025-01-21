@@ -1,4 +1,4 @@
-import { query } from "bitecs";
+import { IsA, query } from "bitecs";
 
 import type { World } from "../../../types";
 import type { RenderContext, RenderLayer } from "../types";
@@ -93,13 +93,14 @@ export class DebugLayer implements RenderLayer {
 
     // Get debug entity to check visualization flags
     const debugEntities = query(world, [Debug]);
+    // debugger;
     const debugEid = debugEntities[0];
     const showBoundingBoxes = debugEid
       ? Debug.showBoundingBox[debugEid] === 1
       : false;
 
     // Draw collision shapes
-    const entities = query(world, [Transform]);
+    const entities = query(world, [Transform, IsA(world.prefabs.shape)]);
     for (const eid of entities) {
       const x = (Transform.x[eid] ?? 0) * PIXELS_PER_METER;
       const y = (Transform.y[eid] ?? 0) * PIXELS_PER_METER;
@@ -110,7 +111,7 @@ export class DebugLayer implements RenderLayer {
       ctx.fillStyle = isHovered ? "#ffff0033" : "#ff000033";
 
       // Draw bounding box if enabled
-      if (showBoundingBoxes && BoundingBox.width[eid] !== undefined) {
+      if (BoundingBox.width[eid] !== undefined) {
         const width = (BoundingBox.width[eid] ?? 0) * PIXELS_PER_METER;
         const height = (BoundingBox.height[eid] ?? 0) * PIXELS_PER_METER;
         ctx.strokeStyle = isHovered ? "#ffff00" : "#00ff00";

@@ -198,6 +198,25 @@ export function applyForcesSystem(world: World, dt: number) {
     // w += (torque / I) * dt
     RigidBody.angularVelocity[eid] =
       (RigidBody.angularVelocity[eid] ?? 0) + (torque / moment) * dt;
+    if (eid === 2) {
+      // console.log(
+      //   "fx",
+      //   fx,
+      //   "fy",
+      //   fy,
+      //   "torque",
+      //   torque,
+      //   "mass",
+      //   mass,
+      //   "moment",
+      //   moment,
+      //   "velocity",
+      //   Velocity.x[eid],
+      //   Velocity.y[eid],
+      //   "angularVelocity",
+      //   RigidBody.angularVelocity[eid],
+      // );
+    }
 
     // clear forces
     Force.x[eid] = 0;
