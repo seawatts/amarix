@@ -14,6 +14,7 @@ import {
   Player,
   Polygon,
   RigidBody,
+  SaveableMapEntity,
   Sound,
   Sprite,
   Style,
@@ -101,6 +102,7 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
     Force,
     Named,
     Style,
+    SaveableMapEntity,
   );
   // Initialize physics properties
   // Set player values
@@ -165,6 +167,9 @@ export function createPlayer(world: World, options: CreatePlayerOptions) {
   Style.strokeColor[eid] = "#ffffff";
   Style.strokeWidth[eid] = 2;
   Style.fillOpacity[eid] = 1;
+
+  // Initialize SaveableMapEntity
+  SaveableMapEntity.eid[eid] = eid;
 
   return eid;
 }

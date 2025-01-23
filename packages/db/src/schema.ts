@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -24,12 +25,12 @@ export const Users = pgTable("user", {
   email: text("email").notNull().unique(),
   firstName: text("firstName"),
   id: varchar("id", { length: 128 }).notNull().primaryKey(),
-  lastName: text("lastName"),
-  online: boolean("online").default(false).notNull(),
   lastLoggedInAt: timestamp("lastLoggedInAt", {
     mode: "date",
     withTimezone: true,
   }),
+  lastName: text("lastName"),
+  online: boolean("online").default(false).notNull(),
   updatedAt: timestamp("updatedAt", {
     mode: "date",
     withTimezone: true,
@@ -166,4 +167,79 @@ export const ShortUrl = pgTable("short_url", {
     mode: "date",
     withTimezone: true,
   }).$onUpdateFn(() => new Date()),
+});
+
+export const Maps = pgTable("maps", {
+  autoSaveLastSave: timestamp("autoSaveLastSave", {
+    mode: "date",
+    withTimezone: true,
+  }),
+  autoSaveSequence: text("autoSaveSequence"),
+  createdAt: timestamp("createdAt", {
+    mode: "date",
+    withTimezone: true,
+  }).defaultNow(),
+  createdByUserId: varchar("createdByUserId")
+    .references(() => Users.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  data: text("data").notNull(),
+  dataUrl: text("dataUrl"),
+  description: text("description"),
+  editorState: text("editorState"),
+  height: integer("height").notNull(),
+  id: varchar("id", { length: 128 })
+    .$defaultFn(() => createId({ prefix: "map" }))
+    .notNull()
+    .primaryKey(),
+  isTemplate: boolean("isTemplate").default(false),
+  lastEditedByUserId: varchar("lastEditedByUserId").references(() => Users.id),
+  name: varchar("name", { length: 64 }).notNull(),
+  parentMapId: varchar("parentMapId", { length: 128 }),
+  schemaVersion: varchar("schemaVersion", { length: 32 }).notNull(),
+  tags: text("tags").array(),
+  thumbnailUrl: text("thumbnailUrl"),
+  updatedAt: timestamp("updatedAt", {
+    mode: "date",
+    withTimezone: true,
+  }).$onUpdateFn(() => new Date()),
+  version: varchar("version", { length: 32 }).notNull(),
+  width: integer("width").notNull(),
+});
+
+export type MapType = typeof Maps.$inferSelect;
+
+export const MapsRelations = relations(Maps, ({ one }) => {
+  return {
+    createdByUser: one(Users, {
+      fields: [Maps.createdByUserId],
+      references: [Users.id],
+    }),
+    lastEditedByUser: one(Users, {
+      fields: [Maps.lastEditedByUserId],
+      references: [Users.id],
+    }),
+    parentMap: one(Maps, {
+      fields: [Maps.parentMapId],
+      references: [Maps.id],
+    }),
+  };
+});
+
+export const createMapSchema = createInsertSchema(Maps, {
+  editorState: z.string(),
+  name: z
+    .string()
+    .min(1)
+    .max(64)
+    .regex(/^[a-z0-9-]+$/, {
+      message:
+        "Map name must contain only lowercase letters, numbers, and hyphens",
+    }),
+  tags: z.array(z.string()),
+}).omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
 });

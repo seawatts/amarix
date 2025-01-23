@@ -1,9 +1,10 @@
 import { addComponent, addPrefab, createWorld } from "bitecs";
 
 import type { WorldProps } from "./types";
-import { Debug, Named } from "./components";
+import { Named } from "./components";
 import {
   createCamera,
+  createDebug,
   createGround,
   createHostileNPC,
   createNPC,
@@ -101,7 +102,10 @@ export function createGameWorld(
 
   // Create the shape prefab
   const shapePrefab = addPrefab(world);
-  addComponent(world, shapePrefab, Named, Debug);
+  addComponent(world, shapePrefab, Named);
+  Named.name[shapePrefab] = "Shape";
+  createDebug(world, shapePrefab);
+
   world.prefabs.shape = shapePrefab;
 
   // Register animations

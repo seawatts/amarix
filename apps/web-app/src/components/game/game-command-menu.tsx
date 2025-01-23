@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { query } from "bitecs";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
+import { useServerAction } from "zsa-react";
 
 import {
   Command,
@@ -16,6 +18,12 @@ import {
 import { Icons } from "@acme/ui/icons";
 import { useSidebar } from "@acme/ui/sidebar";
 
+import type { MapMetadata } from "~/lib/ecs/types";
+import {
+  listMapsAction,
+  loadMapAction,
+  saveMapAction,
+} from "~/components/game/actions";
 import { useHotkeys } from "~/hooks/use-hotkeys";
 import { Camera, CurrentPlayer, Debug } from "~/lib/ecs/components";
 import {
@@ -26,6 +34,7 @@ import {
   createPlayer,
   createTriggerZone,
 } from "~/lib/ecs/entities";
+import { serializeWorld } from "~/lib/ecs/map-serialization";
 import { createGameWorld } from "~/lib/ecs/world";
 import { useDebugStore } from "~/providers/debug-provider";
 import { useGame } from "~/providers/game-provider";
@@ -33,7 +42,11 @@ import { useGame } from "~/providers/game-provider";
 export function GameCommandMenu() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [maps, setMaps] = useState<MapMetadata[]>([]);
   const engine = useGame((state) => state.engine);
+  const currentMap = useGame((state) => state.currentMap);
+  const isDirty = useGame((state) => state.isDirty);
+  const setCurrentMap = useGame((state) => state.setCurrentMap);
   const entities = useDebugStore((state) => state.metrics?.entities);
   const isDebugging = useDebugStore((state) => state.isDebugging);
   const isPaused = useDebugStore((state) => state.isPaused);
@@ -48,15 +61,17 @@ export function GameCommandMenu() {
     (state) => state.toggleSidebarSection,
   );
   const sidebar = useSidebar();
+  const saveMap = useServerAction(saveMapAction);
   const { setTheme, theme } = useTheme();
 
   // Filter entities and systems based on search
-  const filteredEntities = search
-    ? entities?.filter((entity) => {
-        const name = entity.name ?? `Entity ${entity.id}`;
-        return name.toLowerCase().includes(search.toLowerCase());
-      })
-    : [];
+  const filteredEntities =
+    search && entities
+      ? entities.filter((entity) => {
+          const name = entity.name ?? `Entity ${entity.id}`;
+          return name.toLowerCase().includes(search.toLowerCase());
+        })
+      : [];
 
   const systemNames = Object.entries(systems);
   const filteredSystems = search
@@ -64,6 +79,79 @@ export function GameCommandMenu() {
         name.toLowerCase().includes(search.toLowerCase()),
       )
     : [];
+
+  const filteredMaps = search
+    ? maps.filter((map) =>
+        map.name.toLowerCase().includes(search.toLowerCase()),
+      )
+    : [];
+
+  const handleLoadMaps = useCallback(async () => {
+    try {
+      const [data, error] = await listMapsAction({ filter: undefined });
+      if (error) {
+        throw new Error(error.message);
+      }
+      setMaps(data);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to list maps",
+      );
+    }
+  }, []);
+
+  const handleSaveMap = useCallback(async () => {
+    if (!engine?.world) return;
+
+    try {
+      const serializedWorld = serializeWorld(engine.world);
+      const [, error] = await saveMap.execute({
+        metadata: {
+          author: currentMap?.author ?? "Anonymous",
+          createdAt: currentMap?.createdAt ?? new Date().toISOString(),
+          description: currentMap?.description ?? "",
+          dimensions: currentMap?.dimensions ?? { height: 1000, width: 1000 },
+          isTemplate: currentMap?.isTemplate ?? false,
+          name: currentMap?.name ?? "untitled-map",
+          schemaVersion: 1,
+          tags: currentMap?.tags ?? [],
+          thumbnailUrl: currentMap?.thumbnailUrl,
+          updatedAt: new Date().toISOString(),
+          version: currentMap?.version ?? "v1",
+        },
+        serializedWorld,
+      });
+      if (error) {
+        throw new Error(error.message);
+      }
+      toast.success("Map saved successfully");
+    } catch (error) {
+      console.error("Error saving map", error);
+      toast.error(
+        error instanceof Error ? error.message : "Failed to save map",
+      );
+    }
+  }, [currentMap, engine?.world, saveMap]);
+
+  const handleLoadMap = useCallback(
+    async (filePath: string) => {
+      if (!engine?.world) return;
+
+      try {
+        const [data, error] = await loadMapAction({ filePath });
+        if (error) {
+          throw new Error(error.message);
+        }
+        setCurrentMap(data.metadata);
+        return data;
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to load map",
+        );
+      }
+    },
+    [engine?.world, setCurrentMap],
+  );
 
   useHotkeys({
     "Alt+1": () => {
@@ -92,6 +180,17 @@ export function GameCommandMenu() {
     "Meta+k": () => {
       setOpen((open) => !open);
     },
+    "Meta+l": () => {
+      void handleLoadMaps()
+        .then(() => {
+          setOpen(true);
+        })
+        .catch((error) => {
+          toast.error(
+            error instanceof Error ? error.message : "Failed to list maps",
+          );
+        });
+    },
     "Meta+p": () => {
       if (!engine) return;
       engine.stop();
@@ -102,6 +201,11 @@ export function GameCommandMenu() {
       const world = createGameWorld();
       engine.reset(world);
       setOpen(false);
+    },
+    "Meta+s": () => {
+      void handleSaveMap().then(() => {
+        setOpen(false);
+      });
     },
     "Meta+t": () => {
       setTheme(theme === "light" ? "dark" : "light");
@@ -127,6 +231,34 @@ export function GameCommandMenu() {
             setOpen(false);
           },
           shortcut: ["p"],
+        },
+        {
+          icon: saveMap.isPending ? (
+            <Icons.Spinner size="sm" />
+          ) : (
+            <Icons.Download size="sm" />
+          ),
+          id: "save-map",
+          label: "Save Map",
+          onSelect: () => {
+            void handleSaveMap().then(() => {
+              // setOpen(false);
+            });
+          },
+          shortcut: ["⌘", "s"],
+        },
+        {
+          icon: <Icons.Upload size="sm" />,
+          id: "load-map",
+          label: "Load Map",
+          onSelect: () => {
+            void handleLoadMaps().catch((error) => {
+              toast.error(
+                error instanceof Error ? error.message : "Failed to list maps",
+              );
+            });
+          },
+          shortcut: ["⌘", "l"],
         },
         {
           icon: <Icons.Eye size="sm" />,
@@ -471,6 +603,21 @@ export function GameCommandMenu() {
         },
       ],
     },
+    {
+      group: "Maps",
+      items: filteredMaps.map((map) => ({
+        icon: <Icons.ListFilter size="sm" />,
+        id: `load-map-${map.name}`,
+        label: map.name,
+        onSelect: () => {
+          void handleLoadMap(
+            `${map.name}-${map.version}-${map.updatedAt.replaceAll(/[:.]/g, "")}.map.json`,
+          ).then(() => {
+            setOpen(false);
+          });
+        },
+      })),
+    },
   ];
 
   return (
@@ -494,11 +641,11 @@ export function GameCommandMenu() {
                   {item.icon}
                   <span>{item.label}</span>
                   <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                    {item.shortcut.map((shortcut) => (
+                    {/* {item.shortcut.map((shortcut) => (
                       <span key={shortcut} className="uppercase">
                         {shortcut}
                       </span>
-                    ))}
+                    ))} */}
                   </kbd>
                 </CommandItem>
               ))}
@@ -529,7 +676,7 @@ export function GameCommandMenu() {
               ))}
             </CommandGroup>
           )}
-          {search && filteredEntities && filteredEntities.length > 0 && (
+          {search && filteredEntities.length > 0 && (
             <CommandGroup heading="Entities">
               {filteredEntities.map((entity) => (
                 <div key={entity.id}>
@@ -565,6 +712,38 @@ export function GameCommandMenu() {
                     </span>
                   </CommandItem>
                 </div>
+              ))}
+            </CommandGroup>
+          )}
+          {search && filteredMaps.length > 0 && (
+            <CommandGroup heading="Maps">
+              {filteredMaps.map((map) => (
+                <CommandItem
+                  key={map.name}
+                  // onSelect={() => {
+                  //   void (async () => {
+                  //     try {
+                  //       await loadMap(`src/maps/${map.name}.map.json`);
+                  //       setCurrentMap(map);
+                  //       toast.success(`Loaded map: ${map.name}`);
+                  //     } catch (error) {
+                  //       toast.error(
+                  //         error instanceof Error
+                  //           ? error.message
+                  //           : `Failed to load map: ${map.name}`,
+                  //       );
+                  //     }
+                  //     setOpen(false);
+                  //   })();
+                  // }}
+                  className="flex items-center gap-2"
+                >
+                  <Icons.GalleryVerticalEnd size="sm" />
+                  <span>{map.name}</span>
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    {new Date(map.updatedAt).toLocaleDateString()}
+                  </span>
+                </CommandItem>
               ))}
             </CommandGroup>
           )}

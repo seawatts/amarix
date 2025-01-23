@@ -13,11 +13,14 @@ import {
   Health,
   HostileNPC,
   InBattle,
+  InteractionCooldown,
   Movement,
   Named,
   NPC,
+  NPCInteraction,
   Polygon,
   RigidBody,
+  SaveableMapEntity,
   Script,
   Sound,
   Sprite,
@@ -104,7 +107,13 @@ export function createNPC(world: World, options: CreateNPCOptions) {
     Named,
     Style,
     IsA(world.prefabs.shape),
+    NPCInteraction,
+    InteractionCooldown,
+    SaveableMapEntity,
   );
+
+  // Initialize SaveableMapEntity
+  SaveableMapEntity.eid[eid] = eid;
 
   // Set NPC values
   Transform.x[eid] = options.x;

@@ -1,66 +1,35 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { PropsWithChildren } from "react";
+import type { StoreApi } from "zustand";
 import { createContext, useContext, useRef } from "react";
-import { useStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 
-import type { GameEngine } from "~/lib/ecs/engine";
-import type { GameStore } from "~/lib/stores/game-state";
-import { createGameStore, defaultInitState } from "~/lib/stores/game-state";
+import type { GameStore } from "../lib/stores/game-state";
+import { createGameStore, defaultInitState } from "../lib/stores/game-state";
 
-export type GameStoreApi = ReturnType<typeof createGameStore>;
+type GameProviderProps = PropsWithChildren;
 
-interface GameContextValue {
-  store: GameStoreApi;
-}
-
-export const GameContext = createContext<GameContextValue | null>(null);
-
-export interface GameProviderProps {
-  children: ReactNode;
-}
+const GameStoreContext = createContext<StoreApi<GameStore>>(
+  createGameStore(defaultInitState),
+);
 
 export function GameProvider({ children }: GameProviderProps) {
-  const storeRef = useRef<GameStoreApi>(createGameStore(defaultInitState));
-  const engineRef = useRef<GameEngine | null>(null);
-
-  const initializeEngine = (canvas: HTMLCanvasElement) => {
-    if (engineRef.current) {
-      return engineRef.current;
-    }
-
-    // const engine = new GameEngine({ store: storeRef.current.getState() });
-    // engineRef.current = engine;
-    // storeRef.current.getState().setEngine(engine);
-    // engine.start();
-    // return engine;
-  };
-
-  const cleanupEngine = () => {
-    if (!engineRef.current) {
-      return;
-    }
-
-    engineRef.current.cleanup();
-    engineRef.current = null;
-    // storeRef.current.getState().setEngine(null);
-  };
+  const storeRef = useRef<StoreApi<GameStore>>(
+    createGameStore(defaultInitState),
+  );
 
   return (
-    <GameContext.Provider
-      value={{
-        store: storeRef.current,
-      }}
-    >
+    <GameStoreContext.Provider value={storeRef.current}>
       {children}
-    </GameContext.Provider>
+    </GameStoreContext.Provider>
   );
 }
 
-export function useGame<T>(selector: (store: GameStore) => T): T {
-  const context = useContext(GameContext);
-  if (!context) {
-    throw new Error("useGameStore must be used within GameProvider");
-  }
-  return useStore(context.store, selector);
+export function useGame<T>(
+  selector: (state: GameStore) => T,
+  equalityFn?: (left: T, right: T) => boolean,
+): T {
+  const store = useContext(GameStoreContext);
+  return useStoreWithEqualityFn(store, selector, equalityFn);
 }

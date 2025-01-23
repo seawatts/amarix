@@ -14,8 +14,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@next/bundle-analyzer": "15.1.4",
-    "next": "15.1.4"
+    "@next/bundle-analyzer": "15.1.6",
+    "next": "15.1.6"
   },
   "devDependencies": {
     "@acme/eslint-config": "workspace:*",

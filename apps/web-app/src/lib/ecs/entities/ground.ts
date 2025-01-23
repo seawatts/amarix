@@ -7,6 +7,7 @@ import {
   Named,
   Polygon,
   RigidBody,
+  SaveableMapEntity,
   Style,
   Transform,
 } from "../components";
@@ -63,6 +64,7 @@ export function createGround(world: World, options: CreateGroundOptions) {
     Named,
     Style,
     IsA(world.prefabs.shape),
+    SaveableMapEntity,
   );
 
   // Set transform values
@@ -103,6 +105,7 @@ export function createGround(world: World, options: CreateGroundOptions) {
   // Set name
   Named.name[eid] = "Ground";
   createDebug(world, eid);
+  SaveableMapEntity.eid[eid] = eid;
 
   return eid;
 }

@@ -4,18 +4,28 @@ import { f32, u8, u32 } from "bitecs/serialization";
 
 const baseInitializationSize = 10_000;
 
-export const Transform = {
-  _name: "Transform",
+function defineComponent<T extends Record<string, unknown>>(
+  name: string,
+  component: T,
+): T {
+  return Object.defineProperty(component, "_name", {
+    configurable: true,
+    enumerable: false,
+    value: name,
+    writable: true,
+  });
+}
+
+export const Transform = defineComponent("Transform", {
   rotation: f32(Array.from({ length: baseInitializationSize })),
   scaleX: f32(Array.from({ length: baseInitializationSize })),
   scaleY: f32(Array.from({ length: baseInitializationSize })),
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Camera component for controlling view
-export const Camera = {
-  _name: "Camera",
+export const Camera = defineComponent("Camera", {
   isActive: u8(Array.from({ length: baseInitializationSize })),
   isPanning: u8(Array.from({ length: baseInitializationSize })), // Whether the camera is currently being panned
   lastPanX: f32(Array.from({ length: baseInitializationSize })), // Last mouse X position during pan
@@ -27,61 +37,52 @@ export const Camera = {
   smoothing: f32(Array.from({ length: baseInitializationSize })),
   target: u32(Array.from({ length: baseInitializationSize })),
   zoom: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
-export const Velocity = {
-  _name: "Velocity",
+export const Velocity = defineComponent("Velocity", {
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Movement component for storing movement input
-export const Movement = {
-  _name: "Movement",
+export const Movement = defineComponent("Movement", {
   dx: f32(Array.from({ length: baseInitializationSize })),
   dy: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Tag component to identify the player entity
-export const Player = {
-  _name: "Player",
+export const Player = defineComponent("Player", {
   eid: u32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
-export const CurrentPlayer = {
-  _name: "CurrentPlayer",
+export const CurrentPlayer = defineComponent("CurrentPlayer", {
   eid: u32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Tag component to identify NPC entities
-export const NPC = {
-  _name: "NPC",
+export const NPC = defineComponent("NPC", {
   eid: u32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Tag component to identify hostile NPCs
-export const HostileNPC = {
-  _name: "HostileNPC",
+export const HostileNPC = defineComponent("HostileNPC", {
   eid: u32(Array.from({ length: baseInitializationSize })),
   isHostile: u8(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Component to store NPC interaction data
-export const NPCInteraction = {
-  _name: "NPCInteraction",
+export const NPCInteraction = defineComponent("NPCInteraction", {
   isInteracting: u8(Array.from({ length: baseInitializationSize })),
   message: Array.from({ length: 100 }).fill(""),
-} as const;
+} as const);
 
 // Component to store interaction cooldown
-export const InteractionCooldown = {
-  _name: "InteractionCooldown",
+export const InteractionCooldown = defineComponent("InteractionCooldown", {
   timer: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Component to store battle state
-export const BattleState = {
-  _name: "BattleState",
+export const BattleState = defineComponent("BattleState", {
   enemyPosition: {
     x: f32(Array.from({ length: baseInitializationSize })),
     y: f32(Array.from({ length: baseInitializationSize })),
@@ -92,51 +93,43 @@ export const BattleState = {
     y: f32(Array.from({ length: baseInitializationSize })),
   },
   turn: u8(Array.from({ length: baseInitializationSize })), // 0 = player turn, 1 = enemy turn
-} as const;
+} as const);
 
 // Tag component to identify entities in battle
-export const InBattle = {
-  _name: "InBattle",
+export const InBattle = defineComponent("InBattle", {
   eid: u32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Component to store health data
-export const Health = {
-  _name: "Health",
+export const Health = defineComponent("Health", {
   current: f32(Array.from({ length: baseInitializationSize })),
   max: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Component to store battle action data
-export const BattleAction = {
-  _name: "BattleAction",
+export const BattleAction = defineComponent("BattleAction", {
   // "move" | "attack"
   targetX: f32(Array.from({ length: baseInitializationSize })),
   targetY: f32(Array.from({ length: baseInitializationSize })),
   type: Array.from({ length: 100 }).fill(""),
-} as const;
+} as const);
 
 // Component to store valid moves/actions
-export const ValidActions = {
-  _name: "ValidActions",
+export const ValidActions = defineComponent("ValidActions", {
   cells: Array.from({ length: 100 }).fill([]), // Array of {x: number, y: number}[]
-} as const;
+} as const);
 
 // Input state using bit fields for multiple key tracking
-export const GlobalKeyboardState = {
-  _name: "GlobalKeyboardState",
-
+export const GlobalKeyboardState = defineComponent("GlobalKeyboardState", {
   // Single value to track all keys (using bit field)
   keys: 0 as number,
 
   // Map to store all pressed keys
   pressedKeys: new Set<string>(),
-} as const;
+} as const);
 
 // Global mouse state
-export const GlobalMouseState = {
-  _name: "GlobalMouseState",
-
+export const GlobalMouseState = defineComponent("GlobalMouseState", {
   // Mouse buttons state (using bit field like keyboard)
   // Bit 0: Left button
   // Bit 1: Right button
@@ -156,19 +149,16 @@ export const GlobalMouseState = {
   // Current mouse position in world coordinates
   worldX: 0,
   worldY: 0,
-};
+} as const);
 
 // BoundingBox component for collision detection and interaction areas
-export const BoundingBox = {
-  _name: "BoundingBox",
+export const BoundingBox = defineComponent("BoundingBox", {
   height: f32(Array.from({ length: baseInitializationSize })),
   width: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Polygon component for complex shapes
-export const Polygon = {
-  _name: "Polygon",
-
+export const Polygon = defineComponent("Polygon", {
   // Flag for convex polygons (allows for optimization)
   isConvex: u8(Array.from({ length: baseInitializationSize })),
 
@@ -189,12 +179,10 @@ export const Polygon = {
   verticesY: Array.from({ length: 100 }).fill(
     f32(Array.from({ length: baseInitializationSize })),
   ) as Float32Array[],
-} as const;
+} as const);
 
 // Physics components
-export const RigidBody = {
-  _name: "RigidBody",
-
+export const RigidBody = defineComponent("RigidBody", {
   angularDamping: f32(Array.from({ length: baseInitializationSize })),
 
   // reduce angular velocity over time
@@ -211,7 +199,7 @@ export const RigidBody = {
   momentOfInertia: f32(Array.from({ length: baseInitializationSize })), // rotational inertia (simplified)
   restitution: f32(Array.from({ length: baseInitializationSize })),
   rotation: f32(Array.from({ length: baseInitializationSize })), // rotation in radians
-} as const;
+} as const);
 
 export enum CollisionMask {
   Player = 1 << 0,
@@ -222,9 +210,7 @@ export enum CollisionMask {
 }
 
 // Collision components
-export const Collidable = {
-  _name: "Collidable",
-
+export const Collidable = defineComponent("Collidable", {
   // Collision flags
   isActive: new Int8Array(baseInitializationSize),
 
@@ -236,12 +222,10 @@ export const Collidable = {
   layer: new Int32Array(baseInitializationSize),
   // Which layer this entity belongs to
   mask: new Int32Array(baseInitializationSize), // Bit mask of layers this can collide with
-} as const;
+} as const);
 
 // Collision manifold component - stores collision data
-export const CollisionManifold = {
-  _name: "CollisionManifold",
-
+export const CollisionManifold = defineComponent("CollisionManifold", {
   // How deep the collision is
   contactPointX: f32(Array.from({ length: baseInitializationSize })),
 
@@ -261,12 +245,15 @@ export const CollisionManifold = {
   normalY: f32(Array.from({ length: baseInitializationSize })),
   // Collision details
   penetrationDepth: f32(Array.from({ length: baseInitializationSize })), // Point of contact Y
-} as const;
+} as const);
+
+// Component to mark entities that should be saved with the map
+export const SaveableMapEntity = defineComponent("SaveableMapEntity", {
+  eid: u32(Array.from({ length: baseInitializationSize })),
+} as const);
 
 // Component for trigger zones that can start quests, battles, or other events
-export const TriggerZone = {
-  _name: "TriggerZone",
-
+export const TriggerZone = defineComponent("TriggerZone", {
   // ID of the quest/battle/dialog to trigger
   actionId: u32(Array.from({ length: baseInitializationSize })),
 
@@ -284,24 +271,20 @@ export const TriggerZone = {
 
   // Type of trigger: "quest" | "battle" | "dialog" | "checkpoint" etc.
   type: Array.from<string>({ length: 100 }).fill(""),
-} as const;
+} as const);
 
-export const Hoverable = {
-  _name: "Hoverable",
+export const Hoverable = defineComponent("Hoverable", {
   isHovered: u8(Array.from({ length: baseInitializationSize })),
   type: Array.from<string>({ length: 100 }).fill(""),
-} as const;
+} as const);
 
-export const Clickable = {
-  _name: "Clickable",
+export const Clickable = defineComponent("Clickable", {
   isClicked: u8(Array.from({ length: baseInitializationSize })),
   type: Array.from<string>({ length: 100 }).fill(""),
-} as const;
+} as const);
 
 // Script component to define entity behaviors
-export const Script = {
-  _name: "Script",
-
+export const Script = defineComponent("Script", {
   // Whether the script is active
   isActive: u8(Array.from({ length: baseInitializationSize })),
   // Function index in the script registry
@@ -310,12 +293,10 @@ export const Script = {
   state: f32(Array.from({ length: baseInitializationSize })),
   // Timer for time-based scripts
   timer: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Sprite component for rendering images
-export const Sprite = {
-  _name: "Sprite",
-
+export const Sprite = defineComponent("Sprite", {
   // Current animation frame index
   frame: u32(Array.from({ length: baseInitializationSize })),
 
@@ -350,12 +331,10 @@ export const Sprite = {
   scaleY: f32(Array.from({ length: baseInitializationSize })),
   // Sprite sheet source path
   src: Array.from<string>({ length: 100 }).fill(""),
-} as const;
+} as const);
 
 // Animation component for sprite animations
-export const Animation = {
-  _name: "Animation",
-
+export const Animation = defineComponent("Animation", {
   // Current animation sequence name
   currentSequence: Array.from({ length: 100 }).fill(""),
 
@@ -369,12 +348,10 @@ export const Animation = {
   isPlaying: u8(Array.from({ length: baseInitializationSize })),
   // Time elapsed in current frame
   timer: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Sound component for audio playback
-export const Sound = {
-  _name: "Sound",
-
+export const Sound = defineComponent("Sound", {
   // Whether the sound should loop
   isLooping: u8(Array.from({ length: baseInitializationSize })),
 
@@ -392,12 +369,10 @@ export const Sound = {
   src: Array.from<string>({ length: 100 }).fill(""),
   // Sound volume (0-1)
   volume: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Scene component for managing game scenes
-export const Scene = {
-  _name: "Scene",
-
+export const Scene = defineComponent("Scene", {
   // Current scene name
   current: Array.from<string>({ length: 1 }).fill(""),
 
@@ -414,12 +389,10 @@ export const Scene = {
 
   // Scene transition progress (0-1)
   transitionProgress: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Particle component for visual effects
-export const Particle = {
-  _name: "Particle",
-
+export const Particle = defineComponent("Particle", {
   // Current alpha/opacity (0-1)
   alpha: f32(Array.from({ length: baseInitializationSize })),
 
@@ -442,12 +415,10 @@ export const Particle = {
   // Position
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // ParticleEmitter component for spawning particles
-export const ParticleEmitter = {
-  _name: "ParticleEmitter",
-
+export const ParticleEmitter = defineComponent("ParticleEmitter", {
   // Emission rate (particles per second)
   emissionRate: f32(Array.from({ length: baseInitializationSize })),
 
@@ -470,36 +441,31 @@ export const ParticleEmitter = {
   spawnRadius: f32(Array.from({ length: baseInitializationSize })),
   // Total particles emitted
   totalEmitted: u32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Force component for constant forces like gravity
-export const Force = {
-  _name: "Force",
+export const Force = defineComponent("Force", {
   torque: f32(Array.from({ length: baseInitializationSize })),
   // Constant forces (like gravity, wind)
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
-export const Gravity = {
-  _name: "Gravity",
+export const Gravity = defineComponent("Gravity", {
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
-export const Acceleration = {
-  _name: "Acceleration",
+export const Acceleration = defineComponent("Acceleration", {
   x: f32(Array.from({ length: baseInitializationSize })),
   y: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
-export const Named = {
-  _name: "Named",
+export const Named = defineComponent("Named", {
   name: Array.from<string>({ length: 100 }).fill(""),
-} as const;
+} as const);
 
-export const Debug = {
-  _name: "Debug",
+export const Debug = defineComponent("Debug", {
   clickedEntity: u8(Array.from({ length: baseInitializationSize })),
   frameTime: f32(Array.from({ length: baseInitializationSize })),
   hoveredEntity: u8(Array.from({ length: baseInitializationSize })),
@@ -520,22 +486,20 @@ export const Debug = {
   systemsAffecting: Array.from<string[]>({ length: 100 }).fill([]),
   toString: Array.from<() => string>({ length: 100 }).fill(() => ""),
   updateTime: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Box component for rectangular shapes
-export const Box = {
-  _name: "Box",
+export const Box = defineComponent("Box", {
   height: f32(Array.from({ length: baseInitializationSize })),
   isWireframe: u8(Array.from({ length: baseInitializationSize })), // 1 = wireframe, 0 = filled
   originX: f32(Array.from({ length: baseInitializationSize })), // Center point X
   originY: f32(Array.from({ length: baseInitializationSize })), // Center point Y
   rotation: f32(Array.from({ length: baseInitializationSize })), // Rotation in radians
   width: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
 
 // Circle component for circular shapes
-export const Circle = {
-  _name: "Circle",
+export const Circle = defineComponent("Circle", {
   endAngle: f32(Array.from({ length: baseInitializationSize })), // End angle in radians
   isWireframe: u8(Array.from({ length: baseInitializationSize })), // 1 = wireframe, 0 = filled
   originX: f32(Array.from({ length: baseInitializationSize })), // Center point X
@@ -543,14 +507,13 @@ export const Circle = {
   radius: f32(Array.from({ length: baseInitializationSize })),
   segments: u8(Array.from({ length: baseInitializationSize })), // Number of segments to draw (higher = smoother)
   startAngle: f32(Array.from({ length: baseInitializationSize })), // Start angle in radians
-} as const;
+} as const);
 
 // Visual style component for shape rendering
-export const Style = {
-  _name: "Style",
+export const Style = defineComponent("Style", {
   fillColor: Array.from<string>({ length: 100 }).fill("#ffffff"),
   fillOpacity: f32(Array.from({ length: baseInitializationSize })),
   strokeColor: Array.from<string>({ length: 100 }).fill("#000000"),
   strokeOpacity: f32(Array.from({ length: baseInitializationSize })),
   strokeWidth: f32(Array.from({ length: baseInitializationSize })),
-} as const;
+} as const);
