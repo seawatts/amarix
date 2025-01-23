@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       '@acme/commitlint-config':
         specifier: workspace:*
@@ -79,7 +83,7 @@ importers:
         version: 2.0.1(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)
       nativewind:
         specifier: 4.1.23
-        version: 4.1.23(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@4.0.0)
+        version: 4.1.23(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
       react:
         specifier: 19.0.0
         version: 19.0.0
@@ -91,7 +95,7 @@ importers:
         version: 0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0)
       react-native-css-interop:
         specifier: 0.1.22
-        version: 0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@4.0.0)
+        version: 0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
       react-native-gesture-handler:
         specifier: 2.22.0
         version: 2.22.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)
@@ -142,8 +146,8 @@ importers:
         specifier: 3.4.2
         version: 3.4.2
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       typescript:
         specifier: 5.7.3
         version: 5.7.3
@@ -230,7 +234,7 @@ importers:
         version: 1.45.1
       tailwindcss-animate:
         specifier: 1.0.7
-        version: 1.0.7(tailwindcss@4.0.0)
+        version: 1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -296,8 +300,8 @@ importers:
         specifier: 3.4.2
         version: 3.4.2
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       typescript:
         specifier: 5.7.3
         version: 5.7.3
@@ -483,8 +487,8 @@ importers:
         specifier: 3.4.2
         version: 3.4.2
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       typescript:
         specifier: 5.7.3
         version: 5.7.3
@@ -527,6 +531,9 @@ importers:
       react-dom:
         specifier: 19.0.0
         version: 19.0.0(react@19.0.0)
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -582,6 +589,9 @@ importers:
       superjson:
         specifier: 2.2.2
         version: 2.2.2
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -631,6 +641,9 @@ importers:
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -680,6 +693,9 @@ importers:
       '@paralleldrive/cuid2':
         specifier: 2.2.2
         version: 2.2.2
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       ulid:
         specifier: 2.3.0
         version: 2.3.0
@@ -845,7 +861,7 @@ importers:
         version: 2.6.0
       tailwindcss-animate:
         specifier: 1.0.7
-        version: 1.0.7(tailwindcss@4.0.0)
+        version: 1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
       vaul:
         specifier: 1.1.2
         version: 1.1.2(@types/react-dom@19.0.3(@types/react@19.0.7))(@types/react@19.0.7)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -878,8 +894,8 @@ importers:
         specifier: 19.0.0
         version: 19.0.0
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       typescript:
         specifier: 5.7.3
         version: 5.7.3
@@ -889,6 +905,9 @@ importers:
 
   packages/validators:
     dependencies:
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       zod:
         specifier: 3.24.1
         version: 3.24.1
@@ -923,6 +942,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: 19.6.0
         version: 19.6.0
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -975,6 +997,9 @@ importers:
       eslint-plugin-unused-imports:
         specifier: 4.1.4
         version: 4.1.4(@typescript-eslint/eslint-plugin@8.21.0(@typescript-eslint/parser@8.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.18.0(jiti@2.4.2))
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       typescript-eslint:
         specifier: ^8.21.0
         version: 8.21.0(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
@@ -998,13 +1023,20 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
-  tooling/github: {}
+  tooling/github:
+    dependencies:
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
 
   tooling/lint-staged:
     dependencies:
       lint-staged:
         specifier: 15.4.1
         version: 15.4.1
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       eslint:
         specifier: 9.18.0
@@ -1024,6 +1056,9 @@ importers:
       next:
         specifier: 15.1.6
         version: 15.1.6(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -1068,8 +1103,8 @@ importers:
         specifier: 16.1.0
         version: 16.1.0(postcss@8.5.1)
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -1104,6 +1139,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: 0.6.10
         version: 0.6.10(@ianvs/prettier-plugin-sort-imports@4.4.1(prettier@3.4.2))(prettier@3.4.2)
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     devDependencies:
       '@acme/tsconfig':
         specifier: workspace:*
@@ -1118,11 +1156,11 @@ importers:
         specifier: 8.5.1
         version: 8.5.1
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
       tailwindcss-animate:
         specifier: 1.0.7
-        version: 1.0.7(tailwindcss@4.0.0)
+        version: 1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
     devDependencies:
       '@acme/eslint-config':
         specifier: workspace:*
@@ -1146,7 +1184,11 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
-  tooling/typescript: {}
+  tooling/typescript:
+    dependencies:
+      tailwindcss:
+        specifier: 3.4.1
+        version: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
 
 packages:
 
@@ -5638,6 +5680,10 @@ packages:
   camel-case@3.0.0:
     resolution: {integrity: sha512-+MbKztAYHXPr1jNTSKQF52VpcFjwY5RkR7fxksV8Doo4KAYc5Fl4UJRgthBbTmEx8C54DqahhbLJkDwjI3PI/w==}
 
+  camelcase-css@2.0.1:
+    resolution: {integrity: sha512-QOSvevhslijgYwRx6Rv7zKdMF8lbRmx+uQGx2+vDc+KI/eBnsy9kit5aj23AgGu3pa4t9AgwbnXWqS+iOY+2aA==}
+    engines: {node: '>= 6'}
+
   camelcase@5.3.1:
     resolution: {integrity: sha512-L28STB170nwWS63UjtlEOE3dldQApaJXZkOI1uMFfzf3rRuPegHaHesyee+YxQ+W6SvRDQV6UrdOdRiR153wJg==}
     engines: {node: '>=6'}
@@ -6250,6 +6296,9 @@ packages:
   detect-node-es@1.1.0:
     resolution: {integrity: sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==}
 
+  didyoumean@1.2.2:
+    resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
+
   diff@4.0.2:
     resolution: {integrity: sha512-58lmxKSA4BNyLz+HHMUzlOEpg09FV+ev6ZMe3vJihgdxzgcwZ8VoEEPmALCZG9LmqfVoNMMKpttIYTVG6uDY7A==}
     engines: {node: '>=0.3.1'}
@@ -6257,6 +6306,9 @@ packages:
   dir-glob@3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
     engines: {node: '>=8'}
+
+  dlv@1.1.3:
+    resolution: {integrity: sha512-+HlytyjlPKnIG8XuRG8WvmBP8xs8P71y+SKKS6ZXWoEgLuePxtDoUEiH7WkdePWrQ5JBpE6aoVqfZfJUQkjXwA==}
 
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
@@ -7757,6 +7809,10 @@ packages:
   jimp-compact@0.16.1:
     resolution: {integrity: sha512-dZ6Ra7u1G8c4Letq/B5EzAxj4tLFHL+cGtdpR+PVm4yzPDj+lCk+AbivWt1eOM+ikzkowtyV7qSqX6qr3t71Ww==}
 
+  jiti@1.21.7:
+    resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
+    hasBin: true
+
   jiti@2.4.2:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
@@ -8034,6 +8090,10 @@ packages:
   lightningcss@1.29.1:
     resolution: {integrity: sha512-FmGoeD4S05ewj+AkhTY+D+myDvXI6eL27FjHIjoyUkO/uw7WZD1fBVs0QxeYWa7E17CUHJaYX/RUGISCtcrG4Q==}
     engines: {node: '>= 12.0.0'}
+
+  lilconfig@2.1.0:
+    resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
+    engines: {node: '>=10'}
 
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
@@ -8607,6 +8667,10 @@ packages:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
     engines: {node: '>=0.10.0'}
 
+  object-hash@3.0.0:
+    resolution: {integrity: sha512-RSn9F68PjH9HqtltsSnqYC1XXoWe9Bju5+213R98cNGttag9q9yAOTzdbsqvIa7aNm5WffBZFpWYr2aWrklWAw==}
+    engines: {node: '>= 6'}
+
   object-inspect@1.13.3:
     resolution: {integrity: sha512-kDCGIbxkDSXE3euJZZXzc6to7fCrKHNI/hSRQnRuQ+BWjFNzZwiFF8fj/6o2t2G9/jTj8PSIYTfCLelLZEeRpA==}
     engines: {node: '>= 0.4'}
@@ -8966,11 +9030,35 @@ packages:
     peerDependencies:
       postcss: ^8.4
 
+  postcss-import@15.1.0:
+    resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      postcss: ^8.0.0
+
   postcss-import@16.1.0:
     resolution: {integrity: sha512-7hsAZ4xGXl4MW+OKEWCnF6T5jqBw80/EE9aXg1r2yyn1RsVEU8EtKXbijEODa+rg7iih4bKf7vlvTGYR4CnPNg==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       postcss: ^8.0.0
+
+  postcss-js@4.0.1:
+    resolution: {integrity: sha512-dDLF8pEO191hJMtlHFPRa8xsizHaM82MLfNkUHdUtVEV3tgTp5oj+8qbEqYM57SLfc74KSbw//4SeJma2LRVIw==}
+    engines: {node: ^12 || ^14 || >= 16}
+    peerDependencies:
+      postcss: ^8.4.21
+
+  postcss-load-config@4.0.2:
+    resolution: {integrity: sha512-bSVhyJGL00wMVoPUzAVAnbEoWyqRxkjv64tUl427SKnPrENtq6hJwUojroMz2VB+Q1edmi4IfrAPpami5VVgMQ==}
+    engines: {node: '>= 14'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
 
   postcss-merge-longhand@7.0.4:
     resolution: {integrity: sha512-zer1KoZA54Q8RVHKOY5vMke0cCdNxMP3KBfDerjH/BYHh4nCIh+1Yy0t1pAEQF18ac/4z3OFclO+ZVH8azjR4A==}
@@ -9007,6 +9095,12 @@ packages:
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: ^8.4.31
+
+  postcss-nested@6.2.0:
+    resolution: {integrity: sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==}
+    engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.2.14
 
   postcss-normalize-charset@7.0.0:
     resolution: {integrity: sha512-ABisNUXMeZeDNzCQxPxBCkXexvBrUHV+p7/BXOY+ulxkcjUZO0cp8ekGBwvIh2LbCwnWbyMPNJVtBSdyhM2zYQ==}
@@ -10290,6 +10384,11 @@ packages:
     resolution: {integrity: sha512-bl6mpH3T7I3UFxuvDEXLxy/VuFxBk5bbzplh7tXI68mwMokNYd1t9qPBHlnyTwfa4JGC4zP516I1hYYtQ/vspA==}
     peerDependencies:
       tailwindcss: '>=3.0.0 || insiders'
+
+  tailwindcss@3.4.1:
+    resolution: {integrity: sha512-qAYmXRfk3ENzuPBakNK0SRrUDipP8NQnEY6772uDhflcQz5EhRdD7JNZxyrFHVQNCwULPBn6FNPp9brpO7ctcA==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
 
   tailwindcss@4.0.0:
     resolution: {integrity: sha512-ULRPI3A+e39T7pSaf1xoi58AqqJxVCLg8F/uM5A3FadUbnyDTgltVnXJvdkTjwCOGA6NazqHVcwPJC5h2vRYVQ==}
@@ -16361,6 +16460,8 @@ snapshots:
       no-case: 2.3.2
       upper-case: 1.1.3
 
+  camelcase-css@2.0.1: {}
+
   camelcase@5.3.1: {}
 
   camelcase@6.3.0: {}
@@ -16998,11 +17099,15 @@ snapshots:
 
   detect-node-es@1.1.0: {}
 
+  didyoumean@1.2.2: {}
+
   diff@4.0.2: {}
 
   dir-glob@3.0.1:
     dependencies:
       path-type: 4.0.0
+
+  dlv@1.1.3: {}
 
   doctrine@2.1.0:
     dependencies:
@@ -18778,6 +18883,8 @@ snapshots:
 
   jimp-compact@0.16.1: {}
 
+  jiti@1.21.7: {}
+
   jiti@2.4.2: {}
 
   join-component@1.1.0: {}
@@ -19049,6 +19156,8 @@ snapshots:
       lightningcss-linux-x64-musl: 1.29.1
       lightningcss-win32-arm64-msvc: 1.29.1
       lightningcss-win32-x64-msvc: 1.29.1
+
+  lilconfig@2.1.0: {}
 
   lilconfig@3.1.3: {}
 
@@ -19519,12 +19628,12 @@ snapshots:
 
   nanoid@3.3.8: {}
 
-  nativewind@4.1.23(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@4.0.0):
+  nativewind@4.1.23(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))):
     dependencies:
       comment-json: 4.2.5
       debug: 4.4.0
-      react-native-css-interop: 0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@4.0.0)
-      tailwindcss: 4.0.0
+      react-native-css-interop: 0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)))
+      tailwindcss: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     transitivePeerDependencies:
       - react
       - react-native
@@ -19689,6 +19798,8 @@ snapshots:
       flow-enums-runtime: 0.0.6
 
   object-assign@4.1.1: {}
+
+  object-hash@3.0.0: {}
 
   object-inspect@1.13.3: {}
 
@@ -20056,12 +20167,32 @@ snapshots:
       postcss: 8.5.1
       postcss-selector-parser: 7.0.0
 
+  postcss-import@15.1.0(postcss@8.5.1):
+    dependencies:
+      postcss: 8.5.1
+      postcss-value-parser: 4.2.0
+      read-cache: 1.0.0
+      resolve: 1.22.10
+
   postcss-import@16.1.0(postcss@8.5.1):
     dependencies:
       postcss: 8.5.1
       postcss-value-parser: 4.2.0
       read-cache: 1.0.0
       resolve: 1.22.10
+
+  postcss-js@4.0.1(postcss@8.5.1):
+    dependencies:
+      camelcase-css: 2.0.1
+      postcss: 8.5.1
+
+  postcss-load-config@4.0.2(postcss@8.5.1)(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)):
+    dependencies:
+      lilconfig: 3.1.3
+      yaml: 2.7.0
+    optionalDependencies:
+      postcss: 8.5.1
+      ts-node: 10.9.2(@types/node@22.10.8)(typescript@5.7.3)
 
   postcss-merge-longhand@7.0.4(postcss@8.5.1):
     dependencies:
@@ -20099,6 +20230,11 @@ snapshots:
   postcss-minify-selectors@7.0.4(postcss@8.5.1):
     dependencies:
       cssesc: 3.0.0
+      postcss: 8.5.1
+      postcss-selector-parser: 6.1.2
+
+  postcss-nested@6.2.0(postcss@8.5.1):
+    dependencies:
       postcss: 8.5.1
       postcss-selector-parser: 6.1.2
 
@@ -20422,7 +20558,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  react-native-css-interop@0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@4.0.0):
+  react-native-css-interop@0.1.22(react-native-reanimated@3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native-safe-area-context@5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0))(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))):
     dependencies:
       '@babel/helper-module-imports': 7.25.9
       '@babel/traverse': 7.26.5
@@ -20433,7 +20569,7 @@ snapshots:
       react-native: 0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0)
       react-native-reanimated: 3.16.7(@babel/core@7.26.0)(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)
       semver: 7.6.3
-      tailwindcss: 4.0.0
+      tailwindcss: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
     optionalDependencies:
       react-native-safe-area-context: 5.1.0(react-native@0.77.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(@types/react@19.0.7)(bufferutil@4.0.9)(react@19.0.0))(react@19.0.0)
     transitivePeerDependencies:
@@ -21536,9 +21672,36 @@ snapshots:
 
   tailwind-merge@2.6.0: {}
 
-  tailwindcss-animate@1.0.7(tailwindcss@4.0.0):
+  tailwindcss-animate@1.0.7(tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))):
     dependencies:
-      tailwindcss: 4.0.0
+      tailwindcss: 3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
+
+  tailwindcss@3.4.1(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3)):
+    dependencies:
+      '@alloc/quick-lru': 5.2.0
+      arg: 5.0.2
+      chokidar: 3.6.0
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.3.3
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      jiti: 1.21.7
+      lilconfig: 2.1.0
+      micromatch: 4.0.8
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.1.1
+      postcss: 8.5.1
+      postcss-import: 15.1.0(postcss@8.5.1)
+      postcss-js: 4.0.1(postcss@8.5.1)
+      postcss-load-config: 4.0.2(postcss@8.5.1)(ts-node@10.9.2(@types/node@22.10.8)(typescript@5.7.3))
+      postcss-nested: 6.2.0(postcss@8.5.1)
+      postcss-selector-parser: 6.1.2
+      resolve: 1.22.10
+      sucrase: 3.35.0
+    transitivePeerDependencies:
+      - ts-node
 
   tailwindcss@4.0.0: {}
 
@@ -22360,8 +22523,7 @@ snapshots:
 
   yaml@2.6.1: {}
 
-  yaml@2.7.0:
-    optional: true
+  yaml@2.7.0: {}
 
   yargs-parser@21.1.1: {}
 

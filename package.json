@@ -42,5 +42,8 @@
     "extends": [
       "@acme/commitlint-config"
     ]
+  },
+  "dependencies": {
+    "tailwindcss": "3.4.1"
   }
 }
