@@ -38,7 +38,7 @@ describe.skip("NPC Interaction System", () => {
     npcInteractionSystem(world);
 
     // No interaction should be created during initial delay
-    expect(NPCInteraction._name in world).toBe(false);
+    expect((NPCInteraction as any)._name in world).toBe(false);
   });
 
   it("should create interaction when player collides with NPC", async () => {
@@ -130,8 +130,8 @@ describe.skip("NPC Interaction System", () => {
     npcInteractionSystem(worldWithLongDelta);
 
     // Interaction should be removed
-    expect(NPCInteraction._name in world).toBe(false);
-    expect(InteractionCooldown._name in world).toBe(false);
+    expect((NPCInteraction as any)._name in world).toBe(false);
+    expect((InteractionCooldown as any)._name in world).toBe(false);
   });
 
   it("should not create interaction if NPC is already interacting", async () => {

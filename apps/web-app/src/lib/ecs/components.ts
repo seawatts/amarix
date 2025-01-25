@@ -126,7 +126,7 @@ export const GlobalKeyboardState = defineComponent("GlobalKeyboardState", {
 
   // Map to store all pressed keys
   pressedKeys: new Set<string>(),
-} as const);
+});
 
 // Global mouse state
 export const GlobalMouseState = defineComponent("GlobalMouseState", {
@@ -149,7 +149,7 @@ export const GlobalMouseState = defineComponent("GlobalMouseState", {
   // Current mouse position in world coordinates
   worldX: 0,
   worldY: 0,
-} as const);
+});
 
 // BoundingBox component for collision detection and interaction areas
 export const BoundingBox = defineComponent("BoundingBox", {

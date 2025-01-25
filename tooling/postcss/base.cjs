@@ -6,6 +6,5 @@ module.exports = {
       replaceWith: "[data-focus-visible-added]",
     },
     "@tailwindcss/postcss": {},
-    ...(process.env.NODE_ENV === "production" ? { cssnano: {} } : {}),
   },
 };

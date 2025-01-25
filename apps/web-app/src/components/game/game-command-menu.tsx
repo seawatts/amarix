@@ -640,12 +640,12 @@ export function GameCommandMenu() {
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  <kbd className="pointer-events-none ml-auto inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-                    {/* {item.shortcut.map((shortcut) => (
+                  <kbd className="bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
+                    {item.shortcut.map((shortcut) => (
                       <span key={shortcut} className="uppercase">
                         {shortcut}
                       </span>
-                    ))} */}
+                    ))}
                   </kbd>
                 </CommandItem>
               ))}
@@ -689,7 +689,7 @@ export function GameCommandMenu() {
                   >
                     <Icons.CircleDot size="sm" />
                     <span>Select {entity.name ?? `Entity ${entity.id}`}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">
+                    <span className="text-muted-foreground ml-auto text-xs">
                       ID: {entity.id}
                     </span>
                   </CommandItem>
@@ -707,7 +707,7 @@ export function GameCommandMenu() {
                     <span>
                       Move Camera to {entity.name ?? `Entity ${entity.id}`}
                     </span>
-                    <span className="ml-auto text-xs text-muted-foreground">
+                    <span className="text-muted-foreground ml-auto text-xs">
                       ID: {entity.id}
                     </span>
                   </CommandItem>
@@ -740,7 +740,7 @@ export function GameCommandMenu() {
                 >
                   <Icons.GalleryVerticalEnd size="sm" />
                   <span>{map.name}</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className="text-muted-foreground ml-auto text-xs">
                     {new Date(map.updatedAt).toLocaleDateString()}
                   </span>
                 </CommandItem>

@@ -1,6 +1,3 @@
 {
-  "name": "@acme/github",
-  "dependencies": {
-    "tailwindcss": "3.4.1"
-  }
+  "name": "@acme/github"
 }

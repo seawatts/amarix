@@ -17,7 +17,7 @@ import {
   MESSAGE_TYPES,
   Networked,
   Position,
-} from "./shared";
+} from "./shared.ts1";
 
 const world = createWorld();
 

@@ -65,7 +65,7 @@ export function FloatingToolbar({
   return (
     <div
       className={cn(
-        "fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-sidebar p-1 shadow-lg backdrop-blur-sm",
+        "fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-sidebar p-1 shadow-lg backdrop-blur-xs",
         className,
       )}
       {...props}
