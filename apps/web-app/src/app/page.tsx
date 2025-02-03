@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { Skeleton } from '@acme/ui/skeleton'
 import { H1, P } from '@acme/ui/typography'
 
-import { MapsGridServer } from '~/app/_components/maps-grid.server'
+import { MapsGridServer } from './_components/maps-grid.server'
 
 function MapsSkeleton() {
   return (

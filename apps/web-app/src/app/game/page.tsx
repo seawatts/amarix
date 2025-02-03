@@ -24,7 +24,7 @@ declare global {
 
 export default async function GamePage() {
   const cookieStore = await cookies()
-  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true' ?? true
+  const defaultOpen = cookieStore.get('sidebar:state')?.value === 'true'
 
   return (
     <DebugStoreProvider>

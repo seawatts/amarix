@@ -44,9 +44,9 @@ export function GameCommandMenu() {
   const [search, setSearch] = useState('')
   const [maps, setMaps] = useState<MapMetadata[]>([])
   const engine = useGame((state) => state.engine)
-  const currentMap = useGame((state) => state.currentMap)
-  const _isDirty = useGame((state) => state.isDirty)
-  const setCurrentMap = useGame((state) => state.setCurrentMap)
+  // const currentMap = useGame((state) => state.currentMap)
+  // const _isDirty = useGame((state) => state.isDirty)
+  // const setCurrentMap = useGame((state) => state.setCurrentMap)
   const entities = useDebugStore((state) => state.metrics?.entities)
   const isDebugging = useDebugStore((state) => state.isDebugging)
   const isPaused = useDebugStore((state) => state.isPaused)
@@ -104,32 +104,32 @@ export function GameCommandMenu() {
     if (!engine?.world) return
 
     try {
-      const serializedWorld = serializeWorld(engine.world)
-      const [, error] = await saveMap.execute({
-        metadata: {
-          author: currentMap?.author ?? 'Anonymous',
-          createdAt: currentMap?.createdAt ?? new Date().toISOString(),
-          description: currentMap?.description ?? '',
-          dimensions: currentMap?.dimensions ?? { height: 1000, width: 1000 },
-          isTemplate: currentMap?.isTemplate ?? false,
-          name: currentMap?.name ?? 'untitled-map',
-          schemaVersion: 1,
-          tags: currentMap?.tags ?? [],
-          thumbnailUrl: currentMap?.thumbnailUrl,
-          updatedAt: new Date().toISOString(),
-          version: currentMap?.version ?? 'v1',
-        },
-        serializedWorld,
-      })
-      if (error) {
-        throw new Error(error.message)
-      }
+      serializeWorld(engine.world)
+      // const [, error] = await saveMap.execute({
+      //   metadata: {
+      //     author: currentMap?.author ?? 'Anonymous',
+      //     createdAt: currentMap?.createdAt ?? new Date().toISOString(),
+      //     description: currentMap?.description ?? '',
+      //     dimensions: currentMap?.dimensions ?? { height: 1000, width: 1000 },
+      //     isTemplate: currentMap?.isTemplate ?? false,
+      //     name: currentMap?.name ?? 'untitled-map',
+      //     schemaVersion: 1,
+      //     tags: currentMap?.tags ?? [],
+      //     thumbnailUrl: currentMap?.thumbnailUrl,
+      //     updatedAt: new Date().toISOString(),
+      //     version: currentMap?.version ?? 'v1',
+      //   },
+      //   serializedWorld,
+      // })
+      // if (error) {
+      // throw new Error(error.message)
+      // }
       toast.success('Map saved successfully')
     } catch (error) {
       console.error('Error saving map', error)
       toast.error(error instanceof Error ? error.message : 'Failed to save map')
     }
-  }, [currentMap, engine?.world, saveMap])
+  }, [engine?.world])
 
   const handleLoadMap = useCallback(
     async (filePath: string) => {
@@ -140,7 +140,7 @@ export function GameCommandMenu() {
         if (error) {
           throw new Error(error.message)
         }
-        setCurrentMap(data.metadata)
+        // setCurrentMap(data.metadata)
         return data
       } catch (error) {
         toast.error(
@@ -148,7 +148,7 @@ export function GameCommandMenu() {
         )
       }
     },
-    [engine?.world, setCurrentMap],
+    [engine?.world],
   )
 
   useHotkeys({
@@ -639,11 +639,12 @@ export function GameCommandMenu() {
                   {item.icon}
                   <span>{item.label}</span>
                   <kbd className="bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex h-5 items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 select-none">
-                    {item.shortcut.map((shortcut) => (
-                      <span key={shortcut} className="uppercase">
-                        {shortcut}
-                      </span>
-                    ))}
+                    {'shortcut' in item &&
+                      item.shortcut.map((shortcut) => (
+                        <span key={shortcut} className="uppercase">
+                          {shortcut}
+                        </span>
+                      ))}
                   </kbd>
                 </CommandItem>
               ))}

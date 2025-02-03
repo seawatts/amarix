@@ -59,9 +59,9 @@ export function AppSidebar() {
           'skeleton-3',
           'skeleton-4',
           'skeleton-5',
-        ]).map((key, index) => (
+        ]).map((key) => (
           <SidebarMenuItem key={key}>
-            <SidebarMenuSkeleton index={index} />
+            <SidebarMenuSkeleton />
           </SidebarMenuItem>
         ))}
       </SidebarMenu>

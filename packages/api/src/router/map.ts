@@ -3,7 +3,6 @@ import { z } from 'zod'
 
 import { db } from '@acme/db/client'
 import { Maps } from '@acme/db/schema'
-
 import { createTRPCRouter, protectedProcedure } from '../trpc'
 
 const defaultMapData = {

@@ -9,8 +9,20 @@ const nextConfig = {
   reactStrictMode: true,
   eslint: { ignoreDuringBuilds: true },
   experimental: {
+    turbo: {
+      rules: {
+        // Handle .node files
+        '*.node': {
+          loaders: ['nextjs-node-loader'],
+          as: '*.js',
+        },
+      },
+      // resolveExtensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.node'],
+      // moduleIdStrategy:
+      // process.env.NODE_ENV === 'production' ? 'deterministic' : 'named',
+    },
     scrollRestoration: true,
-    typedRoutes: true,
+    // typedRoutes: true,
     // dynamicIO: true,
     serverActions: {
       bodySizeLimit: '20mb',

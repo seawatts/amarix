@@ -113,7 +113,7 @@ export class GameEngine {
       lastFrame: performance.now(),
     }
 
-    this.store.reset()
+    // this.store.reset()
   }
 
   public reset(world: World) {

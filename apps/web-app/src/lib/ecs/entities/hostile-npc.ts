@@ -1,5 +1,10 @@
 import { IsA, addComponent, addEntity } from 'bitecs'
 
+interface CreateHostileNPCOptions {
+  x?: number
+  y?: number
+}
+
 import {
   Acceleration,
   Clickable,
