@@ -55,7 +55,6 @@ export const mapRouter = createTRPCRouter({
     }),
 
   list: protectedProcedure.query(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
     return db.query.Maps.findMany({
       orderBy: [desc(Maps.updatedAt)],
     })
