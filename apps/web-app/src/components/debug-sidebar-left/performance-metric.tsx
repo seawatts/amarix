@@ -1,28 +1,28 @@
-"use client";
+'use client'
 
-import type { LucideIcon } from "lucide-react";
-import { memo } from "react";
-import { ChevronRight } from "lucide-react";
+import type { LucideIcon } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import { memo } from 'react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@acme/ui/collapsible";
-import { SidebarMenuButton, SidebarMenuItem } from "@acme/ui/sidebar";
+} from '@acme/ui/collapsible'
+import { SidebarMenuButton, SidebarMenuItem } from '@acme/ui/sidebar'
 
-import type { DataPoint } from "../../lib/ecs/types";
-import { MetricChart } from "./metric-chart";
+import type { DataPoint } from '../../lib/ecs/types'
+import { MetricChart } from './metric-chart'
 
 interface PerformanceMetricProps {
-  label: string;
-  value: number;
-  data: DataPoint[];
-  icon?: LucideIcon;
-  unit: string;
-  minDomain?: number;
-  maxDomain?: number | "auto";
-  formatValue?: (value: number) => string;
+  label: string
+  value: number
+  data: DataPoint[]
+  icon?: LucideIcon
+  unit: string
+  minDomain?: number
+  maxDomain?: number | 'auto'
+  formatValue?: (value: number) => string
 }
 
 function PerformanceMetricComponent({
@@ -32,7 +32,7 @@ function PerformanceMetricComponent({
   icon: Icon,
   unit,
   minDomain = 0,
-  maxDomain = "auto",
+  maxDomain = 'auto',
   formatValue = (v) => v.toFixed(0),
 }: PerformanceMetricProps) {
   return (
@@ -65,7 +65,7 @@ function PerformanceMetricComponent({
         </CollapsibleContent>
       </Collapsible>
     </SidebarMenuItem>
-  );
+  )
 }
 
-export const PerformanceMetric = memo(PerformanceMetricComponent);
+export const PerformanceMetric = memo(PerformanceMetricComponent)

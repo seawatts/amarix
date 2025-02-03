@@ -1,17 +1,16 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { query } from "bitecs";
+import { useState } from 'react'
 
-import { NPCInteraction } from "~/lib/ecs/components";
-import { NPCDialog } from "./npc-dialog";
+import { NPCInteraction } from '~/lib/ecs/components'
+import { NPCDialog } from './npc-dialog'
 
 export function NPCInteractionManager() {
   // const world = useGame((state) => state.world);
   const [activeInteraction, setActiveInteraction] = useState<{
-    message: string;
-    entityId: number;
-  } | null>(null);
+    message: string
+    entityId: number
+  } | null>(null)
 
   // useEffect(() => {
   //   // Check for active interactions each frame
@@ -39,16 +38,16 @@ export function NPCInteractionManager() {
   const handleClose = () => {
     if (activeInteraction) {
       // Set message to empty string instead of deleting to maintain type safety
-      NPCInteraction.message[activeInteraction.entityId] = "";
-      setActiveInteraction(null);
+      NPCInteraction.message[activeInteraction.entityId] = ''
+      setActiveInteraction(null)
     }
-  };
+  }
 
   return (
     <NPCDialog
       isOpen={activeInteraction !== null}
       onClose={handleClose}
-      message={activeInteraction?.message ?? ""}
+      message={activeInteraction?.message ?? ''}
     />
-  );
+  )
 }

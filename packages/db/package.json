@@ -1,60 +1,71 @@
 {
-  "name": "@acme/db",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "dependencies": {
+    "@acme/id": "workspace:*",
+    "@clerk/nextjs": "6.10.6",
+    "@supabase/ssr": "0.5.2",
+    "@supabase/supabase-js": "2.48.1",
+    "@t3-oss/env-core": "0.12.0",
+    "@vercel/postgres": "0.10.0",
+    "drizzle-orm": "0.39.1",
+    "drizzle-seed": "0.3.1",
+    "drizzle-zod": "0.7.0",
+    "lodash-es": "4.17.21",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "zod": "3.24.1",
+    "zustand": "5.0.3"
+  },
+  "devDependencies": {
+    "@acme/tsconfig": "workspace:*",
+    "@t3-oss/env-core": "0.12.0",
+    "@t3-oss/env-nextjs": "0.12.0",
+    "@types/lodash-es": "4.17.12",
+    "@types/react": "19.0.8",
+    "@types/react-dom": "19.0.3",
+    "dotenv-cli": "8.0.0",
+    "drizzle-kit": "0.30.4",
+    "supabase": "2.9.6",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3"
+  },
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./src/index.ts"
+      "default": "./src/index.ts",
+      "types": "./dist/index.d.ts"
     },
     "./client": {
-      "types": "./dist/client.d.ts",
-      "default": "./src/client.ts"
+      "default": "./src/client.ts",
+      "types": "./dist/client.d.ts"
     },
     "./schema": {
-      "types": "./dist/schema.d.ts",
-      "default": "./src/schema.ts"
+      "default": "./src/schema.ts",
+      "types": "./dist/schema.d.ts"
+    },
+    "./supabase/client": {
+      "default": "./src/supabase/client-exports.ts",
+      "types": "./dist/supabase/client-exports.d.ts"
+    },
+    "./supabase/server": {
+      "default": "./src/supabase/server-exports.ts",
+      "types": "./dist/supabase/server-exports.d.ts"
     }
   },
   "license": "MIT",
+  "name": "@acme/db",
+  "private": true,
   "scripts": {
     "build": "tsc",
+    "clean": "rm -rf .turbo node_modules dist",
     "dev": "tsc --watch",
-    "clean": "rm -rf .turbo node_modules",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
-    "push": "pnpm with-env drizzle-kit push",
-    "migrate": "pnpm with-env drizzle-kit migrate",
-    "seed": "pnpm with-env tsx src/seed.ts",
     "gen-migration": "pnpm with-env drizzle-kit generate",
+    "migrate": "pnpm with-env drizzle-kit migrate",
+    "push": "pnpm with-env drizzle-kit push",
+    "seed": "pnpm with-env tsx src/seed.ts",
     "studio": "pnpm with-env drizzle-kit studio",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "dotenv -e ../../.env --"
   },
-  "dependencies": {
-    "@acme/id": "workspace:*",
-    "@t3-oss/env-core": "0.12.0",
-    "@vercel/postgres": "0.10.0",
-    "drizzle-orm": "0.38.4",
-    "drizzle-zod": "0.6.1",
-    "lodash-es": "4.17.21",
-    "zod": "3.24.1"
-  },
-  "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/lint-staged-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
-    "@acme/tsconfig": "workspace:*",
-    "@types/lodash-es": "4.17.12",
-    "dotenv-cli": "8.0.0",
-    "drizzle-kit": "0.30.2",
-    "drizzle-seed": "0.3.0",
-    "eslint": "9.19.0",
-    "prettier": "3.4.2",
-    "supabase": "2.6.8",
-    "tsx": "4.19.2",
-    "typescript": "5.7.3"
-  },
-  "prettier": "@acme/prettier-config"
+  "type": "module",
+  "version": "0.1.0"
 }

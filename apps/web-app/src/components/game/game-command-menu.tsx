@@ -1,10 +1,10 @@
-"use client";
+'use client'
 
-import { useCallback, useState } from "react";
-import { query } from "bitecs";
-import { useTheme } from "next-themes";
-import { toast } from "sonner";
-import { useServerAction } from "zsa-react";
+import { query } from 'bitecs'
+import { useTheme } from 'next-themes'
+import { useCallback, useState } from 'react'
+import { toast } from 'sonner'
+import { useServerAction } from 'zsa-react'
 
 import {
   Command,
@@ -14,18 +14,17 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@acme/ui/command";
-import { Icons } from "@acme/ui/icons";
-import { useSidebar } from "@acme/ui/sidebar";
+} from '@acme/ui/command'
+import { Icons } from '@acme/ui/icons'
+import { useSidebar } from '@acme/ui/sidebar'
 
-import type { MapMetadata } from "~/lib/ecs/types";
 import {
   listMapsAction,
   loadMapAction,
   saveMapAction,
-} from "~/components/game/actions";
-import { useHotkeys } from "~/hooks/use-hotkeys";
-import { Camera, CurrentPlayer, Debug } from "~/lib/ecs/components";
+} from '~/components/game/actions'
+import { useHotkeys } from '~/hooks/use-hotkeys'
+import { Camera, CurrentPlayer, Debug } from '~/lib/ecs/components'
 import {
   createCamera,
   createGround,
@@ -33,189 +32,188 @@ import {
   createNPC,
   createPlayer,
   createTriggerZone,
-} from "~/lib/ecs/entities";
-import { serializeWorld } from "~/lib/ecs/map-serialization";
-import { createGameWorld } from "~/lib/ecs/world";
-import { useDebugStore } from "~/providers/debug-provider";
-import { useGame } from "~/providers/game-provider";
+} from '~/lib/ecs/entities'
+import { serializeWorld } from '~/lib/ecs/map-serialization'
+import type { MapMetadata } from '~/lib/ecs/types'
+import { createGameWorld } from '~/lib/ecs/world'
+import { useDebugStore } from '~/providers/debug-provider'
+import { useGame } from '~/providers/game-provider'
 
 export function GameCommandMenu() {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [maps, setMaps] = useState<MapMetadata[]>([]);
-  const engine = useGame((state) => state.engine);
-  const currentMap = useGame((state) => state.currentMap);
-  const isDirty = useGame((state) => state.isDirty);
-  const setCurrentMap = useGame((state) => state.setCurrentMap);
-  const entities = useDebugStore((state) => state.metrics?.entities);
-  const isDebugging = useDebugStore((state) => state.isDebugging);
-  const isPaused = useDebugStore((state) => state.isPaused);
-  const systems = useDebugStore((state) => state.systems);
-  const toggleSystemPause = useDebugStore((state) => state.toggleSystemPause);
-  const setIsDebugging = useDebugStore((state) => state.setIsDebugging);
-  const selectedEntityId = useDebugStore((state) => state.selectedEntityId);
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [maps, setMaps] = useState<MapMetadata[]>([])
+  const engine = useGame((state) => state.engine)
+  const currentMap = useGame((state) => state.currentMap)
+  const _isDirty = useGame((state) => state.isDirty)
+  const setCurrentMap = useGame((state) => state.setCurrentMap)
+  const entities = useDebugStore((state) => state.metrics?.entities)
+  const isDebugging = useDebugStore((state) => state.isDebugging)
+  const isPaused = useDebugStore((state) => state.isPaused)
+  const systems = useDebugStore((state) => state.systems)
+  const toggleSystemPause = useDebugStore((state) => state.toggleSystemPause)
+  const setIsDebugging = useDebugStore((state) => state.setIsDebugging)
+  const selectedEntityId = useDebugStore((state) => state.selectedEntityId)
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
-  );
+  )
   const toggleSidebarSection = useDebugStore(
     (state) => state.toggleSidebarSection,
-  );
-  const sidebar = useSidebar();
-  const saveMap = useServerAction(saveMapAction);
-  const { setTheme, theme } = useTheme();
+  )
+  const sidebar = useSidebar()
+  const saveMap = useServerAction(saveMapAction)
+  const { setTheme, theme } = useTheme()
 
   // Filter entities and systems based on search
   const filteredEntities =
     search && entities
       ? entities.filter((entity) => {
-          const name = entity.name ?? `Entity ${entity.id}`;
-          return name.toLowerCase().includes(search.toLowerCase());
+          const name = entity.name ?? `Entity ${entity.id}`
+          return name.toLowerCase().includes(search.toLowerCase())
         })
-      : [];
+      : []
 
-  const systemNames = Object.entries(systems);
+  const systemNames = Object.entries(systems)
   const filteredSystems = search
     ? systemNames.filter(([name]) =>
         name.toLowerCase().includes(search.toLowerCase()),
       )
-    : [];
+    : []
 
   const filteredMaps = search
     ? maps.filter((map) =>
         map.name.toLowerCase().includes(search.toLowerCase()),
       )
-    : [];
+    : []
 
   const handleLoadMaps = useCallback(async () => {
     try {
-      const [data, error] = await listMapsAction({ filter: undefined });
+      const [data, error] = await listMapsAction({ filter: undefined })
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message)
       }
-      setMaps(data);
+      setMaps(data)
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to list maps",
-      );
+        error instanceof Error ? error.message : 'Failed to list maps',
+      )
     }
-  }, []);
+  }, [])
 
   const handleSaveMap = useCallback(async () => {
-    if (!engine?.world) return;
+    if (!engine?.world) return
 
     try {
-      const serializedWorld = serializeWorld(engine.world);
+      const serializedWorld = serializeWorld(engine.world)
       const [, error] = await saveMap.execute({
         metadata: {
-          author: currentMap?.author ?? "Anonymous",
+          author: currentMap?.author ?? 'Anonymous',
           createdAt: currentMap?.createdAt ?? new Date().toISOString(),
-          description: currentMap?.description ?? "",
+          description: currentMap?.description ?? '',
           dimensions: currentMap?.dimensions ?? { height: 1000, width: 1000 },
           isTemplate: currentMap?.isTemplate ?? false,
-          name: currentMap?.name ?? "untitled-map",
+          name: currentMap?.name ?? 'untitled-map',
           schemaVersion: 1,
           tags: currentMap?.tags ?? [],
           thumbnailUrl: currentMap?.thumbnailUrl,
           updatedAt: new Date().toISOString(),
-          version: currentMap?.version ?? "v1",
+          version: currentMap?.version ?? 'v1',
         },
         serializedWorld,
-      });
+      })
       if (error) {
-        throw new Error(error.message);
+        throw new Error(error.message)
       }
-      toast.success("Map saved successfully");
+      toast.success('Map saved successfully')
     } catch (error) {
-      console.error("Error saving map", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to save map",
-      );
+      console.error('Error saving map', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to save map')
     }
-  }, [currentMap, engine?.world, saveMap]);
+  }, [currentMap, engine?.world, saveMap])
 
   const handleLoadMap = useCallback(
     async (filePath: string) => {
-      if (!engine?.world) return;
+      if (!engine?.world) return
 
       try {
-        const [data, error] = await loadMapAction({ filePath });
+        const [data, error] = await loadMapAction({ filePath })
         if (error) {
-          throw new Error(error.message);
+          throw new Error(error.message)
         }
-        setCurrentMap(data.metadata);
-        return data;
+        setCurrentMap(data.metadata)
+        return data
       } catch (error) {
         toast.error(
-          error instanceof Error ? error.message : "Failed to load map",
-        );
+          error instanceof Error ? error.message : 'Failed to load map',
+        )
       }
     },
     [engine?.world, setCurrentMap],
-  );
+  )
 
   useHotkeys({
-    "Alt+1": () => {
-      toggleSidebarSection("performance");
+    'Alt+1': () => {
+      toggleSidebarSection('performance')
     },
-    "Alt+2": () => {
-      toggleSidebarSection("ecs");
+    'Alt+2': () => {
+      toggleSidebarSection('ecs')
     },
-    "Alt+3": () => {
-      toggleSidebarSection("systems");
+    'Alt+3': () => {
+      toggleSidebarSection('systems')
     },
-    "Alt+4": () => {
-      toggleSidebarSection("visualizations");
+    'Alt+4': () => {
+      toggleSidebarSection('visualizations')
     },
     Escape: () => {
-      setOpen(false);
+      setOpen(false)
     },
-    "Meta+b": () => {
-      sidebar.toggleSidebar();
+    'Meta+b': () => {
+      sidebar.toggleSidebar()
     },
-    "Meta+f": () => {
-      if (!engine) return;
+    'Meta+f': () => {
+      if (!engine) return
       // engine.toggleFullscreen();
-      setOpen(false);
+      setOpen(false)
     },
-    "Meta+k": () => {
-      setOpen((open) => !open);
+    'Meta+k': () => {
+      setOpen((open) => !open)
     },
-    "Meta+l": () => {
+    'Meta+l': () => {
       void handleLoadMaps()
         .then(() => {
-          setOpen(true);
+          setOpen(true)
         })
         .catch((error) => {
           toast.error(
-            error instanceof Error ? error.message : "Failed to list maps",
-          );
-        });
+            error instanceof Error ? error.message : 'Failed to list maps',
+          )
+        })
     },
-    "Meta+p": () => {
-      if (!engine) return;
-      engine.stop();
-      setOpen(false);
+    'Meta+p': () => {
+      if (!engine) return
+      engine.stop()
+      setOpen(false)
     },
-    "Meta+r": () => {
-      if (!engine) return;
-      const world = createGameWorld();
-      engine.reset(world);
-      setOpen(false);
+    'Meta+r': () => {
+      if (!engine) return
+      const world = createGameWorld()
+      engine.reset(world)
+      setOpen(false)
     },
-    "Meta+s": () => {
+    'Meta+s': () => {
       void handleSaveMap().then(() => {
-        setOpen(false);
-      });
+        setOpen(false)
+      })
     },
-    "Meta+t": () => {
-      setTheme(theme === "light" ? "dark" : "light");
-      setOpen(false);
+    'Meta+t': () => {
+      setTheme(theme === 'light' ? 'dark' : 'light')
+      setOpen(false)
     },
-  });
+  })
 
   const commands = [
     {
-      group: "Game",
+      group: 'Game',
       items: [
         {
           icon: isPaused ? (
@@ -223,14 +221,14 @@ export function GameCommandMenu() {
           ) : (
             <Icons.CircleStop size="sm" />
           ),
-          id: "toggle-pause",
-          label: isPaused ? "Resume Game" : "Pause Game",
+          id: 'toggle-pause',
+          label: isPaused ? 'Resume Game' : 'Pause Game',
           onSelect: () => {
-            if (!engine) return;
-            engine.togglePause();
-            setOpen(false);
+            if (!engine) return
+            engine.togglePause()
+            setOpen(false)
           },
-          shortcut: ["p"],
+          shortcut: ['p'],
         },
         {
           icon: saveMap.isPending ? (
@@ -238,387 +236,387 @@ export function GameCommandMenu() {
           ) : (
             <Icons.Download size="sm" />
           ),
-          id: "save-map",
-          label: "Save Map",
+          id: 'save-map',
+          label: 'Save Map',
           onSelect: () => {
             void handleSaveMap().then(() => {
               // setOpen(false);
-            });
+            })
           },
-          shortcut: ["⌘", "s"],
+          shortcut: ['⌘', 's'],
         },
         {
           icon: <Icons.Upload size="sm" />,
-          id: "load-map",
-          label: "Load Map",
+          id: 'load-map',
+          label: 'Load Map',
           onSelect: () => {
             void handleLoadMaps().catch((error) => {
               toast.error(
-                error instanceof Error ? error.message : "Failed to list maps",
-              );
-            });
+                error instanceof Error ? error.message : 'Failed to list maps',
+              )
+            })
           },
-          shortcut: ["⌘", "l"],
+          shortcut: ['⌘', 'l'],
         },
         {
           icon: <Icons.Eye size="sm" />,
-          id: "toggle-camera-mode",
-          label: "Toggle Camera Mode (Free/Target)",
+          id: 'toggle-camera-mode',
+          label: 'Toggle Camera Mode (Free/Target)',
           onSelect: () => {
-            if (!engine?.world) return;
-            const cameraEntities = query(engine.world, [Camera]);
-            const cameraEid = cameraEntities[0];
-            if (!cameraEid) return;
+            if (!engine?.world) return
+            const cameraEntities = query(engine.world, [Camera])
+            const cameraEid = cameraEntities[0]
+            if (!cameraEid) return
 
             // Toggle between free camera and target mode
-            const currentTarget = Camera.target[cameraEid];
+            const currentTarget = Camera.target[cameraEid]
             if (currentTarget) {
-              Camera.target[cameraEid] = 0; // Remove target to enable free camera
+              Camera.target[cameraEid] = 0 // Remove target to enable free camera
             } else {
               // Find player entity to target
-              const playerEntities = query(engine.world, [CurrentPlayer]);
-              const playerEid = playerEntities[0];
+              const playerEntities = query(engine.world, [CurrentPlayer])
+              const playerEid = playerEntities[0]
               if (playerEid) {
-                Camera.target[cameraEid] = playerEid;
+                Camera.target[cameraEid] = playerEid
               }
             }
-            setOpen(false);
+            setOpen(false)
           },
-          shortcut: ["c"],
+          shortcut: ['c'],
         },
         {
           icon: <Icons.Settings size="sm" />,
-          id: "toggle-debug-mode",
-          label: "Toggle Debug Mode",
+          id: 'toggle-debug-mode',
+          label: 'Toggle Debug Mode',
           onSelect: () => {
-            setIsDebugging(!isDebugging);
+            setIsDebugging(!isDebugging)
 
-            if (!engine?.world) return;
-            const debugEntities = query(engine.world, [Debug]);
-            const debugEid = debugEntities[0];
+            if (!engine?.world) return
+            const debugEntities = query(engine.world, [Debug])
+            const debugEid = debugEntities[0]
             if (debugEid) {
-              Debug.isPaused[debugEid] = Debug.isPaused[debugEid] ? 0 : 1;
+              Debug.isPaused[debugEid] = Debug.isPaused[debugEid] ? 0 : 1
             }
-            setOpen(false);
+            setOpen(false)
           },
-          shortcut: ["d"],
+          shortcut: ['d'],
         },
         {
           icon: <Icons.ListPlus size="sm" />,
-          id: "toggle-wireframes",
-          label: "Toggle Wireframes",
+          id: 'toggle-wireframes',
+          label: 'Toggle Wireframes',
           onSelect: () => {
-            if (!engine?.world) return;
-            const debugEntities = query(engine.world, [Debug]);
-            const debugEid = debugEntities[0];
+            if (!engine?.world) return
+            const debugEntities = query(engine.world, [Debug])
+            const debugEid = debugEntities[0]
             if (debugEid) {
               Debug.showBoundingBox[debugEid] = Debug.showBoundingBox[debugEid]
                 ? 0
-                : 1;
+                : 1
             }
-            setOpen(false);
+            setOpen(false)
           },
-          shortcut: ["w"],
+          shortcut: ['w'],
         },
         {
           icon: <Icons.CircleStop size="sm" />,
-          id: "deselect-entity",
-          label: "Deselect Entity",
+          id: 'deselect-entity',
+          label: 'Deselect Entity',
           onSelect: () => {
-            setSelectedEntityId(null);
-            setOpen(false);
+            setSelectedEntityId(null)
+            setOpen(false)
           },
-          shortcut: ["Esc"],
+          shortcut: ['Esc'],
         },
         {
           icon: <Icons.ArrowLeft size="sm" />,
-          id: "reset-game",
-          label: "Reset Game",
+          id: 'reset-game',
+          label: 'Reset Game',
           onSelect: () => {
-            if (!engine) return;
+            if (!engine) return
             // TODO: Implement reset in GameEngine
-            const world = createGameWorld();
-            engine.reset(world);
-            setOpen(false);
+            const world = createGameWorld()
+            engine.reset(world)
+            setOpen(false)
           },
-          shortcut: ["r"],
+          shortcut: ['r'],
         },
       ],
     },
     {
-      group: "View",
+      group: 'View',
       items: [
         {
           icon: <Icons.Maximize size="sm" />,
-          id: "toggle-fullscreen",
-          label: "Toggle Fullscreen",
+          id: 'toggle-fullscreen',
+          label: 'Toggle Fullscreen',
           onSelect: async () => {
             try {
               await (document.fullscreenElement
                 ? document.exitFullscreen()
-                : document.documentElement.requestFullscreen());
+                : document.documentElement.requestFullscreen())
             } catch (error) {
-              console.error("Error toggling fullscreen:", error);
+              console.error('Error toggling fullscreen:', error)
             } finally {
-              setOpen(false);
+              setOpen(false)
             }
           },
-          shortcut: ["f"],
+          shortcut: ['f'],
         },
         {
           icon: <Icons.ArrowBigUp size="sm" />,
-          id: "toggle-debug-panel",
-          label: "Show / Hide Debug Panel",
+          id: 'toggle-debug-panel',
+          label: 'Show / Hide Debug Panel',
           onSelect: () => {
-            sidebar.toggleSidebar();
-            setOpen(false);
+            sidebar.toggleSidebar()
+            setOpen(false)
           },
-          shortcut: ["⌘", "b"],
+          shortcut: ['⌘', 'b'],
         },
         {
           icon: <Icons.SunMedium size="sm" />,
-          id: "toggle-theme",
-          label: "Toggle Theme",
+          id: 'toggle-theme',
+          label: 'Toggle Theme',
           onSelect: () => {
-            setTheme(theme === "light" ? "dark" : "light");
-            setOpen(false);
+            setTheme(theme === 'light' ? 'dark' : 'light')
+            setOpen(false)
           },
-          shortcut: ["⌘", "t"],
+          shortcut: ['⌘', 't'],
         },
         {
           icon: <Icons.BarChart2 size="sm" />,
-          id: "toggle-performance-section",
-          label: "Toggle Performance Section",
+          id: 'toggle-performance-section',
+          label: 'Toggle Performance Section',
           onSelect: () => {
-            toggleSidebarSection("performance");
-            setOpen(false);
+            toggleSidebarSection('performance')
+            setOpen(false)
           },
-          shortcut: ["⌘", "1"],
+          shortcut: ['⌘', '1'],
         },
         {
           icon: <Icons.CircleDot size="sm" />,
-          id: "toggle-ecs-section",
-          label: "Toggle ECS Section",
+          id: 'toggle-ecs-section',
+          label: 'Toggle ECS Section',
           onSelect: () => {
-            toggleSidebarSection("ecs");
-            setOpen(false);
+            toggleSidebarSection('ecs')
+            setOpen(false)
           },
-          shortcut: ["⌘", "2"],
+          shortcut: ['⌘', '2'],
         },
         {
           icon: <Icons.Settings size="sm" />,
-          id: "toggle-systems-section",
-          label: "Toggle Systems Section",
+          id: 'toggle-systems-section',
+          label: 'Toggle Systems Section',
           onSelect: () => {
-            toggleSidebarSection("systems");
-            setOpen(false);
+            toggleSidebarSection('systems')
+            setOpen(false)
           },
-          shortcut: ["⌘", "3"],
+          shortcut: ['⌘', '3'],
         },
         {
           icon: <Icons.Eye size="sm" />,
-          id: "toggle-visualizations-section",
-          label: "Toggle Visualizations Section",
+          id: 'toggle-visualizations-section',
+          label: 'Toggle Visualizations Section',
           onSelect: () => {
-            toggleSidebarSection("visualizations");
-            setOpen(false);
+            toggleSidebarSection('visualizations')
+            setOpen(false)
           },
-          shortcut: ["⌘", "4"],
+          shortcut: ['⌘', '4'],
         },
       ],
     },
     {
-      group: "Edit",
+      group: 'Edit',
       items: [
         {
           icon: <Icons.ListPlus size="sm" />,
-          id: "create-prefab",
-          label: "Create Prefab from Selection",
+          id: 'create-prefab',
+          label: 'Create Prefab from Selection',
           onSelect: () => {
-            if (!engine?.world) return;
+            if (!engine?.world) return
             if (selectedEntityId) {
               // TODO: Implement prefab creation
-              console.log("Creating prefab from entity:", selectedEntityId);
+              console.log('Creating prefab from entity:', selectedEntityId)
             }
-            setOpen(false);
+            setOpen(false)
           },
-          shortcut: ["⌘", "s"],
+          shortcut: ['⌘', 's'],
         },
         {
           icon: <Icons.MessageSquareText size="sm" />,
-          id: "add-comment",
-          label: "Add Comment",
+          id: 'add-comment',
+          label: 'Add Comment',
           onSelect: () => {
-            if (!engine?.world) return;
+            if (!engine?.world) return
             if (selectedEntityId) {
               // TODO: Implement comment system
-              console.log("Adding comment to entity:", selectedEntityId);
+              console.log('Adding comment to entity:', selectedEntityId)
             }
-            setOpen(false);
+            setOpen(false)
           },
-          shortcut: ["⌘", "/"],
+          shortcut: ['⌘', '/'],
         },
         {
           icon: <Icons.ArrowLeft size="sm" />,
-          id: "undo",
-          label: "Undo",
+          id: 'undo',
+          label: 'Undo',
           onSelect: () => {
-            if (!engine?.world) return;
+            if (!engine?.world) return
             // TODO: Implement undo system
-            console.log("Undo last action");
-            setOpen(false);
+            console.log('Undo last action')
+            setOpen(false)
           },
-          shortcut: ["⌘", "z"],
+          shortcut: ['⌘', 'z'],
         },
         {
           icon: <Icons.ArrowRight size="sm" />,
-          id: "redo",
-          label: "Redo",
+          id: 'redo',
+          label: 'Redo',
           onSelect: () => {
-            if (!engine?.world) return;
+            if (!engine?.world) return
             // TODO: Implement redo system
-            console.log("Redo last action");
-            setOpen(false);
+            console.log('Redo last action')
+            setOpen(false)
           },
-          shortcut: ["⌘", "⇧", "z"],
+          shortcut: ['⌘', '⇧', 'z'],
         },
         {
           icon: <Icons.Sparkles size="sm" />,
-          id: "ask-ai",
-          label: "Ask AI Assistant",
+          id: 'ask-ai',
+          label: 'Ask AI Assistant',
           onSelect: () => {
-            if (!engine?.world) return;
+            if (!engine?.world) return
             // TODO: Implement AI assistant integration
-            console.log("Opening AI assistant");
-            setOpen(false);
+            console.log('Opening AI assistant')
+            setOpen(false)
           },
-          shortcut: ["⌘", "k"],
+          shortcut: ['⌘', 'k'],
         },
       ],
     },
     {
-      group: "Create Entity",
+      group: 'Create Entity',
       items: [
         {
           icon: <Icons.User size="sm" />,
-          id: "create-player",
-          label: "Create Player",
+          id: 'create-player',
+          label: 'Create Player',
           onSelect: () => {
-            if (!engine?.world) return;
-            const canvas = document.querySelector("canvas");
-            if (!canvas) return;
-            const x = canvas.width / 2;
-            const y = canvas.height / 2;
-            const eid = createPlayer(engine.world, { x, y });
-            setSelectedEntityId(eid);
-            setOpen(false);
+            if (!engine?.world) return
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
+            const x = canvas.width / 2
+            const y = canvas.height / 2
+            const eid = createPlayer(engine.world, { x, y })
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["p"],
+          shortcut: ['p'],
         },
         {
           icon: <Icons.UsersRound size="sm" />,
-          id: "create-npc",
-          label: "Create NPC",
+          id: 'create-npc',
+          label: 'Create NPC',
           onSelect: () => {
-            if (!engine?.world) return;
-            const canvas = document.querySelector("canvas");
-            if (!canvas) return;
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * canvas.height;
-            const eid = createNPC(engine.world, { x, y });
-            setSelectedEntityId(eid);
-            setOpen(false);
+            if (!engine?.world) return
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
+            const x = Math.random() * canvas.width
+            const y = Math.random() * canvas.height
+            const eid = createNPC(engine.world, { x, y })
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["n"],
+          shortcut: ['n'],
         },
         {
           icon: <Icons.CircleStop size="sm" />,
-          id: "create-hostile-npc",
-          label: "Create Hostile NPC",
+          id: 'create-hostile-npc',
+          label: 'Create Hostile NPC',
           onSelect: () => {
-            if (!engine?.world) return;
-            const canvas = document.querySelector("canvas");
-            if (!canvas) return;
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * canvas.height;
-            const eid = createHostileNPC(engine.world, { x, y });
-            setSelectedEntityId(eid);
-            setOpen(false);
+            if (!engine?.world) return
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
+            const x = Math.random() * canvas.width
+            const y = Math.random() * canvas.height
+            const eid = createHostileNPC(engine.world, { x, y })
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["h"],
+          shortcut: ['h'],
         },
         {
           icon: <Icons.Eye size="sm" />,
-          id: "create-camera",
-          label: "Create Camera",
+          id: 'create-camera',
+          label: 'Create Camera',
           onSelect: () => {
-            if (!engine?.world) return;
-            const eid = createCamera(engine.world, {});
-            setSelectedEntityId(eid);
-            setOpen(false);
+            if (!engine?.world) return
+            const eid = createCamera(engine.world, {})
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["c"],
+          shortcut: ['c'],
         },
         {
           icon: <Icons.SquarePen size="sm" />,
-          id: "create-ground",
-          label: "Create Ground",
+          id: 'create-ground',
+          label: 'Create Ground',
           onSelect: () => {
-            if (!engine?.world) return;
-            const canvas = document.querySelector("canvas");
-            if (!canvas) return;
+            if (!engine?.world) return
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
             const eid = createGround(engine.world, {
               height: 20,
               width: canvas.width,
               x: canvas.width / 2,
               y: canvas.height - 10,
-            });
-            setSelectedEntityId(eid);
-            setOpen(false);
+            })
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["g"],
+          shortcut: ['g'],
         },
         {
           icon: <Icons.CircleDot size="sm" />,
-          id: "create-trigger-zone",
-          label: "Create Trigger Zone",
+          id: 'create-trigger-zone',
+          label: 'Create Trigger Zone',
           onSelect: () => {
-            if (!engine?.world) return;
-            const canvas = document.querySelector("canvas");
-            if (!canvas) return;
+            if (!engine?.world) return
+            const canvas = document.querySelector('canvas')
+            if (!canvas) return
             const eid = createTriggerZone(engine.world, {
               actionId: Date.now(),
               cooldown: 0,
               height: 100,
               isRepeatable: true,
-              type: "battle",
+              type: 'battle',
               width: 100,
               x: canvas.width / 2,
               y: canvas.height / 2,
-            });
-            setSelectedEntityId(eid);
-            setOpen(false);
+            })
+            setSelectedEntityId(eid)
+            setOpen(false)
           },
-          shortcut: ["t"],
+          shortcut: ['t'],
         },
       ],
     },
     {
-      group: "Maps",
+      group: 'Maps',
       items: filteredMaps.map((map) => ({
         icon: <Icons.ListFilter size="sm" />,
         id: `load-map-${map.name}`,
         label: map.name,
         onSelect: () => {
           void handleLoadMap(
-            `${map.name}-${map.version}-${map.updatedAt.replaceAll(/[:.]/g, "")}.map.json`,
+            `${map.name}-${map.version}-${map.updatedAt.replaceAll(/[:.]/g, '')}.map.json`,
           ).then(() => {
-            setOpen(false);
-          });
+            setOpen(false)
+          })
         },
       })),
     },
-  ];
+  ]
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
@@ -657,8 +655,8 @@ export function GameCommandMenu() {
                 <CommandItem
                   key={name}
                   onSelect={() => {
-                    toggleSystemPause(name);
-                    setOpen(false);
+                    toggleSystemPause(name)
+                    setOpen(false)
                   }}
                   className="flex items-center gap-2"
                 >
@@ -682,8 +680,8 @@ export function GameCommandMenu() {
                 <div key={entity.id}>
                   <CommandItem
                     onSelect={() => {
-                      setSelectedEntityId(entity.id);
-                      setOpen(false);
+                      setSelectedEntityId(entity.id)
+                      setOpen(false)
                     }}
                     className="flex items-center gap-2"
                   >
@@ -695,12 +693,12 @@ export function GameCommandMenu() {
                   </CommandItem>
                   <CommandItem
                     onSelect={() => {
-                      if (!engine?.world) return;
-                      const cameraEntities = query(engine.world, [Camera]);
-                      const cameraEid = cameraEntities[0];
-                      if (!cameraEid) return;
-                      Camera.target[cameraEid] = entity.id;
-                      setOpen(false);
+                      if (!engine?.world) return
+                      const cameraEntities = query(engine.world, [Camera])
+                      const cameraEid = cameraEntities[0]
+                      if (!cameraEid) return
+                      Camera.target[cameraEid] = entity.id
+                      setOpen(false)
                     }}
                   >
                     <Icons.ArrowRight size="sm" />
@@ -750,5 +748,5 @@ export function GameCommandMenu() {
         </CommandList>
       </Command>
     </CommandDialog>
-  );
+  )
 }

@@ -1,32 +1,32 @@
-import { hasComponent, query, removeComponent, removeEntity } from "bitecs";
+import { hasComponent, query, removeComponent, removeEntity } from 'bitecs'
 
-import type { World } from "../../types";
 import {
   CollisionManifold,
   Polygon,
   RigidBody,
   Transform,
   Velocity,
-} from "../../components";
-import { createCollisionManifold } from "../../entities/collision-manifold";
+} from '../../components'
+import { createCollisionManifold } from '../../entities/collision-manifold'
+import type { World } from '../../types'
 
 /**
  * Gets edge normal (perpendicular vector) for SAT collision detection
  */
 function getEdgeNormal(p1: number[], p2: number[]): number[] {
-  const dx = (p2[0] ?? 0) - (p1[0] ?? 0);
-  const dy = (p2[1] ?? 0) - (p1[1] ?? 0);
-  return [dy, -dx]; // perpendicular
+  const dx = (p2[0] ?? 0) - (p1[0] ?? 0)
+  const dy = (p2[1] ?? 0) - (p1[1] ?? 0)
+  return [dy, -dx] // perpendicular
 }
 
 /**
  * Normalizes a vector in-place
  */
 function normalize(vec: number[]): void {
-  const length = Math.hypot(vec[0] ?? 0, vec[1] ?? 0);
+  const length = Math.hypot(vec[0] ?? 0, vec[1] ?? 0)
   if (length > 0.000_001) {
-    vec[0] = (vec[0] ?? 0) / length;
-    vec[1] = (vec[1] ?? 0) / length;
+    vec[0] = (vec[0] ?? 0) / length
+    vec[1] = (vec[1] ?? 0) / length
   }
 }
 
@@ -37,29 +37,29 @@ function projectVertices(
   vertices: number[][],
   axis: number[],
 ): [number, number] {
-  let min = Number.POSITIVE_INFINITY;
-  let max = Number.NEGATIVE_INFINITY;
+  let min = Number.POSITIVE_INFINITY
+  let max = Number.NEGATIVE_INFINITY
   for (const [vx, vy] of vertices) {
-    const axisX = axis[0] ?? 0;
-    const axisY = axis[1] ?? 0;
-    const projection = (vx ?? 0) * axisX + (vy ?? 0) * axisY;
-    if (projection < min) min = projection;
-    if (projection > max) max = projection;
+    const axisX = axis[0] ?? 0
+    const axisY = axis[1] ?? 0
+    const projection = (vx ?? 0) * axisX + (vy ?? 0) * axisY
+    if (projection < min) min = projection
+    if (projection > max) max = projection
   }
-  return [min, max];
+  return [min, max]
 }
 
 /**
  * Calculates centroid of a polygon
  */
 function centroid(verts: number[][]): [number, number] {
-  let sumX = 0;
-  let sumY = 0;
+  let sumX = 0
+  let sumY = 0
   for (const [x, y] of verts) {
-    sumX += x ?? 0;
-    sumY += y ?? 0;
+    sumX += x ?? 0
+    sumY += y ?? 0
   }
-  return [sumX / verts.length, sumY / verts.length];
+  return [sumX / verts.length, sumY / verts.length]
 }
 
 /**
@@ -67,27 +67,27 @@ function centroid(verts: number[][]): [number, number] {
  * Includes rotation from RigidBody if present.
  */
 function getWorldVertices(eid: number): number[][] {
-  const x0 = Transform.x[eid] ?? 0;
-  const y0 = Transform.y[eid] ?? 0;
-  const vertCount = Polygon.vertexCount[eid] ?? 0;
-  const xs = Polygon.verticesX[eid];
-  const ys = Polygon.verticesY[eid];
-  const rotation = Polygon.rotation[eid] ?? 0;
+  const x0 = Transform.x[eid] ?? 0
+  const y0 = Transform.y[eid] ?? 0
+  const vertCount = Polygon.vertexCount[eid] ?? 0
+  const xs = Polygon.verticesX[eid]
+  const ys = Polygon.verticesY[eid]
+  const rotation = Polygon.rotation[eid] ?? 0
 
-  const result: number[][] = [];
-  const cos = Math.cos(rotation);
-  const sin = Math.sin(rotation);
+  const result: number[][] = []
+  const cos = Math.cos(rotation)
+  const sin = Math.sin(rotation)
 
   for (let index = 0; index < vertCount; index++) {
-    const localX = xs?.[index] ?? 0;
-    const localY = ys?.[index] ?? 0;
+    const localX = xs?.[index] ?? 0
+    const localY = ys?.[index] ?? 0
 
     // Apply rotation and translation
-    const rotX = localX * cos - localY * sin;
-    const rotY = localX * sin + localY * cos;
-    result.push([x0 + rotX, y0 + rotY]);
+    const rotX = localX * cos - localY * sin
+    const rotY = localX * sin + localY * cos
+    result.push([x0 + rotX, y0 + rotY])
   }
-  return result;
+  return result
 }
 
 /**
@@ -98,175 +98,171 @@ function satCollision(
   vertsB: number[][],
 ): { collided: boolean; overlap: number; overlapAxis: number[] } {
   // Collect edges from both polygons
-  const edges: [number[], number[]][] = [];
+  const edges: [number[], number[]][] = []
 
   for (let index = 0; index < vertsA.length; index++) {
-    const p1 = vertsA[index];
-    const p2 = vertsA[(index + 1) % vertsA.length];
+    const p1 = vertsA[index]
+    const p2 = vertsA[(index + 1) % vertsA.length]
     if (p1 && p2) {
-      edges.push([p1, p2]);
+      edges.push([p1, p2])
     }
   }
   for (let index = 0; index < vertsB.length; index++) {
-    const p1 = vertsB[index];
-    const p2 = vertsB[(index + 1) % vertsB.length];
+    const p1 = vertsB[index]
+    const p2 = vertsB[(index + 1) % vertsB.length]
     if (p1 && p2) {
-      edges.push([p1, p2]);
+      edges.push([p1, p2])
     }
   }
 
-  let minOverlap = Number.POSITIVE_INFINITY;
-  let overlapAxis: number[] = [0, 0];
+  let minOverlap = Number.POSITIVE_INFINITY
+  let overlapAxis: number[] = [0, 0]
 
   for (const [p1, p2] of edges) {
-    const axis = getEdgeNormal(p1, p2);
-    normalize(axis);
+    const axis = getEdgeNormal(p1, p2)
+    normalize(axis)
 
-    const [minA, maxA] = projectVertices(vertsA, axis);
-    const [minB, maxB] = projectVertices(vertsB, axis);
+    const [minA, maxA] = projectVertices(vertsA, axis)
+    const [minB, maxB] = projectVertices(vertsB, axis)
 
     // If there's a gap, no collision
     if (maxA < minB || maxB < minA) {
-      return { collided: false, overlap: 0, overlapAxis: [0, 0] };
+      return { collided: false, overlap: 0, overlapAxis: [0, 0] }
     }
 
     // Check overlap distance on this axis
-    const overlapDistribution = Math.min(maxA, maxB) - Math.max(minA, minB);
+    const overlapDistribution = Math.min(maxA, maxB) - Math.max(minA, minB)
     if (overlapDistribution < minOverlap) {
-      minOverlap = overlapDistribution;
-      overlapAxis = [...axis];
+      minOverlap = overlapDistribution
+      overlapAxis = [...axis]
     }
   }
 
-  return { collided: true, overlap: minOverlap, overlapAxis };
+  return { collided: true, overlap: minOverlap, overlapAxis }
 }
 
 /**
  * Collision detection and resolution using SAT
  */
 export function collisionSystem(world: World) {
-  const entities = query(world, [Transform, Polygon]);
+  const entities = query(world, [Transform, Polygon])
 
   // Clear old collision manifolds and their entities
-  const manifolds = query(world, [CollisionManifold]);
+  const manifolds = query(world, [CollisionManifold])
   for (const eid of manifolds) {
-    removeComponent(world, eid, CollisionManifold);
-    removeEntity(world, eid);
+    removeComponent(world, eid, CollisionManifold)
+    removeEntity(world, eid)
   }
 
   // O(n^2) naive collision check
   for (const entityA of entities) {
-    const hasRbA = hasComponent(world, entityA, RigidBody);
-    const vertsA = getWorldVertices(entityA);
+    const hasRbA = hasComponent(world, entityA, RigidBody)
+    const vertsA = getWorldVertices(entityA)
 
-    let isStaticA = false;
-    let restitutionA = 0;
-    let vxA = 0;
-    let vyA = 0;
+    let isStaticA = false
+    let restitutionA = 0
+    let vxA = 0
+    let vyA = 0
     if (hasRbA) {
-      isStaticA = RigidBody.isStatic[entityA] === 1;
-      restitutionA = RigidBody.restitution[entityA] ?? 0;
-      vxA = Velocity.x[entityA] ?? 0;
-      vyA = Velocity.y[entityA] ?? 0;
+      isStaticA = RigidBody.isStatic[entityA] === 1
+      restitutionA = RigidBody.restitution[entityA] ?? 0
+      vxA = Velocity.x[entityA] ?? 0
+      vyA = Velocity.y[entityA] ?? 0
     }
 
     for (const entityB of entities) {
-      if (entityA === entityB) continue;
+      if (entityA === entityB) continue
 
-      const hasRbB = hasComponent(world, entityB, RigidBody);
-      const vertsB = getWorldVertices(entityB);
+      const hasRbB = hasComponent(world, entityB, RigidBody)
+      const vertsB = getWorldVertices(entityB)
 
-      let isStaticB = false;
-      let restitutionB = 0;
-      let vxB = 0;
-      let vyB = 0;
+      let isStaticB = false
+      let restitutionB = 0
+      let vxB = 0
+      let vyB = 0
       if (hasRbB) {
-        isStaticB = RigidBody.isStatic[entityB] === 1;
-        restitutionB = RigidBody.restitution[entityB] ?? 0;
-        vxB = Velocity.x[entityB] ?? 0;
-        vyB = Velocity.y[entityB] ?? 0;
+        isStaticB = RigidBody.isStatic[entityB] === 1
+        restitutionB = RigidBody.restitution[entityB] ?? 0
+        vxB = Velocity.x[entityB] ?? 0
+        vyB = Velocity.y[entityB] ?? 0
       }
 
       // Both static => no collision resolution needed
-      if (isStaticA && isStaticB) continue;
+      if (isStaticA && isStaticB) continue
 
       // SAT collision test
-      const { collided, overlap, overlapAxis } = satCollision(vertsA, vertsB);
-      if (!collided) continue;
+      const { collided, overlap, overlapAxis } = satCollision(vertsA, vertsB)
+      if (!collided) continue
 
       // Create collision manifold
-      const manifoldEid = createCollisionManifold(world);
+      const manifoldEid = createCollisionManifold(world)
       // Determine push-out direction from A->B
-      const centerA = centroid(vertsA);
-      const centerB = centroid(vertsB);
-      const axisDirection = [centerB[0] - centerA[0], centerB[1] - centerA[1]];
+      const centerA = centroid(vertsA)
+      const centerB = centroid(vertsB)
+      const axisDirection = [centerB[0] - centerA[0], centerB[1] - centerA[1]]
       const dot =
         (axisDirection[0] ?? 0) * (overlapAxis[0] ?? 0) +
-        (axisDirection[1] ?? 0) * (overlapAxis[1] ?? 0);
+        (axisDirection[1] ?? 0) * (overlapAxis[1] ?? 0)
       if (dot < 0) {
-        overlapAxis[0] = -(overlapAxis[0] ?? 0);
-        overlapAxis[1] = -(overlapAxis[1] ?? 0);
+        overlapAxis[0] = -(overlapAxis[0] ?? 0)
+        overlapAxis[1] = -(overlapAxis[1] ?? 0)
       }
-      normalize(overlapAxis);
+      normalize(overlapAxis)
 
       // Store collision data in manifold
-      CollisionManifold.entity1[manifoldEid] = entityA;
-      CollisionManifold.entity2[manifoldEid] = entityB;
-      CollisionManifold.normalX[manifoldEid] = overlapAxis[0] ?? 0;
-      CollisionManifold.normalY[manifoldEid] = overlapAxis[1] ?? 0;
-      CollisionManifold.penetrationDepth[manifoldEid] = overlap;
+      CollisionManifold.entity1[manifoldEid] = entityA
+      CollisionManifold.entity2[manifoldEid] = entityB
+      CollisionManifold.normalX[manifoldEid] = overlapAxis[0] ?? 0
+      CollisionManifold.normalY[manifoldEid] = overlapAxis[1] ?? 0
+      CollisionManifold.penetrationDepth[manifoldEid] = overlap
 
       // Calculate contact point (middle of overlap)
-      const contactX = (centerA[0] + centerB[0]) / 2;
-      const contactY = (centerA[1] + centerB[1]) / 2;
-      CollisionManifold.contactPointX[manifoldEid] = contactX;
-      CollisionManifold.contactPointY[manifoldEid] = contactY;
+      const contactX = (centerA[0] + centerB[0]) / 2
+      const contactY = (centerA[1] + centerB[1]) / 2
+      CollisionManifold.contactPointX[manifoldEid] = contactX
+      CollisionManifold.contactPointY[manifoldEid] = contactY
 
       // Distribute overlap
-      const moveDistribution = overlap / (hasRbA && hasRbB ? 2 : 1);
+      const moveDistribution = overlap / (hasRbA && hasRbB ? 2 : 1)
 
       // Push out A
       if (hasRbA && !isStaticA) {
         Transform.x[entityA] =
-          (Transform.x[entityA] ?? 0) -
-          (overlapAxis[0] ?? 0) * moveDistribution;
+          (Transform.x[entityA] ?? 0) - (overlapAxis[0] ?? 0) * moveDistribution
         Transform.y[entityA] =
-          (Transform.y[entityA] ?? 0) -
-          (overlapAxis[1] ?? 0) * moveDistribution;
+          (Transform.y[entityA] ?? 0) - (overlapAxis[1] ?? 0) * moveDistribution
       }
       // Push out B
       if (hasRbB && !isStaticB) {
         Transform.x[entityB] =
-          (Transform.x[entityB] ?? 0) +
-          (overlapAxis[0] ?? 0) * moveDistribution;
+          (Transform.x[entityB] ?? 0) + (overlapAxis[0] ?? 0) * moveDistribution
         Transform.y[entityB] =
-          (Transform.y[entityB] ?? 0) +
-          (overlapAxis[1] ?? 0) * moveDistribution;
+          (Transform.y[entityB] ?? 0) + (overlapAxis[1] ?? 0) * moveDistribution
       }
 
       // Simple linear bounce
       if (hasRbA && hasRbB) {
-        const combinedRest = (restitutionA + restitutionB) * 0.5;
-        const relativeVelX = vxB - vxA;
-        const relativeVelY = vyB - vyA;
+        const combinedRest = (restitutionA + restitutionB) * 0.5
+        const relativeVelX = vxB - vxA
+        const relativeVelY = vyB - vyA
         const relativeSpeed =
           relativeVelX * (overlapAxis[0] ?? 0) +
-          relativeVelY * (overlapAxis[1] ?? 0);
+          relativeVelY * (overlapAxis[1] ?? 0)
 
         // Only respond if objects moving toward each other
         if (relativeSpeed < 0) {
-          const impulse = -(1 + combinedRest) * relativeSpeed * 0.5;
+          const impulse = -(1 + combinedRest) * relativeSpeed * 0.5
           if (!isStaticA) {
             Velocity.x[entityA] =
-              (Velocity.x[entityA] ?? 0) - impulse * (overlapAxis[0] ?? 0);
+              (Velocity.x[entityA] ?? 0) - impulse * (overlapAxis[0] ?? 0)
             Velocity.y[entityA] =
-              (Velocity.y[entityA] ?? 0) - impulse * (overlapAxis[1] ?? 0);
+              (Velocity.y[entityA] ?? 0) - impulse * (overlapAxis[1] ?? 0)
           }
           if (!isStaticB) {
             Velocity.x[entityB] =
-              (Velocity.x[entityB] ?? 0) + impulse * (overlapAxis[0] ?? 0);
+              (Velocity.x[entityB] ?? 0) + impulse * (overlapAxis[0] ?? 0)
             Velocity.y[entityB] =
-              (Velocity.y[entityB] ?? 0) + impulse * (overlapAxis[1] ?? 0);
+              (Velocity.y[entityB] ?? 0) + impulse * (overlapAxis[1] ?? 0)
           }
         }
       }

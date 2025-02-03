@@ -1,33 +1,33 @@
-"use client";
+'use client'
 
-import type { PropsWithChildren } from "react";
+import type { PropsWithChildren } from 'react'
 
-import { Button } from "@acme/ui/button";
-import { cn } from "@acme/ui/lib/utils";
-import { Separator } from "@acme/ui/separator";
-import { Switch } from "@acme/ui/switch";
+import { Button } from '@acme/ui/button'
+import { cn } from '@acme/ui/lib/utils'
+import { Separator } from '@acme/ui/separator'
+import { Switch } from '@acme/ui/switch'
 
 interface FloatingToolbarProps extends React.HTMLAttributes<HTMLDivElement> {
-  className?: string;
+  className?: string
 }
 
 export function FloatingToolbarButton({
   icon,
-  variant = "ghost",
+  variant = 'ghost',
   ...props
 }: React.HTMLAttributes<HTMLButtonElement> & {
-  icon: React.ReactNode;
-  variant?: React.ComponentProps<typeof Button>["variant"];
+  icon: React.ReactNode
+  variant?: React.ComponentProps<typeof Button>['variant']
 }) {
   return (
     <Button variant={variant} size="icon" className="rounded-xl" {...props}>
       {icon}
     </Button>
-  );
+  )
 }
 
 export function FloatingToolbarSeparator() {
-  return <Separator orientation="vertical" className="h-6" />;
+  return <Separator orientation="vertical" className="h-6" />
 }
 
 export function FloatingToolbarSwitch({
@@ -35,12 +35,12 @@ export function FloatingToolbarSwitch({
   checked,
   onCheckedChange,
   thumbComponent,
-  size = "sm",
+  size = 'sm',
   variant,
   ...props
 }: React.ComponentPropsWithoutRef<typeof Switch> & {
-  icon?: React.ReactNode;
-  thumbComponent?: React.ReactNode;
+  icon?: React.ReactNode
+  thumbComponent?: React.ReactNode
 }) {
   return (
     <div className="flex items-center gap-2">
@@ -54,7 +54,7 @@ export function FloatingToolbarSwitch({
         {...props}
       />
     </div>
-  );
+  )
 }
 
 export function FloatingToolbar({
@@ -65,12 +65,12 @@ export function FloatingToolbar({
   return (
     <div
       className={cn(
-        "fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-sidebar p-1 shadow-lg backdrop-blur-xs",
+        'fixed bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-sidebar p-1 shadow-lg backdrop-blur-xs',
         className,
       )}
       {...props}
     >
       {children}
     </div>
-  );
+  )
 }

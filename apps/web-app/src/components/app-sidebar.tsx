@@ -1,6 +1,5 @@
-"use client";
+'use client'
 
-import { useParams, usePathname } from "next/navigation";
 import {
   BookOpen,
   Bot,
@@ -18,15 +17,16 @@ import {
   User2,
   Users,
   Workflow,
-} from "lucide-react";
+} from 'lucide-react'
+import { useParams, usePathname } from 'next/navigation'
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@acme/ui/dropdown-menu";
-import { Icons } from "@acme/ui/icons";
+} from '@acme/ui/dropdown-menu'
+import { Icons } from '@acme/ui/icons'
 import {
   Sidebar,
   SidebarContent,
@@ -41,82 +41,88 @@ import {
   SidebarMenuSkeleton,
   SidebarSeparator,
   SidebarTrigger,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
 export function AppSidebar() {
-  const params = useParams();
-  const pathname = usePathname();
+  const params = useParams()
+  const pathname = usePathname()
 
-  const projectId = params.projectId as string;
-  const environmentId = params.environmentId as string;
+  const projectId = params.projectId as string
+  const environmentId = params.environmentId as string
 
   if (!projectId || !environmentId) {
     return (
       <SidebarMenu>
-        {Array.from({ length: 5 }).map((_, index) => (
-          <SidebarMenuItem key={`skeleton-${index}`}>
+        {Array.from([
+          'skeleton-1',
+          'skeleton-2',
+          'skeleton-3',
+          'skeleton-4',
+          'skeleton-5',
+        ]).map((key, index) => (
+          <SidebarMenuItem key={key}>
             <SidebarMenuSkeleton index={index} />
           </SidebarMenuItem>
         ))}
       </SidebarMenu>
-    );
+    )
   }
 
   // Menu items.
   const monitoringItems = [
     {
       icon: LayoutDashboard,
-      title: "Dashboard",
+      title: 'Dashboard',
       url: `/projects/${projectId}/environments/${environmentId}/dashboard`,
     },
     {
       icon: Logs,
-      title: "Logs",
+      title: 'Logs',
       url: `/projects/${projectId}/environments/${environmentId}/logs`,
     },
     {
       icon: Users,
-      title: "Users",
+      title: 'Users',
       url: `/projects/${projectId}/environments/${environmentId}/users`,
     },
-  ];
+  ]
   const developmentItems = [
     {
       icon: Sparkles,
-      title: "Prompts",
+      title: 'Prompts',
       url: `/projects/${projectId}/environments/${environmentId}/prompts`,
     },
     {
       icon: Bot,
-      title: "Agents",
+      title: 'Agents',
       url: `/projects/${projectId}/environments/${environmentId}/agents`,
     },
     {
       icon: Workflow,
-      title: "Workflows",
+      title: 'Workflows',
       url: `/projects/${projectId}/environments/${environmentId}/workflows`,
     },
     {
       icon: SquareFunction,
-      title: "Tools",
+      title: 'Tools',
       url: `/projects/${projectId}/environments/${environmentId}/tools`,
     },
     {
       icon: ShieldCheck,
-      title: "Guardrails",
+      title: 'Guardrails',
       url: `/projects/${projectId}/environments/${environmentId}/guardrails`,
     },
     {
       icon: TestTube2,
-      title: "Tests",
+      title: 'Tests',
       url: `/projects/${projectId}/environments/${environmentId}/tests`,
     },
     {
       icon: PlayCircle,
-      title: "Playground",
+      title: 'Playground',
       url: `/projects/${projectId}/environments/${environmentId}/playground`,
     },
-  ];
+  ]
 
   return (
     <Sidebar collapsible="icon">
@@ -259,5 +265,5 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  );
+  )
 }

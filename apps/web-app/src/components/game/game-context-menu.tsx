@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   ContextMenu,
@@ -12,26 +12,26 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from "@acme/ui/context-menu";
-import { Icons } from "@acme/ui/icons";
+} from '@acme/ui/context-menu'
+import { Icons } from '@acme/ui/icons'
 
-import { createGameWorld } from "~/lib/ecs/world";
-import { useDebugStore } from "~/providers/debug-provider";
-import { useGame } from "~/providers/game-provider";
+import { createGameWorld } from '~/lib/ecs/world'
+import { useDebugStore } from '~/providers/debug-provider'
+import { useGame } from '~/providers/game-provider'
 
 interface GameContextMenuProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export function GameContextMenu({ children }: GameContextMenuProps) {
-  const engine = useGame((state) => state.engine);
+  const engine = useGame((state) => state.engine)
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
-  );
+  )
   const toggleVisualization = useDebugStore(
     (state) => state.toggleVisualization,
-  );
-  const visualizations = useDebugStore((state) => state.visualizations);
+  )
+  const visualizations = useDebugStore((state) => state.visualizations)
 
   return (
     <ContextMenu>
@@ -41,8 +41,8 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
         <ContextMenuItem
           inset
           onSelect={() => {
-            if (!engine) return;
-            engine.togglePause();
+            if (!engine) return
+            engine.togglePause()
           }}
         >
           Toggle Pause
@@ -52,8 +52,8 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
         <ContextMenuItem
           inset
           onSelect={() => {
-            if (!engine) return;
-            engine.reset(createGameWorld());
+            if (!engine) return
+            engine.reset(createGameWorld())
           }}
         >
           Reset Game
@@ -66,7 +66,7 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
         <ContextMenuItem
           inset
           onSelect={() => {
-            setSelectedEntityId(null);
+            setSelectedEntityId(null)
           }}
         >
           Deselect Entity
@@ -83,35 +83,35 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
           <ContextMenuSubContent className="w-48">
             <ContextMenuCheckboxItem
               checked={visualizations.showBoundingBoxes}
-              onSelect={() => toggleVisualization("showBoundingBoxes")}
+              onSelect={() => toggleVisualization('showBoundingBoxes')}
             >
               Bounding Boxes
               <ContextMenuShortcut>⌘B</ContextMenuShortcut>
             </ContextMenuCheckboxItem>
             <ContextMenuCheckboxItem
               checked={visualizations.showCollisionPoints}
-              onSelect={() => toggleVisualization("showCollisionPoints")}
+              onSelect={() => toggleVisualization('showCollisionPoints')}
             >
               Collision Points
               <ContextMenuShortcut>⌘C</ContextMenuShortcut>
             </ContextMenuCheckboxItem>
             <ContextMenuCheckboxItem
               checked={visualizations.showForceVectors}
-              onSelect={() => toggleVisualization("showForceVectors")}
+              onSelect={() => toggleVisualization('showForceVectors')}
             >
               Force Vectors
               <ContextMenuShortcut>⌘F</ContextMenuShortcut>
             </ContextMenuCheckboxItem>
             <ContextMenuCheckboxItem
               checked={visualizations.showVelocityVectors}
-              onSelect={() => toggleVisualization("showVelocityVectors")}
+              onSelect={() => toggleVisualization('showVelocityVectors')}
             >
               Velocity Vectors
               <ContextMenuShortcut>⌘V</ContextMenuShortcut>
             </ContextMenuCheckboxItem>
             <ContextMenuCheckboxItem
               checked={visualizations.showTriggerZones}
-              onSelect={() => toggleVisualization("showTriggerZones")}
+              onSelect={() => toggleVisualization('showTriggerZones')}
             >
               Trigger Zones
               <ContextMenuShortcut>⌘T</ContextMenuShortcut>
@@ -120,5 +120,5 @@ export function GameContextMenu({ children }: GameContextMenuProps) {
         </ContextMenuSub>
       </ContextMenuContent>
     </ContextMenu>
-  );
+  )
 }

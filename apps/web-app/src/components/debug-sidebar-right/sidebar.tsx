@@ -1,36 +1,36 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { ViewVerticalIcon } from "@radix-ui/react-icons";
+import { ViewVerticalIcon } from '@radix-ui/react-icons'
+import { useEffect } from 'react'
 
-import { Button } from "@acme/ui/button";
+import { Button } from '@acme/ui/button'
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   useSidebar,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
-import { useHotkeys } from "~/hooks/use-hotkeys";
-import { useDebugStore } from "~/providers/debug-provider";
-import { EntityDetailsSidebar } from "./entity-details-sidebar";
+import { useHotkeys } from '~/hooks/use-hotkeys'
+import { useDebugStore } from '~/providers/debug-provider'
+import { EntityDetailsSidebar } from './entity-details-sidebar'
 
 export function DebugSidebarRight() {
-  const sidebar = useSidebar();
-  const selectedEntityId = useDebugStore((state) => state.selectedEntityId);
+  const sidebar = useSidebar()
+  const selectedEntityId = useDebugStore((state) => state.selectedEntityId)
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
-  );
+  )
 
   useEffect(() => {
-    sidebar.setOpen(!!selectedEntityId);
-  }, [selectedEntityId, sidebar]);
+    sidebar.setOpen(!!selectedEntityId)
+  }, [selectedEntityId, sidebar])
 
   useHotkeys({
     Escape: () => {
-      setSelectedEntityId(null);
+      setSelectedEntityId(null)
     },
-  });
+  })
 
   return (
     <Sidebar collapsible="offcanvas" side="right">
@@ -41,8 +41,8 @@ export function DebugSidebarRight() {
           size="icon"
           className="h-7 w-7"
           onClick={(event) => {
-            event.stopPropagation();
-            setSelectedEntityId(null);
+            event.stopPropagation()
+            setSelectedEntityId(null)
           }}
         >
           <ViewVerticalIcon />
@@ -55,5 +55,5 @@ export function DebugSidebarRight() {
         )}
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }

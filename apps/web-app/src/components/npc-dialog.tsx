@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Button } from "@acme/ui/button";
+import { Button } from '@acme/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -8,24 +8,24 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@acme/ui/dialog";
+} from '@acme/ui/dialog'
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
-} from "@acme/ui/drawer";
-import { useIsMobile } from "@acme/ui/hooks/use-mobile";
-import { Text } from "@acme/ui/typography";
+} from '@acme/ui/drawer'
+import { useIsMobile } from '@acme/ui/hooks/use-mobile'
+import { Text } from '@acme/ui/typography'
 
 interface NPCDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  message: string;
+  isOpen: boolean
+  onClose: () => void
+  message: string
 }
 
 export function NPCDialog({ isOpen, onClose, message }: NPCDialogProps) {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile()
 
   if (isMobile) {
     return (
@@ -42,7 +42,7 @@ export function NPCDialog({ isOpen, onClose, message }: NPCDialogProps) {
           </div>
         </DrawerContent>
       </Drawer>
-    );
+    )
   }
 
   return (
@@ -59,5 +59,5 @@ export function NPCDialog({ isOpen, onClose, message }: NPCDialogProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

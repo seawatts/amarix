@@ -1,40 +1,40 @@
-import { GlobalMouseState } from "../components";
+import { GlobalMouseState } from '../components'
 
 // Mouse button constants
 export const MOUSE_BUTTONS = {
   LEFT: 0,
   MIDDLE: 1,
   RIGHT: 2,
-} as const;
+} as const
 
 // Helper function to get canvas-relative coordinates
 export function getCanvasCoordinates(
   event: MouseEvent,
   canvas: HTMLCanvasElement,
 ): { x: number; y: number } {
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width / rect.width;
-  const scaleY = canvas.height / rect.height;
+  const rect = canvas.getBoundingClientRect()
+  const scaleX = canvas.width / rect.width
+  const scaleY = canvas.height / rect.height
 
   return {
     x: (event.clientX - rect.left) * scaleX,
     y: (event.clientY - rect.top) * scaleY,
-  };
+  }
 }
 
 // Helper function to check if a mouse button is pressed
 export function isMouseButtonDown(button: number): boolean {
-  return (GlobalMouseState.buttonsDown & (1 << button)) !== 0;
+  return (GlobalMouseState.buttonsDown & (1 << button)) !== 0
 }
 
 // Helper function to set mouse button state
 export function setMouseButtonDown(button: number) {
-  GlobalMouseState.buttonsDown |= 1 << button;
+  GlobalMouseState.buttonsDown |= 1 << button
 }
 
 // Helper function to clear mouse button state
 export function clearMouseButtonDown(button: number) {
-  GlobalMouseState.buttonsDown &= ~(1 << button);
+  GlobalMouseState.buttonsDown &= ~(1 << button)
 }
 
 // Helper function to update mouse position
@@ -44,20 +44,20 @@ export function updateMousePosition(
   worldX: number,
   worldY: number,
 ) {
-  GlobalMouseState.screenX = screenX;
-  GlobalMouseState.screenY = screenY;
-  GlobalMouseState.worldX = worldX;
-  GlobalMouseState.worldY = worldY;
+  GlobalMouseState.screenX = screenX
+  GlobalMouseState.screenY = screenY
+  GlobalMouseState.worldX = worldX
+  GlobalMouseState.worldY = worldY
 }
 
 // Helper function to set hovered entity
 export function setHoveredEntity(entityId: number) {
-  GlobalMouseState.hoveredEntity = entityId;
+  GlobalMouseState.hoveredEntity = entityId
 }
 
 // Helper function to set clicked entity
 export function setClickedEntity(entityId: number) {
-  GlobalMouseState.clickedEntity = entityId;
+  GlobalMouseState.clickedEntity = entityId
 }
 
 // Helper function to get mouse state for display
@@ -70,7 +70,7 @@ export function getMouseState() {
     screenY,
     worldX,
     worldY,
-  } = GlobalMouseState;
+  } = GlobalMouseState
 
   return {
     buttons: {
@@ -90,5 +90,5 @@ export function getMouseState() {
         y: Math.round(worldY),
       },
     },
-  };
+  }
 }

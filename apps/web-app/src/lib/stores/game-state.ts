@@ -1,13 +1,13 @@
-"use client";
+'use client'
 
-import { createStore } from "zustand/vanilla";
+import { createStore } from 'zustand/vanilla'
 
-import type { GameSystem, World } from "../ecs/types";
-import { GameEngine } from "../ecs/engine";
+import { GameEngine } from '../ecs/engine'
+import type { GameSystem, World } from '../ecs/types'
 
 interface State {
   // currentMap: MapMetadata | null;
-  engine: GameEngine | null;
+  engine: GameEngine | null
   // isDirty: boolean;
   // isLoading: boolean;
   // isSaving: boolean;
@@ -19,35 +19,35 @@ export const defaultInitState: State = {
   // isDirty: false,
   // isLoading: false,
   // isSaving: false,
-};
+}
 
 export type GameStore = State & {
   initializeEngine: (props: {
-    canvas: HTMLCanvasElement;
-    world: World;
+    canvas: HTMLCanvasElement
+    world: World
     systems: {
-      name: string;
-      system: GameSystem;
-      isPaused?: boolean;
-    }[];
-  }) => GameEngine;
+      name: string
+      system: GameSystem
+      isPaused?: boolean
+    }[]
+  }) => GameEngine
   // loadMap: (filePath: string) => Promise<void>;
   // markDirty: () => void;
   // reset: () => void;
   // saveCurrentMap: () => Promise<void>;
   // setCurrentMap: (map: MapMetadata) => void;
-};
+}
 
 export const createGameStore = (initState: State = defaultInitState) => {
   return createStore<GameStore>((set, get) => ({
     ...initState,
 
     initializeEngine: (props) => {
-      const { canvas, world, systems } = props;
-      const engine = new GameEngine({ canvas, store: get(), systems, world });
-      engine.start();
-      set({ engine });
-      return engine;
+      const { canvas, world, systems } = props
+      const engine = new GameEngine({ canvas, store: get(), systems, world })
+      engine.start()
+      set({ engine })
+      return engine
     },
 
     // loadMap: async (filePath: string) => {
@@ -71,7 +71,7 @@ export const createGameStore = (initState: State = defaultInitState) => {
     // },
 
     reset: () => {
-      set(defaultInitState);
+      set(defaultInitState)
     },
 
     // saveCurrentMap: async () => {
@@ -93,5 +93,5 @@ export const createGameStore = (initState: State = defaultInitState) => {
     // setCurrentMap: (map: MapMetadata) => {
     //   set({ currentMap: map });
     // },
-  }));
-};
+  }))
+}

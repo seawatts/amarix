@@ -1,20 +1,6 @@
 {
-  "name": "@acme/postcss-config",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "exports": {
-    "./base": "./base.cjs"
-  },
-  "license": "MIT",
-  "scripts": {
-    "clean": "rm -rf .turbo node_modules",
-    "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit"
-  },
   "dependencies": {
-    "@tailwindcss/postcss": "4.0.0",
+    "@tailwindcss/postcss": "4.0.3",
     "autoprefixer": "10.4.20",
     "cssnano": "7.0.6",
     "postcss": "8.5.1",
@@ -22,13 +8,19 @@
     "postcss-import": "16.1.0"
   },
   "devDependencies": {
-    "@acme/eslint-config": "workspace:*",
-    "@acme/lint-staged-config": "workspace:*",
-    "@acme/prettier-config": "workspace:*",
     "@acme/tsconfig": "workspace:*",
-    "eslint": "9.19.0",
-    "prettier": "3.4.2",
     "typescript": "5.7.3"
   },
-  "prettier": "@acme/prettier-config"
+  "exports": {
+    "./base": "./base.cjs"
+  },
+  "license": "MIT",
+  "name": "@acme/postcss-config",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules dist",
+    "typecheck": "tsc --noEmit"
+  },
+  "type": "module",
+  "version": "0.1.0"
 }

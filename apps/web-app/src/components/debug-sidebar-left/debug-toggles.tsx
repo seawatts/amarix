@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Activity,
@@ -20,23 +20,23 @@ import {
   Swords,
   Users,
   Volume2,
-} from "lucide-react";
+} from 'lucide-react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@acme/ui/collapsible";
+} from '@acme/ui/collapsible'
 import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuItem,
-} from "@acme/ui/sidebar";
-import { Switch } from "@acme/ui/switch";
+} from '@acme/ui/sidebar'
+import { Switch } from '@acme/ui/switch'
 
-import { useDebugStore } from "~/providers/debug-provider";
+import { useDebugStore } from '~/providers/debug-provider'
 
 const systemIcons = {
   animation: Play,
@@ -56,7 +56,7 @@ const systemIcons = {
   sound: Volume2,
   sprite: Gamepad2,
   trigger: Radio,
-} as const;
+} as const
 
 const visualizationIcons = {
   showBoundingBoxes: Boxes,
@@ -66,31 +66,31 @@ const visualizationIcons = {
   showPolygons: Box,
   showTriggerZones: Radio,
   showVelocityVectors: Activity,
-} as const;
+} as const
 
 export function DebugToggles() {
-  const systems = useDebugStore((state) => state.systems);
-  const toggleSystem = useDebugStore((state) => state.toggleSystem);
-  const toggleSystemPause = useDebugStore((state) => state.toggleSystemPause);
-  const visualizations = useDebugStore((state) => state.visualizations);
+  const systems = useDebugStore((state) => state.systems)
+  const toggleSystem = useDebugStore((state) => state.toggleSystem)
+  const toggleSystemPause = useDebugStore((state) => state.toggleSystemPause)
+  const visualizations = useDebugStore((state) => state.visualizations)
   const toggleVisualization = useDebugStore(
     (state) => state.toggleVisualization,
-  );
+  )
 
-  const isSystemsOpen = useDebugStore((state) => state.sidebarSections.systems);
+  const isSystemsOpen = useDebugStore((state) => state.sidebarSections.systems)
   const isVisualizationsOpen = useDebugStore(
     (state) => state.sidebarSections.visualizations,
-  );
+  )
   const toggleSidebarSection = useDebugStore(
     (state) => state.toggleSidebarSection,
-  );
+  )
 
   return (
     <>
       <Collapsible
         className="group/collapsible"
         open={isSystemsOpen}
-        onOpenChange={() => toggleSidebarSection("systems")}
+        onOpenChange={() => toggleSidebarSection('systems')}
       >
         <SidebarGroup>
           <CollapsibleTrigger className="w-full">
@@ -109,7 +109,7 @@ export function DebugToggles() {
               <SidebarMenu>
                 {Object.entries(systems).map(([name, state]) => {
                   const Icon =
-                    systemIcons[name.toLowerCase() as keyof typeof systemIcons];
+                    systemIcons[name.toLowerCase() as keyof typeof systemIcons]
                   return (
                     <SidebarMenuItem
                       key={name}
@@ -137,7 +137,7 @@ export function DebugToggles() {
                         </div>
                       )}
                     </SidebarMenuItem>
-                  );
+                  )
                 })}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -148,7 +148,7 @@ export function DebugToggles() {
       <Collapsible
         className="group/collapsible"
         open={isVisualizationsOpen}
-        onOpenChange={() => toggleSidebarSection("visualizations")}
+        onOpenChange={() => toggleSidebarSection('visualizations')}
       >
         <SidebarGroup>
           <CollapsibleTrigger className="w-full">
@@ -167,14 +167,14 @@ export function DebugToggles() {
               <SidebarMenu>
                 {Object.entries(visualizations).map(([name, isEnabled]) => {
                   const Icon =
-                    visualizationIcons[name as keyof typeof visualizationIcons];
+                    visualizationIcons[name as keyof typeof visualizationIcons]
                   return (
                     <SidebarMenuItem key={name}>
                       <div className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="size-4" />
                           <span className="capitalize">
-                            {name.replaceAll(/([A-Z])/g, " $1").trim()}
+                            {name.replaceAll(/([A-Z])/g, ' $1').trim()}
                           </span>
                         </div>
                         <Switch
@@ -183,7 +183,7 @@ export function DebugToggles() {
                         />
                       </div>
                     </SidebarMenuItem>
-                  );
+                  )
                 })}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -191,5 +191,5 @@ export function DebugToggles() {
         </SidebarGroup>
       </Collapsible>
     </>
-  );
+  )
 }

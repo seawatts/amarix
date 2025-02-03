@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
 import {
   FloatingToolbar,
   FloatingToolbarButton,
   FloatingToolbarSeparator,
-} from "@acme/ui/floating-toolbar";
-import { Icons } from "@acme/ui/icons";
+} from '@acme/ui/floating-toolbar'
+import { Icons } from '@acme/ui/icons'
 
-import { useDebugStore } from "~/providers/debug-provider";
+import { useDebugStore } from '~/providers/debug-provider'
 
 export function GameToolbar() {
-  const selectedEntityId = useDebugStore((state) => state.selectedEntityId);
+  const selectedEntityId = useDebugStore((state) => state.selectedEntityId)
   // const setIsDebugging = useDebugStore((state) => state.setIsDebugging);
   // const isDebugging = useDebugStore((state) => state.isDebugging);
 
@@ -36,8 +36,8 @@ export function GameToolbar() {
       <FloatingToolbarSeparator />
       <FloatingToolbarButton
         icon={<Icons.Command size="sm" />}
-        variant={selectedEntityId === null ? undefined : "secondary"}
+        variant={selectedEntityId === null ? undefined : 'secondary'}
       />
     </FloatingToolbar>
-  );
+  )
 }

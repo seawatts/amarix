@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { memo } from "react";
+import { memo } from 'react'
 import {
   Area,
   AreaChart,
@@ -8,16 +8,16 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   YAxis,
-} from "recharts";
-import { quantile } from "simple-statistics";
+} from 'recharts'
+import { quantile } from 'simple-statistics'
 
-import type { DataPoint } from "../../lib/ecs/types";
+import type { DataPoint } from '../../lib/ecs/types'
 
 interface MetricChartProps {
-  data: DataPoint[];
-  label: string;
-  minDomain: number;
-  maxDomain: number | "auto";
+  data: DataPoint[]
+  label: string
+  minDomain: number
+  maxDomain: number | 'auto'
 }
 
 function MetricChartComponent({
@@ -26,23 +26,23 @@ function MetricChartComponent({
   minDomain,
   maxDomain,
 }: MetricChartProps) {
-  const values = data.map((d) => d.value);
-  const p0 = values.length > 0 ? Math.min(...values) : 0; // min
-  const p50 = quantile(values, 0.5); // median
-  const p95 = quantile(values, 0.95);
-  const p99 = quantile(values, 0.99);
-  const p100 = values.length > 0 ? Math.max(...values) : 0; // max
+  const values = data.map((d) => d.value)
+  const p0 = values.length > 0 ? Math.min(...values) : 0 // min
+  const p50 = quantile(values, 0.5) // median
+  const p95 = quantile(values, 0.95)
+  const p99 = quantile(values, 0.99)
+  const p100 = values.length > 0 ? Math.max(...values) : 0 // max
 
-  const padding = (p100 - p0) * 0.1; // 10% padding
-  const yMin = Math.max(minDomain, p0 - padding);
-  const yMax = maxDomain === "auto" ? p100 + padding : maxDomain;
-  const numberFormatter = new Intl.NumberFormat("en-US", {
-    compactDisplay: "short",
+  const padding = (p100 - p0) * 0.1 // 10% padding
+  const yMin = Math.max(minDomain, p0 - padding)
+  const yMax = maxDomain === 'auto' ? p100 + padding : maxDomain
+  const numberFormatter = new Intl.NumberFormat('en-US', {
+    compactDisplay: 'short',
     maximumFractionDigits: 1,
     minimumFractionDigits: 0,
-    notation: "compact",
-    unitDisplay: "short",
-  });
+    notation: 'compact',
+    unitDisplay: 'short',
+  })
 
   return (
     <div
@@ -127,10 +127,10 @@ function MetricChartComponent({
               strokeDasharray="3 3"
               opacity={0.5}
               label={{
-                fill: "hsl(var(--chart-1))",
+                fill: 'hsl(var(--chart-1))',
                 fontSize: 9,
-                position: "right",
-                value: "P50",
+                position: 'right',
+                value: 'P50',
               }}
             />
             <ReferenceLine
@@ -139,10 +139,10 @@ function MetricChartComponent({
               strokeDasharray="3 3"
               opacity={0.5}
               label={{
-                fill: "hsl(var(--chart-2))",
+                fill: 'hsl(var(--chart-2))',
                 fontSize: 9,
-                position: "right",
-                value: "P95",
+                position: 'right',
+                value: 'P95',
               }}
             />
             <ReferenceLine
@@ -151,10 +151,10 @@ function MetricChartComponent({
               strokeDasharray="3 3"
               opacity={0.5}
               label={{
-                fill: "hsl(var(--chart-3))",
+                fill: 'hsl(var(--chart-3))',
                 fontSize: 9,
-                position: "right",
-                value: "P99",
+                position: 'right',
+                value: 'P99',
               }}
             />
             <Area
@@ -171,7 +171,7 @@ function MetricChartComponent({
         </ResponsiveContainer>
       </div>
     </div>
-  );
+  )
 }
 
-export const MetricChart = memo(MetricChartComponent);
+export const MetricChart = memo(MetricChartComponent)

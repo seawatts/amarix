@@ -1,16 +1,23 @@
-import { Suspense } from "react";
+import { Suspense } from 'react'
 
-import { Skeleton } from "@acme/ui/skeleton";
-import { H1, P } from "@acme/ui/typography";
+import { Skeleton } from '@acme/ui/skeleton'
+import { H1, P } from '@acme/ui/typography'
 
-import { MapsGrid } from "~/components/maps/maps-grid";
+import { MapsGridServer } from '~/app/_components/maps-grid.server'
 
 function MapsSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {Array.from({ length: 6 }).map((_, index) => (
+      {Array.from([
+        'skeleton-1',
+        'skeleton-2',
+        'skeleton-3',
+        'skeleton-4',
+        'skeleton-5',
+        'skeleton-6',
+      ]).map((key) => (
         <div
-          key={`skeleton-${index}`}
+          key={key}
           className="bg-card flex flex-col gap-4 rounded-xl border p-6 shadow-2xs"
         >
           <Skeleton className="h-6 w-3/4" />
@@ -23,7 +30,7 @@ function MapsSkeleton() {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 export default function Page() {
@@ -38,9 +45,9 @@ export default function Page() {
         </div>
 
         <Suspense fallback={<MapsSkeleton />}>
-          <MapsGrid />
+          <MapsGridServer />
         </Suspense>
       </div>
     </main>
-  );
+  )
 }

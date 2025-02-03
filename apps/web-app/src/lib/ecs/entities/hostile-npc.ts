@@ -1,6 +1,5 @@
-import { addComponent, addEntity, IsA } from "bitecs";
+import { IsA, addComponent, addEntity } from 'bitecs'
 
-import type { World } from "../types";
 import {
   Acceleration,
   Clickable,
@@ -10,9 +9,9 @@ import {
   Health,
   HostileNPC,
   InteractionCooldown,
-  Named,
   NPC,
   NPCInteraction,
+  Named,
   Polygon,
   RigidBody,
   SaveableMapEntity,
@@ -21,15 +20,16 @@ import {
   Style,
   Transform,
   Velocity,
-} from "../components";
+} from '../components'
+import type { World } from '../types'
 
 // ... rest of imports ...
 
 export function createHostileNPC(
   world: World,
-  options: CreateHostileNPCOptions,
+  _options: CreateHostileNPCOptions,
 ) {
-  const eid = addEntity(world);
+  const eid = addEntity(world)
 
   // Add NPC components
   addComponent(
@@ -55,10 +55,10 @@ export function createHostileNPC(
     NPCInteraction,
     InteractionCooldown,
     SaveableMapEntity,
-  );
+  )
 
   // Initialize SaveableMapEntity
-  SaveableMapEntity.eid[eid] = eid;
+  SaveableMapEntity.eid[eid] = eid
 
   // ... rest of the function ...
 }

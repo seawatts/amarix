@@ -1,13 +1,13 @@
-"use client";
+'use client'
 
-import { ChevronRight, LayersIcon } from "lucide-react";
+import { ChevronRight, LayersIcon } from 'lucide-react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@acme/ui/collapsible";
-import { Input } from "@acme/ui/input";
+} from '@acme/ui/collapsible'
+import { Input } from '@acme/ui/input'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -15,24 +15,24 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
-import { useDebugStore } from "~/providers/debug-provider";
-import { useGame } from "~/providers/game-provider";
+import { useDebugStore } from '~/providers/debug-provider'
+import { useGame } from '~/providers/game-provider'
 
 interface EntityDetailsSidebarProps {
-  entityId: number;
+  entityId: number
 }
 
-type TypedArray = Float32Array | Uint8Array | Uint32Array | Int32Array;
+type TypedArray = Float32Array | Uint8Array | Uint32Array | Int32Array
 
 export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
-  const metrics = useDebugStore((state) => state.metrics);
-  const engine = useGame((state) => state.engine);
-  const entity = metrics?.entities.find((entity) => entity.id === entityId);
+  const metrics = useDebugStore((state) => state.metrics)
+  const engine = useGame((state) => state.engine)
+  const entity = metrics?.entities.find((entity) => entity.id === entityId)
 
   if (!entity || !engine) {
-    return null;
+    return null
   }
 
   return (
@@ -101,26 +101,26 @@ export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
                             {key}:
                           </span>
                           <Input
-                            type={typeof value === "number" ? "number" : "text"}
+                            type={typeof value === 'number' ? 'number' : 'text'}
                             value={value as string | number}
                             className="h-7"
                             onChange={(event) => {
-                              const component = componentData.component;
-                              if (!component[key]) return;
+                              const component = componentData.component
+                              if (!component[key]) return
 
                               const newValue =
-                                event.target.type === "number"
+                                event.target.type === 'number'
                                   ? Number(event.target.value)
-                                  : event.target.value;
+                                  : event.target.value
 
                               // Update the component's TypedArray or Array directly
                               if (ArrayBuffer.isView(component[key])) {
-                                const typedArray = component[key] as TypedArray;
-                                if (typeof newValue === "number") {
-                                  typedArray[entityId] = newValue;
+                                const typedArray = component[key] as TypedArray
+                                if (typeof newValue === 'number') {
+                                  typedArray[entityId] = newValue
                                 }
                               } else if (Array.isArray(component[key])) {
-                                component[key][entityId] = newValue;
+                                component[key][entityId] = newValue
                               }
 
                               // Force a game state update to refresh the UI
@@ -136,5 +136,5 @@ export function EntityDetailsSidebar({ entityId }: EntityDetailsSidebarProps) {
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
-  );
+  )
 }

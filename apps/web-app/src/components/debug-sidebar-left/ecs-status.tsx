@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   ChevronRight,
@@ -6,13 +6,13 @@ import {
   LayersIcon,
   MousePointerIcon,
   Settings,
-} from "lucide-react";
+} from 'lucide-react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@acme/ui/collapsible";
+} from '@acme/ui/collapsible'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -21,50 +21,50 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
-import { getPressedKeys } from "~/lib/ecs/utils/keyboard";
-import { getMouseState } from "~/lib/ecs/utils/mouse";
-import { useDebugStore } from "~/providers/debug-provider";
+import { getPressedKeys } from '~/lib/ecs/utils/keyboard'
+import { getMouseState } from '~/lib/ecs/utils/mouse'
+import { useDebugStore } from '~/providers/debug-provider'
 
 export function ECSStatus() {
-  const entities = useDebugStore((state) => state.metrics?.entities);
+  const entities = useDebugStore((state) => state.metrics?.entities)
   const setSelectedEntityId = useDebugStore(
     (state) => state.setSelectedEntityId,
-  );
-  const isECSOpen = useDebugStore((state) => state.sidebarSections.ecs);
+  )
+  const isECSOpen = useDebugStore((state) => state.sidebarSections.ecs)
   const toggleSidebarSection = useDebugStore(
     (state) => state.toggleSidebarSection,
-  );
+  )
 
-  if (!entities) return null;
+  if (!entities) return null
 
   // Count total entities
-  const totalEntities = entities.length;
+  const totalEntities = entities.length
 
   // Count component types
-  const componentCounts = new Map<string, number>();
+  const componentCounts = new Map<string, number>()
   for (const entity of entities) {
     for (const componentName of Object.keys(entity.components)) {
       componentCounts.set(
         componentName,
         (componentCounts.get(componentName) ?? 0) + 1,
-      );
+      )
     }
   }
 
   // Get current mouse state
-  const mouseState = getMouseState();
+  const mouseState = getMouseState()
 
   // Get current keyboard state
-  const pressedKeys = getPressedKeys();
+  const pressedKeys = getPressedKeys()
 
   return (
     <SidebarGroup>
       <Collapsible
         className="group/collapsible"
         open={isECSOpen}
-        onOpenChange={() => toggleSidebarSection("ecs")}
+        onOpenChange={() => toggleSidebarSection('ecs')}
       >
         <CollapsibleTrigger className="w-full">
           <SidebarGroupLabel>
@@ -108,7 +108,7 @@ export function ECSStatus() {
                             {Object.entries(mouseState.buttons)
                               .filter(([, pressed]) => pressed)
                               .map(([button]) => button)
-                              .join(", ") || "None"}
+                              .join(', ') || 'None'}
                           </span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -116,7 +116,7 @@ export function ECSStatus() {
                         <SidebarMenuButton>
                           <span className="text-muted-foreground">Screen:</span>
                           <span className="ml-2">
-                            ({mouseState.position.screen.x},{" "}
+                            ({mouseState.position.screen.x},{' '}
                             {mouseState.position.screen.y})
                           </span>
                         </SidebarMenuButton>
@@ -125,7 +125,7 @@ export function ECSStatus() {
                         <SidebarMenuButton>
                           <span className="text-muted-foreground">World:</span>
                           <span className="ml-2">
-                            ({mouseState.position.world.x},{" "}
+                            ({mouseState.position.world.x},{' '}
                             {mouseState.position.world.y})
                           </span>
                         </SidebarMenuButton>
@@ -138,7 +138,7 @@ export function ECSStatus() {
                           <span className="ml-2">
                             {mouseState.hoveredEntity > 0
                               ? mouseState.hoveredEntity
-                              : "None"}
+                              : 'None'}
                           </span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -150,7 +150,7 @@ export function ECSStatus() {
                           <span className="ml-2">
                             {mouseState.clickedEntity > 0
                               ? mouseState.clickedEntity
-                              : "None"}
+                              : 'None'}
                           </span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -178,8 +178,8 @@ export function ECSStatus() {
                           </span>
                           <span className="ml-2">
                             {pressedKeys.length > 0
-                              ? pressedKeys.join(", ")
-                              : "None"}
+                              ? pressedKeys.join(', ')
+                              : 'None'}
                           </span>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -245,5 +245,5 @@ export function ECSStatus() {
         </CollapsibleContent>
       </Collapsible>
     </SidebarGroup>
-  );
+  )
 }

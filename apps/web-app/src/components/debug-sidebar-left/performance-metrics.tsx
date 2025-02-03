@@ -1,20 +1,20 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { startCase } from "lodash-es";
+import { startCase } from 'lodash-es'
 import {
   Activity,
   ChevronRight,
   Gauge,
   LayoutDashboard,
   Timer,
-} from "lucide-react";
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@acme/ui/collapsible";
+} from '@acme/ui/collapsible'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -22,70 +22,70 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuSub,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
-import type { DataPoint } from "~/lib/ecs/types";
-import { RingBuffer } from "~/lib/ecs/types";
-import { useDebugStore } from "~/providers/debug-provider";
-import { useGame } from "~/providers/game-provider";
-import { PerformanceMetric } from "./performance-metric";
+import type { DataPoint } from '~/lib/ecs/types'
+import { RingBuffer } from '~/lib/ecs/types'
+import { useDebugStore } from '~/providers/debug-provider'
+import { useGame } from '~/providers/game-provider'
+import { PerformanceMetric } from './performance-metric'
 
-type SystemHistory = Record<string, RingBuffer<DataPoint>>;
+type SystemHistory = Record<string, RingBuffer<DataPoint>>
 
 export function PerformanceMetrics() {
-  const engine = useGame((state) => state.engine);
+  const engine = useGame((state) => state.engine)
   const isPerformanceOpen = useDebugStore(
     (state) => state.sidebarSections.performance,
-  );
+  )
   const toggleSidebarSection = useDebugStore(
     (state) => state.toggleSidebarSection,
-  );
-  const fps = useDebugStore((state) => state.metrics?.performance.fps);
+  )
+  const fps = useDebugStore((state) => state.metrics?.performance.fps)
   const frameTime = useDebugStore(
     (state) => state.metrics?.performance.frameTime,
-  );
+  )
   const memoryUsage = useDebugStore(
     (state) => state.metrics?.performance.memoryUsage,
-  );
-  const systems = useDebugStore((state) => state.metrics?.performance.systems);
-  const [fpsBuffer] = useState(() => new RingBuffer<DataPoint>(100));
-  const [frameTimeBuffer] = useState(() => new RingBuffer<DataPoint>(100));
-  const [memoryBuffer] = useState(() => new RingBuffer<DataPoint>(100));
-  const [systemBuffers] = useState<SystemHistory>({});
+  )
+  const systems = useDebugStore((state) => state.metrics?.performance.systems)
+  const [fpsBuffer] = useState(() => new RingBuffer<DataPoint>(100))
+  const [frameTimeBuffer] = useState(() => new RingBuffer<DataPoint>(100))
+  const [memoryBuffer] = useState(() => new RingBuffer<DataPoint>(100))
+  const [systemBuffers] = useState<SystemHistory>({})
 
   useEffect(() => {
-    const timestamp = Date.now();
+    const timestamp = Date.now()
 
     if (fps !== undefined) {
       fpsBuffer.push({
         timestamp,
         value: fps,
-      });
+      })
     }
 
     if (frameTime !== undefined) {
       frameTimeBuffer.push({
         timestamp,
         value: frameTime,
-      });
+      })
     }
 
     if (memoryUsage !== undefined) {
       memoryBuffer.push({
         timestamp,
         value: memoryUsage,
-      });
+      })
     }
 
     if (systems) {
       for (const [name, time] of Object.entries(systems)) {
         if (!systemBuffers[name]) {
-          systemBuffers[name] = new RingBuffer<DataPoint>(100);
+          systemBuffers[name] = new RingBuffer<DataPoint>(100)
         }
         systemBuffers[name].push({
           timestamp,
           value: time,
-        });
+        })
       }
     }
   }, [
@@ -97,11 +97,11 @@ export function PerformanceMetrics() {
     frameTimeBuffer,
     memoryBuffer,
     systemBuffers,
-  ]);
+  ])
 
-  if (!engine) return null;
+  if (!engine) return null
 
-  const memoryMB = memoryUsage ? memoryUsage / 1024 / 1024 : 0;
+  const memoryMB = memoryUsage ? memoryUsage / 1024 / 1024 : 0
 
   return (
     <SidebarGroup>
@@ -109,7 +109,7 @@ export function PerformanceMetrics() {
         className="group/performance"
         data-testid="performance-metrics"
         open={isPerformanceOpen}
-        onOpenChange={() => toggleSidebarSection("performance")}
+        onOpenChange={() => toggleSidebarSection('performance')}
       >
         <CollapsibleTrigger
           className="w-full"
@@ -181,7 +181,7 @@ export function PerformanceMetrics() {
                     <span data-testid="performance-metrics-systems-total">
                       {Object.values(systems ?? {})
                         .reduce((sum, time) => sum + time, 0)
-                        .toFixed(2)}{" "}
+                        .toFixed(2)}{' '}
                       ms
                     </span>
                     <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -192,7 +192,7 @@ export function PerformanceMetrics() {
                     {Object.entries(systems ?? {}).map(([name, time]) => (
                       <PerformanceMetric
                         key={name}
-                        label={startCase(name.replaceAll("System", ""))}
+                        label={startCase(name.replaceAll('System', ''))}
                         value={time}
                         data={systemBuffers[name]?.toArray() ?? []}
                         unit="ms"
@@ -210,5 +210,5 @@ export function PerformanceMetrics() {
         </CollapsibleContent>
       </Collapsible>
     </SidebarGroup>
-  );
+  )
 }

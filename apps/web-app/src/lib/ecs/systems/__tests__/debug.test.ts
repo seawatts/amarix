@@ -1,36 +1,36 @@
-import { addComponent, addEntity, createWorld } from "bitecs";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { addComponent, addEntity, createWorld } from 'bitecs'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { World, WorldProps } from "../../types";
-import type { DebugStore } from "~/lib/stores/debug";
+import type { DebugStore } from '~/lib/stores/debug'
 import {
   Debug,
   GlobalKeyboardState,
   GlobalMouseState,
   Transform,
-} from "../../components";
-import { initialGameWorldState } from "../../world";
-import { createDebugSystem } from "../debug";
+} from '../../components'
+import type { World, WorldProps } from '../../types'
+import { initialGameWorldState } from '../../world'
+import { createDebugSystem } from '../debug'
 
-describe("Debug System", () => {
-  let world: World;
-  let eid: number;
-  let mockDebugStore: DebugStore;
+describe('Debug System', () => {
+  let world: World
+  let eid: number
+  let mockDebugStore: DebugStore
 
   beforeEach(() => {
-    world = createWorld<WorldProps>();
-    eid = addEntity(world);
+    world = createWorld<WorldProps>()
+    eid = addEntity(world)
 
     // Set up debug entity
-    addComponent(world, eid, Debug);
-    addComponent(world, eid, Transform);
+    addComponent(world, eid, Debug)
+    addComponent(world, eid, Transform)
 
     // Reset global state
-    GlobalKeyboardState.keys = 0;
-    GlobalMouseState.screenX = 0;
-    GlobalMouseState.screenY = 0;
-    GlobalMouseState.hoveredEntity = 0;
-    GlobalMouseState.clickedEntity = 0;
+    GlobalKeyboardState.keys = 0
+    GlobalMouseState.screenX = 0
+    GlobalMouseState.screenY = 0
+    GlobalMouseState.hoveredEntity = 0
+    GlobalMouseState.clickedEntity = 0
 
     // Mock debug store
     mockDebugStore = {
@@ -87,130 +87,130 @@ describe("Debug System", () => {
         showTriggerZones: false,
         showVelocityVectors: false,
       },
-    };
+    }
 
     // Mock performance.memory
-    vi.stubGlobal("performance", {
+    vi.stubGlobal('performance', {
       memory: {
         usedJSHeapSize: 1_000_000,
       },
       now: () => 1000,
-    });
-  });
+    })
+  })
 
-  it("should show bounding boxes when command key is pressed and entity is hovered", () => {
+  it('should show bounding boxes when command key is pressed and entity is hovered', () => {
     // Set up command key and hover state
-    GlobalKeyboardState.keys = 1 << 4; // Command key
-    Debug.hoveredEntity[eid] = 1;
+    GlobalKeyboardState.keys = 1 << 4 // Command key
+    Debug.hoveredEntity[eid] = 1
 
-    const debugSystem = createDebugSystem(mockDebugStore);
-    debugSystem(world);
+    const debugSystem = createDebugSystem(mockDebugStore)
+    debugSystem(world)
 
     // Verify bounding box is shown
-    expect(Debug.showBoundingBox[eid]).toBe(1);
+    expect(Debug.showBoundingBox[eid]).toBe(1)
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showBoundingBoxes",
-    );
-  });
+      'showBoundingBoxes',
+    )
+  })
 
-  it("should select entity when command key is pressed and entity is clicked", () => {
+  it('should select entity when command key is pressed and entity is clicked', () => {
     // Set up command key and click state
-    GlobalKeyboardState.keys = 1 << 4; // Command key
-    Debug.clickedEntity[eid] = 1;
+    GlobalKeyboardState.keys = 1 << 4 // Command key
+    Debug.clickedEntity[eid] = 1
 
-    const debugSystem = createDebugSystem(mockDebugStore);
-    debugSystem(world);
+    const debugSystem = createDebugSystem(mockDebugStore)
+    debugSystem(world)
 
     // Verify entity was selected
-    expect(Debug.isSelected[eid]).toBe(1);
-    expect(mockDebugStore.setSelectedEntityId).toHaveBeenCalledWith(eid);
-  });
+    expect(Debug.isSelected[eid]).toBe(1)
+    expect(mockDebugStore.setSelectedEntityId).toHaveBeenCalledWith(eid)
+  })
 
-  it("should update performance metrics periodically", () => {
-    const debugSystem = createDebugSystem(mockDebugStore);
-    debugSystem(world);
+  it('should update performance metrics periodically', () => {
+    const debugSystem = createDebugSystem(mockDebugStore)
+    debugSystem(world)
 
     // Verify metrics were updated
-    expect(mockDebugStore.metrics?.performance.memoryUsage).toBe(1_000_000);
-  });
+    expect(mockDebugStore.metrics?.performance.memoryUsage).toBe(1_000_000)
+  })
 
-  it("should sync debug store state with components", () => {
+  it('should sync debug store state with components', () => {
     // Set up debug flags
-    Debug.showBoundingBox[eid] = 1;
-    Debug.showColliders[eid] = 1;
-    Debug.showForceVectors[eid] = 1;
-    Debug.showVelocityVector[eid] = 1;
-    Debug.showTriggerZones[eid] = 1;
+    Debug.showBoundingBox[eid] = 1
+    Debug.showColliders[eid] = 1
+    Debug.showForceVectors[eid] = 1
+    Debug.showVelocityVector[eid] = 1
+    Debug.showTriggerZones[eid] = 1
 
-    const debugSystem = createDebugSystem(mockDebugStore);
-    debugSystem(world);
+    const debugSystem = createDebugSystem(mockDebugStore)
+    debugSystem(world)
 
     // Verify all visualizations were synced
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showBoundingBoxes",
-    );
+      'showBoundingBoxes',
+    )
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showCollisionPoints",
-    );
+      'showCollisionPoints',
+    )
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showForceVectors",
-    );
+      'showForceVectors',
+    )
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showVelocityVectors",
-    );
+      'showVelocityVectors',
+    )
     expect(mockDebugStore.toggleVisualization).toHaveBeenCalledWith(
-      "showTriggerZones",
-    );
-  });
+      'showTriggerZones',
+    )
+  })
 
-  it("should reset debug flags when command key is not pressed", () => {
+  it('should reset debug flags when command key is not pressed', () => {
     // Set up initial debug flags
-    Debug.showBoundingBox[eid] = 1;
-    Debug.showColliders[eid] = 1;
-    Debug.showForceVectors[eid] = 1;
-    Debug.showVelocityVector[eid] = 1;
-    Debug.showTriggerZones[eid] = 1;
+    Debug.showBoundingBox[eid] = 1
+    Debug.showColliders[eid] = 1
+    Debug.showForceVectors[eid] = 1
+    Debug.showVelocityVector[eid] = 1
+    Debug.showTriggerZones[eid] = 1
 
     // Run system without command key pressed
-    const debugSystem = createDebugSystem(mockDebugStore);
-    debugSystem(world);
+    const debugSystem = createDebugSystem(mockDebugStore)
+    debugSystem(world)
 
     // Verify debug flags were reset
-    expect(Debug.showBoundingBox[eid]).toBe(0);
-    expect(Debug.showColliders[eid]).toBe(0);
-    expect(Debug.showForceVectors[eid]).toBe(0);
-    expect(Debug.showVelocityVector[eid]).toBe(0);
-    expect(Debug.showTriggerZones[eid]).toBe(0);
-  });
+    expect(Debug.showBoundingBox[eid]).toBe(0)
+    expect(Debug.showColliders[eid]).toBe(0)
+    expect(Debug.showForceVectors[eid]).toBe(0)
+    expect(Debug.showVelocityVector[eid]).toBe(0)
+    expect(Debug.showTriggerZones[eid]).toBe(0)
+  })
 
-  it("should update debug state", () => {
+  it('should update debug state', () => {
     const world = {
       ...initialGameWorldState,
       timing: { delta: 1 / 60, elapsed: 0, lastFrame: performance.now() },
-    };
+    }
     const debugStore = {
       isEnabled: true,
       showBoundingBox: false,
       showColliders: false,
       showGrid: false,
       showTriggerZones: false,
-    };
-    const debugSystem = createDebugSystem(debugStore as unknown as DebugStore);
+    }
+    const debugSystem = createDebugSystem(debugStore as unknown as DebugStore)
 
     // Create debug entity
-    const debugEid = addEntity(world);
-    addComponent(world, debugEid, Debug);
-    addComponent(world, debugEid, Transform);
+    const debugEid = addEntity(world)
+    addComponent(world, debugEid, Debug)
+    addComponent(world, debugEid, Transform)
 
     // Set initial position
-    Transform.x[debugEid] = 0;
-    Transform.y[debugEid] = 0;
+    Transform.x[debugEid] = 0
+    Transform.y[debugEid] = 0
 
     // Run debug system
-    debugSystem(world);
+    debugSystem(world)
 
     // Debug state should be updated
-    expect(Debug.frameTime[debugEid]).toBe(world.timing.delta);
-    expect(Debug.lastUpdated[debugEid]).toBeGreaterThan(0);
-  });
-});
+    expect(Debug.frameTime[debugEid]).toBe(world.timing.delta)
+    expect(Debug.lastUpdated[debugEid]).toBeGreaterThan(0)
+  })
+})

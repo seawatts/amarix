@@ -1,68 +1,68 @@
-import { createStore } from "zustand/vanilla";
+import { createStore } from 'zustand/vanilla'
 
 interface DebugState {
-  isDebugging: boolean;
-  isPaused: boolean;
-  selectedEntityId: number | null;
+  isDebugging: boolean
+  isPaused: boolean
+  selectedEntityId: number | null
   sidebarSections: {
-    performance: boolean;
-    ecs: boolean;
-    systems: boolean;
-    visualizations: boolean;
-  };
-  systems: Record<string, { isEnabled: boolean; isPaused: boolean }>;
-  visualizations: Record<string, boolean>;
-  metrics: DebugMetrics | null;
+    performance: boolean
+    ecs: boolean
+    systems: boolean
+    visualizations: boolean
+  }
+  systems: Record<string, { isEnabled: boolean; isPaused: boolean }>
+  visualizations: Record<string, boolean>
+  metrics: DebugMetrics | null
 }
 
 interface EntityMetrics {
-  id: number;
-  name?: string;
+  id: number
+  name?: string
   components: Record<
     string,
     {
-      data: Record<string, unknown>;
-      component: Record<string, unknown>;
+      data: Record<string, unknown>
+      component: Record<string, unknown>
     }
-  >;
+  >
 }
 
 interface DebugMetrics {
-  entities: EntityMetrics[];
+  entities: EntityMetrics[]
   performance: {
-    fps: number;
-    frameTime: number;
-    memoryUsage: number;
-    systems: Record<string, number>;
-  };
+    fps: number
+    frameTime: number
+    memoryUsage: number
+    systems: Record<string, number>
+  }
 }
 
 export interface DebugUpdateEvent {
-  type: "entitySelected" | "metricsUpdated";
+  type: 'entitySelected' | 'metricsUpdated'
   data: {
-    selectedEntityId?: number | null;
+    selectedEntityId?: number | null
     metrics?: {
-      entities?: EntityMetrics[];
-      fps?: number;
-      frameTime?: number;
-      memoryUsage?: number;
-      systems?: Record<string, number>;
-    };
-  };
+      entities?: EntityMetrics[]
+      fps?: number
+      frameTime?: number
+      memoryUsage?: number
+      systems?: Record<string, number>
+    }
+  }
 }
 
 export type DebugStore = DebugState & {
-  setSelectedEntityId: (id: number | null) => void;
-  getSystems: () => DebugState["systems"];
-  setIsDebugging: (isDebugging: boolean) => void;
-  setIsPaused: (isPaused: boolean) => void;
-  toggleSystem: (system: keyof DebugState["systems"]) => void;
-  toggleSystemPause: (system: keyof DebugState["systems"]) => void;
-  toggleVisualization: (viz: keyof DebugState["visualizations"]) => void;
-  toggleSidebarSection: (section: keyof DebugState["sidebarSections"]) => void;
-  setSystems: (systems: DebugState["systems"]) => void;
-  handleDebugEvent: (event: DebugUpdateEvent) => void;
-};
+  setSelectedEntityId: (id: number | null) => void
+  getSystems: () => DebugState['systems']
+  setIsDebugging: (isDebugging: boolean) => void
+  setIsPaused: (isPaused: boolean) => void
+  toggleSystem: (system: keyof DebugState['systems']) => void
+  toggleSystemPause: (system: keyof DebugState['systems']) => void
+  toggleVisualization: (viz: keyof DebugState['visualizations']) => void
+  toggleSidebarSection: (section: keyof DebugState['sidebarSections']) => void
+  setSystems: (systems: DebugState['systems']) => void
+  handleDebugEvent: (event: DebugUpdateEvent) => void
+}
 
 export const defaultInitState: DebugState = {
   isDebugging: false,
@@ -93,7 +93,7 @@ export const defaultInitState: DebugState = {
     showTriggerZones: false,
     showVelocityVectors: false,
   },
-};
+}
 
 export const createDebugStore = (initState: DebugState = defaultInitState) => {
   return createStore<DebugStore>((set, get) => ({
@@ -101,17 +101,17 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
     getSystems: () => get().systems,
     handleDebugEvent: (event) => {
       switch (event.type) {
-        case "entitySelected": {
+        case 'entitySelected': {
           if (event.data.selectedEntityId !== undefined) {
-            set({ selectedEntityId: event.data.selectedEntityId });
+            set({ selectedEntityId: event.data.selectedEntityId })
           }
-          break;
+          break
         }
-        case "metricsUpdated": {
+        case 'metricsUpdated': {
           if (event.data.metrics) {
-            const currentState = get();
+            const currentState = get()
             const { fps, frameTime, memoryUsage, systems, entities } =
-              event.data.metrics;
+              event.data.metrics
 
             set({
               metrics: {
@@ -130,9 +130,9 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
                     systems ?? currentState.metrics?.performance.systems ?? {},
                 },
               },
-            });
+            })
           }
-          break;
+          break
         }
       }
     },
@@ -174,5 +174,5 @@ export const createDebugStore = (initState: DebugState = defaultInitState) => {
           [viz]: !state.visualizations[viz],
         },
       })),
-  }));
-};
+  }))
+}

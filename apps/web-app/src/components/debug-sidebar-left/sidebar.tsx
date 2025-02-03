@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import {
   Sidebar,
@@ -6,12 +6,12 @@ import {
   SidebarHeader,
   SidebarRail,
   SidebarTrigger,
-} from "@acme/ui/sidebar";
+} from '@acme/ui/sidebar'
 
-import { DebugToggles } from "./debug-toggles";
-import { ECSStatus } from "./ecs-status";
-import { ModeToggle } from "./mode-toggle";
-import { PerformanceMetrics } from "./performance-metrics";
+import { DebugToggles } from './debug-toggles'
+import { ECSStatus } from './ecs-status'
+import { ModeToggle } from './mode-toggle'
+import { PerformanceMetrics } from './performance-metrics'
 
 export function DebugSidebarLeft() {
   return (
@@ -29,5 +29,5 @@ export function DebugSidebarLeft() {
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

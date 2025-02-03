@@ -1,9 +1,8 @@
 import {
   createSnapshotDeserializer,
   createSnapshotSerializer,
-} from "bitecs/serialization";
+} from 'bitecs/serialization'
 
-import type { MapMetadata, World } from "./types";
 import {
   BoundingBox,
   Collidable,
@@ -15,7 +14,8 @@ import {
   RigidBody,
   SaveableMapEntity,
   Transform,
-} from "./components";
+} from './components'
+import type { MapMetadata, World } from './types'
 
 const mapComponents = [
   Transform,
@@ -28,67 +28,67 @@ const mapComponents = [
   HostileNPC,
   NPCInteraction,
   SaveableMapEntity,
-];
+]
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const uint8Array = new Uint8Array(buffer);
-  let binary = "";
+  const uint8Array = new Uint8Array(buffer)
+  let binary = ''
   for (const byte of uint8Array) {
-    binary += String.fromCodePoint(byte);
+    binary += String.fromCodePoint(byte)
   }
-  return btoa(binary);
+  return btoa(binary)
 }
 
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64);
-  const uint8Array = new Uint8Array(binaryString.length);
+  const binaryString = atob(base64)
+  const uint8Array = new Uint8Array(binaryString.length)
   for (let index = 0; index < binaryString.length; index++) {
-    const codePoint = binaryString.codePointAt(index);
-    if (codePoint === undefined) continue;
-    uint8Array[index] = codePoint;
+    const codePoint = binaryString.codePointAt(index)
+    if (codePoint === undefined) continue
+    uint8Array[index] = codePoint
   }
-  return uint8Array.buffer;
+  return uint8Array.buffer
 }
 
 export function generateMapFilename(name: string, updatedAt: string): string {
-  const timestamp = new Date(updatedAt).toISOString().replaceAll(/[:.]/g, "");
-  return `${name}-v1-${timestamp}.map.json`;
+  const timestamp = new Date(updatedAt).toISOString().replaceAll(/[:.]/g, '')
+  return `${name}-v1-${timestamp}.map.json`
 }
 
 export function serializeWorld(world: World): string {
-  const serializer = createSnapshotSerializer(world, mapComponents);
-  const serializedData = serializer();
+  const serializer = createSnapshotSerializer(world, mapComponents)
+  const serializedData = serializer()
 
   if (serializedData.byteLength === 0) {
-    throw new Error("No entities to save");
+    throw new Error('No entities to save')
   }
 
-  return arrayBufferToBase64(serializedData);
+  return arrayBufferToBase64(serializedData)
 }
 
 export function deserializeWorld(world: World, data: string): void {
-  const deserializer = createSnapshotDeserializer(world, mapComponents);
-  const binaryData = base64ToArrayBuffer(data);
+  const deserializer = createSnapshotDeserializer(world, mapComponents)
+  const binaryData = base64ToArrayBuffer(data)
 
   if (binaryData.byteLength === 0) {
-    return;
+    return
   }
 
-  deserializer(binaryData);
+  deserializer(binaryData)
 }
 
 export function createMapMetadata(
   metadata: Omit<
     MapMetadata,
-    "version" | "updatedAt" | "createdAt" | "schemaVersion"
+    'version' | 'updatedAt' | 'createdAt' | 'schemaVersion'
   >,
 ): MapMetadata {
-  const now = new Date().toISOString();
+  const now = new Date().toISOString()
   return {
     ...metadata,
     createdAt: now,
     schemaVersion: 1,
     updatedAt: now,
-    version: "v1",
-  };
+    version: 'v1',
+  }
 }
