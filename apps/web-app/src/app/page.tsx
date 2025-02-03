@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 
+import { HydrationBoundary, getApi } from '@acme/api/server'
 import { Skeleton } from '@acme/ui/skeleton'
 import { H1, P } from '@acme/ui/typography'
-
-import { MapsGridServer } from './_components/maps-grid.server'
+import { MapsGrid } from './_components/maps-grid'
 
 function MapsSkeleton() {
   return (
@@ -33,7 +33,10 @@ function MapsSkeleton() {
   )
 }
 
-export default function Page() {
+export default async function Page() {
+  const api = await getApi()
+  void api.map.list.prefetch()
+
   return (
     <main className="container py-16">
       <div className="flex flex-col gap-8">
@@ -45,7 +48,9 @@ export default function Page() {
         </div>
 
         <Suspense fallback={<MapsSkeleton />}>
-          <MapsGridServer />
+          <HydrationBoundary>
+            <MapsGrid />
+          </HydrationBoundary>
         </Suspense>
       </div>
     </main>

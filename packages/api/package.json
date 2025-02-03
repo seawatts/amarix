@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@acme/db": "workspace:*",
+    "@acme/id": "workspace:*",
     "@acme/validators": "workspace:*",
     "@tanstack/react-query": "5.66.0",
     "@trpc/client": "next",

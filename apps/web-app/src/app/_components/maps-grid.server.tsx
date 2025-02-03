@@ -1,13 +1,18 @@
-import { HydrationBoundary } from '@acme/api/client'
-import { api } from '@acme/api/server'
-import { MapsGrid } from './maps-grid.client'
+import 'server-only'
+import { HydrationBoundary, getApi } from '@acme/api/server'
+
+import { MapsGrid } from './maps-grid'
 
 export async function MapsGridServer() {
-  await api.map.list.prefetch()
+  const api = await getApi()
+  void api.map.list.prefetch()
 
   return (
-    <HydrationBoundary queryClient={api.queryClient}>
+    <HydrationBoundary>
       <MapsGrid />
     </HydrationBoundary>
+    // <HydrateClient>
+    // <MapsGrid />
+    // </HydrateClient>
   )
 }

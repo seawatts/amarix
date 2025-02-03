@@ -519,6 +519,9 @@ importers:
       '@acme/db':
         specifier: workspace:*
         version: link:../db
+      '@acme/id':
+        specifier: workspace:*
+        version: link:../id
       '@acme/validators':
         specifier: workspace:*
         version: link:../validators

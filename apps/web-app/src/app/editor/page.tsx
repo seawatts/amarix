@@ -6,7 +6,8 @@ import { Icons } from '@acme/ui/icons'
 import { Skeleton } from '@acme/ui/skeleton'
 import { H2 } from '@acme/ui/typography'
 
-import { EditorTabsServer } from './_components/editor-tabs.server'
+import { HydrationBoundary, getApi } from '@acme/api/server'
+import { EditorTabs } from './_components/editor-tabs'
 import { searchParamsCache } from './search-params'
 
 function EditorLoading() {
@@ -23,6 +24,8 @@ export default async function EditorPage({
   searchParams: Promise<{ maps: string[] }>
 }) {
   const { maps } = await searchParamsCache.parse(searchParams)
+  const api = await getApi()
+  void api.map.list.prefetch()
 
   if (maps.length === 0) {
     return (
@@ -42,7 +45,9 @@ export default async function EditorPage({
   return (
     <div className="flex h-screen flex-col">
       <Suspense fallback={<EditorLoading />}>
-        <EditorTabsServer />
+        <HydrationBoundary>
+          <EditorTabs />
+        </HydrationBoundary>
       </Suspense>
     </div>
   )
